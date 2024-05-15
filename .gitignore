@@ -1,0 +1,46 @@
+# file types
+*.bin
+*.bak
+*.cache
+*.check_cache
+*.db
+*.dcu
+*.depend
+*.exp
+*.filters
+*.idb
+*.ilk
+*.list
+*.log
+*.obj
+*.orig
+*.pdb
+*.pyc
+*.rule
+*.rsm
+*.stamp
+*.stat
+*.suo
+*.tlog
+*.user
+
+# IDE files
+.idea/
+.idea_/
+.vs/
+.vscode/
+__history/
+__recovery/
+__pycache__/
+
+# build and backup folders
+/_build*
+/build*
+/build_win
+/cmake-build*
+/out*
+bckp
+
+# cmake
+CMakeUserPresets.json
+CMakeSettings.json
