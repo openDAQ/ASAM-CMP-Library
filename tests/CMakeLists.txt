@@ -1,4 +1,4 @@
-set(TEST_APP test_asam_decoder)
+set(TEST_APP test_asam_cmp)
 
 set(SRC_Include 
 )
@@ -10,7 +10,7 @@ add_executable(${TEST_APP} ${SRC_Cpp}
                            ${SRC_Include}
 )
 
-target_link_libraries(${TEST_APP} PRIVATE AsamCmpLib::asam_decoder
+target_link_libraries(${TEST_APP} PRIVATE asam_cmp
                                           gtest
                                           gmock
 )

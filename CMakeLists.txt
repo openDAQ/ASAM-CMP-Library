@@ -52,6 +52,7 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 add_subdirectory(external)
-
-add_subdirectory(asam_decoder)
-add_subdirectory(asam_encoder)
+add_subdirectory(src)
+if (ASAMCMP_ENABLE_TESTS)
+    add_subdirectory(tests)
+endif()
