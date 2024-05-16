@@ -1,9 +1,12 @@
 set(LIB_NAME asam_cmp)
 
-set(SRC_Headers ../include/${LIB_NAME}/decoder.h               
+set(SRC_Headers ../include/${LIB_NAME}/common.h
+                ../include/${LIB_NAME}/decoder.h
+                ../include/${LIB_NAME}/packet.h
 )
 
 set(SRC_Sources decoder.cpp
+                packet.cpp
 )
 
 add_library(${LIB_NAME} STATIC ${SRC_Headers} ${SRC_Sources})
