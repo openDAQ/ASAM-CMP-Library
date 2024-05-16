@@ -10,8 +10,6 @@ BEGIN_NAMESPACE_ASAM_CMP
 class Packet
 {
 public:
-    using Version = uint8_t;
-
     enum class MessageType : uint8_t
     {
         Undefined = 0x00,
@@ -24,10 +22,10 @@ public:
 public:
     Packet(const void* data, size_t size);
 
-    Version getVersion() const;
-    void setVersion(Version value);
-    uint8_t getDeviceId() const;
-    void setDeviceId(uint8_t value);
+    uint8_t getVersion() const;
+    void setVersion(uint8_t value);
+    uint16_t getDeviceId() const;
+    void setDeviceId(uint16_t value);
     uint8_t getStreamId() const;
     void setStreamId(uint8_t value);
 
@@ -38,8 +36,8 @@ public:
 private:
     std::vector<uint8_t> packData;
 
-    Version version{};
-    uint8_t deviceId{};
+    uint8_t version{};
+    uint16_t deviceId{};
     uint8_t streamId{};
     MessageType messageType{MessageType::Undefined};
 };

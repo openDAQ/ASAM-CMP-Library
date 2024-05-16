@@ -5,6 +5,7 @@ set(SRC_Include
 
 set(SRC_Cpp testapp.cpp
             test_packet.cpp
+            test_decoder.cpp
 )
 
 add_executable(${TEST_APP} ${SRC_Cpp}

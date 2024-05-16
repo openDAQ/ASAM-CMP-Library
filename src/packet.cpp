@@ -9,22 +9,22 @@ Packet::Packet(const void* data, size_t size)
         memcpy(&packData[0], data, size);
 }
 
-Packet::Version Packet::getVersion() const
+uint8_t Packet::getVersion() const
 {
     return version;
 }
 
-void Packet::setVersion(Version value)
+void Packet::setVersion(uint8_t value)
 {
     version = value;
 }
 
-uint8_t Packet::getDeviceId() const
+uint16_t Packet::getDeviceId() const
 {
     return deviceId;
 }
 
-void Packet::setDeviceId(uint8_t value)
+void Packet::setDeviceId(uint16_t value)
 {
     deviceId = value;
 }

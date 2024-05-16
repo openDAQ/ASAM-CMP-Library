@@ -17,7 +17,7 @@ TEST_F(PacketTest, EmptyPacket)
 
 TEST_F(PacketTest, Version)
 {
-    constexpr Packet::Version newVersion = 99;
+    constexpr uint8_t newVersion = 99;
 
     Packet packet(nullptr, 0);
     packet.setVersion(newVersion);
