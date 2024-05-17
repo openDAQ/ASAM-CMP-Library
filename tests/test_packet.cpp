@@ -1,7 +1,10 @@
 #include <gtest/gtest.h>
 #include <asam_cmp/packet.h>
 
-using Packet = AsamCmp::Packet;
+#include "create_message.h"
+
+using AsamCmp::Packet;
+using AsamCmp::Payload;
 using PacketTest = testing::Test;
 
 TEST_F(PacketTest, Construct)
@@ -54,3 +57,11 @@ TEST_F(PacketTest, MessageType)
     auto type = packet.getMessageType();
     ASSERT_EQ(type, newType);
 }
+
+TEST_F(PacketTest, GetPayload)
+{
+    Packet packet(nullptr, 0);
+    auto payload = packet.getPayload();
+    ASSERT_EQ(payload.getType(), Payload::PayloadType::invalid);
+}
+

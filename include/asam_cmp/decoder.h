@@ -8,12 +8,10 @@
 
 BEGIN_NAMESPACE_ASAM_CMP
 
-class Decoder
+class Decoder final
 {
 public:
-    Decoder() = default;
-
-    std::vector<std::shared_ptr<Packet>> decode(const void* data, std::size_t size);
+    std::vector<std::shared_ptr<Packet>> decode(const void* data, const std::size_t size);
 
 private:
 #pragma pack(push, 1)

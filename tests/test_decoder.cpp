@@ -1,85 +1,19 @@
 #include <gtest/gtest.h>
 #include <numeric>
 
+#include <asam_cmp/can_frame_payload.h>
 #include <asam_cmp/decoder.h>
 
-using Decoder = AsamCmp::Decoder;
+#include "create_message.h"
+
+using AsamCmp::CanFramePayload;
+using AsamCmp::Decoder;
+using AsamCmp::swap_endian;
 
 class DecoderFixture : public ::testing::Test
 {
 public:
-#pragma pack(push, 1)
 
-    struct CmpMessageHeader
-    {
-        uint8_t version{1};
-        uint8_t reserved{0};
-        uint16_t deviceId{0};
-        uint8_t messageType{0};
-        uint8_t streamId{0};
-        uint16_t sequenceCounter{0};
-    };
-
-    struct DataMessageHeader
-    {
-        uint64_t timestamp{0};
-        uint32_t interfaceId{0};
-        uint8_t flags{0};
-        uint8_t payloadType{0};
-        uint16_t payloadLength{0};
-    };
-
-    struct CanDataMessageHeader
-    {
-        uint16_t flags{0};
-        uint16_t reserved{0};
-        uint32_t arbId{0};
-        uint32_t crc{0};
-        uint16_t error_pos{0};
-        uint8_t dlc{0};
-        uint8_t data_length{0};
-    };
-
-#pragma pack(pop)
-
-protected:
-    template <typename Header>
-    std::vector<uint8_t> createMessage(Header&& header, const std::vector<uint8_t>& data)
-    {
-        size_t messageSize = sizeof(header) + data.size();
-        std::vector<uint8_t> message(messageSize);
-        memcpy(&message[0], &header, sizeof(header));
-        std::copy(data.begin(), data.end(), std::next(message.begin(), sizeof(header)));
-
-        return message;
-    }
-
-    std::vector<uint8_t> createCanDataMessage(uint32_t arbId, const std::vector<uint8_t>& data)
-    {
-        CanDataMessageHeader header;
-        header.arbId = swap_endian(arbId);
-
-        return createMessage(header, data);
-    }
-
-    std::vector<uint8_t> createDataMessage(uint8_t payloadType, std::vector<uint8_t> payload)
-    {
-        DataMessageHeader header;
-        header.payloadType = swap_endian(payloadType);
-        header.payloadLength = swap_endian(static_cast<uint16_t>(payload.size()));
-
-        return createMessage(header, payload);
-    }
-
-    std::vector<uint8_t> createCmpMessage(uint16_t deviceId, uint8_t messageType, uint8_t streamId, std::vector<uint8_t> payload)
-    {
-        CmpMessageHeader header;
-        header.deviceId = swap_endian(deviceId);
-        header.messageType = swap_endian(messageType);
-        header.streamId = swap_endian(streamId);
-
-        return createMessage(header, payload);
-    }
 };
 
 TEST_F(DecoderFixture, Construct)
@@ -91,12 +25,61 @@ TEST_F(DecoderFixture, Construct)
 TEST_F(DecoderFixture, DataNull)
 {
     Decoder decoder;
-    ASSERT_THROW(decoder.decode(nullptr, 0), std::invalid_argument);
+    auto packets = decoder.decode(nullptr, 0);
+    ASSERT_TRUE(packets.empty());
 }
 
-TEST_F(DecoderFixture, Decode)
+TEST_F(DecoderFixture, DecodeDataMessage)
 {
     constexpr uint8_t version = 1;
+    constexpr size_t payloadDataSize = 8;
+    constexpr uint8_t payloadType = 0x01;
+    constexpr uint16_t deviceId = 3;
+    constexpr uint8_t cmpMessageTypeData = 0x01;
+    constexpr uint8_t streamId = 0x01;
+
+    std::vector<uint8_t> payloadMsg(payloadDataSize);
+    auto dataMsg = createDataMessage(payloadType, payloadMsg);
+    auto cmpMsg = createCmpMessage(deviceId, cmpMessageTypeData, streamId, dataMsg);
+
+    Decoder decoder;
+    auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size());
+    ASSERT_EQ(packets.size(), 1);
+
+    auto packet = packets[0];
+    ASSERT_EQ(packet->getVersion(), version);
+    ASSERT_EQ(packet->getDeviceId(), deviceId);
+    ASSERT_EQ(packet->getStreamId(), streamId);
+    ASSERT_EQ(static_cast<uint8_t>(packet->getMessageType()), cmpMessageTypeData);
+}
+
+TEST_F(DecoderFixture, DecodeStatusMessage)
+{
+    constexpr uint8_t version = 1;
+    constexpr size_t payloadDataSize = 8;
+    constexpr uint8_t payloadType = 0x01;
+    constexpr uint16_t deviceId = 3;
+    constexpr uint8_t cmpMessageTypeData = 0x03;
+    constexpr uint8_t streamId = 0x01;
+
+    std::vector<uint8_t> payloadMsg(payloadDataSize);
+    auto dataMsg = createDataMessage(payloadType, payloadMsg);
+    auto cmpMsg = createCmpMessage(deviceId, cmpMessageTypeData, streamId, dataMsg);
+
+    Decoder decoder;
+    auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size());
+    ASSERT_EQ(packets.size(), 1);
+
+    auto packet = packets[0];
+    ASSERT_EQ(packet->getVersion(), version);
+    ASSERT_EQ(packet->getDeviceId(), deviceId);
+    ASSERT_EQ(packet->getStreamId(), streamId);
+    ASSERT_EQ(static_cast<uint8_t>(packet->getMessageType()), cmpMessageTypeData);
+}
+
+
+TEST_F(DecoderFixture, DecodeCanMessage)
+{
     constexpr size_t canDataSize = 8;
     constexpr uint32_t arbId = 33;
     constexpr uint8_t payloadTypeCan = 0x01;
@@ -111,12 +94,15 @@ TEST_F(DecoderFixture, Decode)
     auto cmpMsg = createCmpMessage(deviceId, cmpMessageTypeData, streamId, dataMsg);
 
     Decoder decoder;
-    auto packets = decoder.decode(&cmpMsg[0], cmpMsg.size());
+    auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size());
     ASSERT_EQ(packets.size(), 1);
 
     auto packet = packets[0];
-    ASSERT_EQ(packet->getVersion(), version);
-    ASSERT_EQ(packet->getDeviceId(), deviceId);
-    ASSERT_EQ(packet->getStreamId(), streamId);
-    ASSERT_EQ(static_cast<uint8_t>(packet->getMessageType()), cmpMessageTypeData);
+    auto payload = packet->getPayload();
+    ASSERT_EQ(static_cast<uint8_t>(payload.getType()), payloadTypeCan);
+
+    auto canPayload = static_cast<const CanFramePayload&>(payload);
+    ASSERT_EQ(canPayload.getArbId(), arbId);
+    ASSERT_EQ(canPayload.getLength(), canDataSize);
+    ASSERT_TRUE(std::equal(data.begin(), data.end(), canPayload.getData()));
 }

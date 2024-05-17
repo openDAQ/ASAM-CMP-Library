@@ -4,10 +4,11 @@
 #include <vector>
 
 #include <asam_cmp/common.h>
+#include <asam_cmp/payload.h>
 
 BEGIN_NAMESPACE_ASAM_CMP
 
-class Packet
+class Packet final
 {
 public:
     enum class MessageType : uint8_t
@@ -20,21 +21,31 @@ public:
     };
 
 public:
-    Packet(const void* data, size_t size);
+    Packet(const uint8_t* data, const size_t size);
 
     uint8_t getVersion() const;
-    void setVersion(uint8_t value);
+    void setVersion(const uint8_t value);
     uint16_t getDeviceId() const;
-    void setDeviceId(uint16_t value);
+    void setDeviceId(const uint16_t value);
     uint8_t getStreamId() const;
-    void setStreamId(uint8_t value);
+    void setStreamId(const uint8_t value);
 
     // Message info
     MessageType getMessageType() const;
-    void setMessageType(MessageType value);
+    void setMessageType(const MessageType value);
+
+    void setPayload(const Payload& newPayload);
+
+    const Payload& getPayload() const;
+
+protected:
+    std::unique_ptr<Payload> create(const Payload::PayloadType type, const uint8_t* data, const size_t size);
+
+protected:
+    constexpr static size_t messageHeaderSize = 16;
 
 private:
-    std::vector<uint8_t> packData;
+    std::unique_ptr<Payload> payload;
 
     uint8_t version{};
     uint16_t deviceId{};
