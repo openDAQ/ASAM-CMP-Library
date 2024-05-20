@@ -30,16 +30,14 @@ public:
     uint8_t getStreamId() const;
     void setStreamId(const uint8_t value);
 
-    // Message info
     MessageType getMessageType() const;
-    void setMessageType(const MessageType value);
 
     void setPayload(const Payload& newPayload);
 
     const Payload& getPayload() const;
 
 protected:
-    std::unique_ptr<Payload> create(const Payload::PayloadType type, const uint8_t* data, const size_t size);
+    std::unique_ptr<Payload> create(const Payload::Type type, const uint8_t* data, const size_t size);
 
 protected:
     constexpr static size_t messageHeaderSize = 16;
@@ -50,7 +48,6 @@ private:
     uint8_t version{};
     uint16_t deviceId{};
     uint8_t streamId{};
-    MessageType messageType{MessageType::Undefined};
 };
 
 END_NAMESPACE_ASAM_CMP

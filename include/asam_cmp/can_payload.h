@@ -5,27 +5,28 @@
 
 BEGIN_NAMESPACE_ASAM_CMP
 
-class CanFramePayload : public Payload
+class CanPayload : public Payload
 {
 public:
-    struct CanPayloadHeader
+#pragma pack(push, 1)
+    struct Header
     {
         uint16_t flags{0};
         uint16_t reserved{0};
         uint32_t id{0};
         uint32_t crc{0};
-        uint16_t error_position{0};
+        uint16_t errorPosition{0};
         uint8_t dlc{0};
-        uint8_t data_length{0};
+        uint8_t dataLength{0};
     };
+#pragma pack(pop)
 
 public:
-    CanFramePayload(const uint8_t* data, const size_t size);
+    CanPayload(const uint8_t* data, const size_t size);
 
-    uint32_t getArbId() const;
-    uint8_t getLength() const;
+    uint32_t getId() const;
+    uint8_t getDataLength() const;
     const uint8_t* getData() const;
-
 };
 
 END_NAMESPACE_ASAM_CMP

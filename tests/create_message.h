@@ -30,11 +30,11 @@ struct CanDataMessageHeader
 {
     uint16_t flags{0};
     uint16_t reserved{0};
-    uint32_t arbId{0};
+    uint32_t id{0};
     uint32_t crc{0};
-    uint16_t error_pos{0};
+    uint16_t errorPosition{0};
     uint8_t dlc{0};
-    uint8_t data_length{0};
+    uint8_t dataLength{0};
 };
 
 #pragma pack(pop)
@@ -53,8 +53,8 @@ std::vector<uint8_t> createMessage(Header&& header, const std::vector<uint8_t>& 
 inline std::vector<uint8_t> createCanDataMessage(uint32_t arbId, const std::vector<uint8_t>& data)
 {
     CanDataMessageHeader header;
-    header.arbId = AsamCmp::swap_endian(arbId);
-    header.data_length = AsamCmp::swap_endian(static_cast<uint8_t>(data.size()));
+    header.id = ASAM::CMP::swapEndian(arbId);
+    header.dataLength = ASAM::CMP::swapEndian(static_cast<uint8_t>(data.size()));
 
     return createMessage(header, data);
 }
@@ -62,8 +62,8 @@ inline std::vector<uint8_t> createCanDataMessage(uint32_t arbId, const std::vect
 inline std::vector<uint8_t> createDataMessage(uint8_t payloadType, std::vector<uint8_t> payload)
 {
     DataMessageHeader header;
-    header.payloadType = AsamCmp::swap_endian(payloadType);
-    header.payloadLength = AsamCmp::swap_endian(static_cast<uint16_t>(payload.size()));
+    header.payloadType = ASAM::CMP::swapEndian(payloadType);
+    header.payloadLength = ASAM::CMP::swapEndian(static_cast<uint16_t>(payload.size()));
 
     return createMessage(header, payload);
 }
@@ -71,9 +71,9 @@ inline std::vector<uint8_t> createDataMessage(uint8_t payloadType, std::vector<u
 inline std::vector<uint8_t> createCmpMessage(uint16_t deviceId, uint8_t messageType, uint8_t streamId, std::vector<uint8_t> payload)
 {
     CmpMessageHeader header;
-    header.deviceId = AsamCmp::swap_endian(deviceId);
-    header.messageType = AsamCmp::swap_endian(messageType);
-    header.streamId = AsamCmp::swap_endian(streamId);
+    header.deviceId = ASAM::CMP::swapEndian(deviceId);
+    header.messageType = ASAM::CMP::swapEndian(messageType);
+    header.streamId = ASAM::CMP::swapEndian(streamId);
 
     return createMessage(header, payload);
 }

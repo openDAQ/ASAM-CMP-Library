@@ -3,8 +3,8 @@
 
 #include "create_message.h"
 
-using AsamCmp::Packet;
-using AsamCmp::Payload;
+using ASAM::CMP::Packet;
+using ASAM::CMP::Payload;
 using PacketTest = testing::Test;
 
 TEST_F(PacketTest, Construct)
@@ -48,20 +48,17 @@ TEST_F(PacketTest, StreamId)
     ASSERT_EQ(id, newId);
 }
 
-TEST_F(PacketTest, MessageType)
+TEST_F(PacketTest, MessageTypeData)
 {
-    constexpr Packet::MessageType newType = Packet::MessageType::Status;
-
     Packet packet(nullptr, 0);
-    packet.setMessageType(newType);
     auto type = packet.getMessageType();
-    ASSERT_EQ(type, newType);
+    ASSERT_EQ(type, Packet::MessageType::Data);
 }
 
 TEST_F(PacketTest, GetPayload)
 {
     Packet packet(nullptr, 0);
     auto payload = packet.getPayload();
-    ASSERT_EQ(payload.getType(), Payload::PayloadType::invalid);
+    ASSERT_EQ(payload.getType(), Payload::Type::invalid);
 }
 

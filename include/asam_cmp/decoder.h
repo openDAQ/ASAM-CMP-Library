@@ -16,7 +16,7 @@ public:
 private:
 #pragma pack(push, 1)
 
-    struct CmpMessageHeader
+    struct CmpHeader
     {
         uint8_t version{1};
         uint8_t reserved{0};

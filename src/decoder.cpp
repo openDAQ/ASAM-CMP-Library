@@ -8,16 +8,15 @@ std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std
 {
     if (data == nullptr)
         return std::vector<std::shared_ptr<Packet>>();
-    if (size < sizeof(CmpMessageHeader))
+    if (size < sizeof(CmpHeader))
         return std::vector<std::shared_ptr<Packet>>();
 
-    auto header = reinterpret_cast<const CmpMessageHeader*>(data);
-    auto packet = std::make_shared<Packet>(reinterpret_cast<const uint8_t*>(header + 1), size - sizeof(CmpMessageHeader));
+    auto header = reinterpret_cast<const CmpHeader*>(data);
+    auto packet = std::make_shared<Packet>(reinterpret_cast<const uint8_t*>(header + 1), size - sizeof(CmpHeader));
 
-    packet->setVersion(swap_endian(header->version));
-    packet->setDeviceId(swap_endian(header->deviceId));
-    packet->setStreamId(swap_endian(header->streamId));
-    packet->setMessageType(static_cast<Packet::MessageType>(swap_endian(header->messageType)));
+    packet->setVersion(swapEndian(header->version));
+    packet->setDeviceId(swapEndian(header->deviceId));
+    packet->setStreamId(swapEndian(header->streamId));
 
     return std::vector<std::shared_ptr<Packet>>(1, packet);
 }

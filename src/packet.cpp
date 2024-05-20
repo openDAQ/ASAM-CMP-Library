@@ -1,4 +1,4 @@
-#include <asam_cmp/can_frame_payload.h>
+#include <asam_cmp/can_payload.h>
 #include <asam_cmp/packet.h>
 
 BEGIN_NAMESPACE_ASAM_CMP
@@ -6,9 +6,9 @@ BEGIN_NAMESPACE_ASAM_CMP
 Packet::Packet(const uint8_t* data, const size_t size)
 {
     if (data != nullptr && size >= messageHeaderSize)
-        payload = create(static_cast<Payload::PayloadType>(data[13]), data + messageHeaderSize, size - messageHeaderSize);
+        payload = create(static_cast<Payload::Type>(data[13]), data + messageHeaderSize, size - messageHeaderSize);
     else
-        payload = create(Payload::PayloadType::invalid, nullptr, 0);
+        payload = create(Payload::Type::invalid, nullptr, 0);
 }
 
 uint8_t Packet::getVersion() const
@@ -43,12 +43,7 @@ void Packet::setStreamId(const uint8_t value)
 
 Packet::MessageType Packet::getMessageType() const
 {
-    return messageType;
-}
-
-void Packet::setMessageType(const MessageType value)
-{
-    messageType = value;
+    return MessageType::Data;
 }
 
 void Packet::setPayload(const Payload& newPayload)
@@ -61,14 +56,14 @@ const Payload& Packet::getPayload() const
     return *payload;
 }
 
-std::unique_ptr<Payload> Packet::create(const Payload::PayloadType type, const uint8_t* data, const size_t size)
+std::unique_ptr<Payload> Packet::create(const Payload::Type type, const uint8_t* data, const size_t size)
 {
     switch (type)
     {
-        case Payload::PayloadType::can:
-            return std::make_unique<CanFramePayload>(data, size);
+        case Payload::Type::can:
+            return std::make_unique<CanPayload>(data, size);
         default:
-            return std::make_unique<Payload>(Payload::PayloadType::invalid, data, size);
+            return std::make_unique<Payload>(Payload::Type::invalid, data, size);
     }
 }
 
