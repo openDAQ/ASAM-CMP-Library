@@ -14,9 +14,12 @@ std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std
     auto header = reinterpret_cast<const CmpHeader*>(data);
     auto packet = std::make_shared<Packet>(reinterpret_cast<const uint8_t*>(header + 1), size - sizeof(CmpHeader));
 
-    packet->setVersion(swapEndian(header->version));
-    packet->setDeviceId(swapEndian(header->deviceId));
-    packet->setStreamId(swapEndian(header->streamId));
+    if (packet->isValid())
+    {
+        packet->setVersion(swapEndian(header->version));
+        packet->setDeviceId(swapEndian(header->deviceId));
+        packet->setStreamId(swapEndian(header->streamId));
+    }
 
     return std::vector<std::shared_ptr<Packet>>(1, packet);
 }

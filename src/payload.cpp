@@ -6,7 +6,7 @@ Payload::Payload(const Type type, const uint8_t* data, const size_t size)
     : type(type)
     , payloadData(size)
 {
-    if (size)
+    if (size && type != Type::invalid)
         memcpy(payloadData.data(), data, size);
 }
 

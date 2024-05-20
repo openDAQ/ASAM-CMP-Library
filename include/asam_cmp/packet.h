@@ -20,8 +20,27 @@ public:
         Vendor = 0xFF
     };
 
+    struct MessageHeader
+    {
+        uint64_t timestamp{0};
+        union
+        {
+            uint32_t interfaceId{0};
+            struct V
+            {
+                uint16_t reserved;
+                uint16_t vendorId;
+            };
+        };
+        uint8_t flags{0};
+        uint8_t payloadType{0};
+        uint16_t payloadLength{0};
+    };
+
 public:
     Packet(const uint8_t* data, const size_t size);
+
+    bool isValid() const;
 
     uint8_t getVersion() const;
     void setVersion(const uint8_t value);
@@ -39,8 +58,8 @@ public:
 protected:
     std::unique_ptr<Payload> create(const Payload::Type type, const uint8_t* data, const size_t size);
 
-protected:
-    constexpr static size_t messageHeaderSize = 16;
+private:
+    constexpr static uint8_t errorInPayload = 0x40;
 
 private:
     std::unique_ptr<Payload> payload;

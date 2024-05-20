@@ -5,10 +5,19 @@ BEGIN_NAMESPACE_ASAM_CMP
 
 Packet::Packet(const uint8_t* data, const size_t size)
 {
-    if (data != nullptr && size >= messageHeaderSize)
-        payload = create(static_cast<Payload::Type>(data[13]), data + messageHeaderSize, size - messageHeaderSize);
+    auto header = reinterpret_cast<const MessageHeader*>(data);
+    if (data != nullptr && size >= sizeof(MessageHeader) && swapEndian(header->payloadLength) <= (size - sizeof(MessageHeader)) &&
+        ((header->flags & errorInPayload) == 0))
+    {
+        payload = create(static_cast<Payload::Type>(header->payloadType), data + sizeof(MessageHeader), size - sizeof(MessageHeader));
+    }
     else
         payload = create(Payload::Type::invalid, nullptr, 0);
+}
+
+bool Packet::isValid() const
+{
+    return payload->getType() != Payload::Type::invalid;
 }
 
 uint8_t Packet::getVersion() const

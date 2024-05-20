@@ -39,6 +39,8 @@ struct CanDataMessageHeader
 
 #pragma pack(pop)
 
+constexpr uint8_t errorInPayload = 0x40;
+
 template <typename Header>
 std::vector<uint8_t> createMessage(Header&& header, const std::vector<uint8_t>& data)
 {

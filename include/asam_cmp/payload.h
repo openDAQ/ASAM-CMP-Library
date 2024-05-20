@@ -25,10 +25,11 @@ public:
     Type getType() const;
 
 protected:
-    std::vector<uint8_t> payloadData;
+    Payload() = default;
 
-private:
-    Type type;
+protected:
+    std::vector<uint8_t> payloadData;
+    Type type{Type::invalid};
 };
 
 END_NAMESPACE_ASAM_CMP

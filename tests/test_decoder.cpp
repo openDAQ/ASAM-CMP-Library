@@ -8,6 +8,7 @@
 
 using ASAM::CMP::CanPayload;
 using ASAM::CMP::Decoder;
+using ASAM::CMP::swapEndian;
 
 class DecoderFixture : public ::testing::Test
 {
@@ -27,9 +28,25 @@ TEST_F(DecoderFixture, DataNull)
     ASSERT_TRUE(packets.empty());
 }
 
-TEST_F(DecoderFixture, DecodeDataMessage)
+TEST_F(DecoderFixture, WrongHeaderSize)
 {
-    constexpr uint8_t version = 1;
+    constexpr uint8_t payloadType = 0x01;
+    constexpr uint16_t deviceId = 3;
+    constexpr uint8_t cmpMessageTypeData = 0x01;
+    constexpr uint8_t streamId = 0x01;
+
+    std::vector<uint8_t> payloadMsg(0);
+    auto dataMsg = createDataMessage(payloadType, payloadMsg);
+    auto cmpMsg = createCmpMessage(deviceId, cmpMessageTypeData, streamId, dataMsg);
+
+    Decoder decoder;
+    auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size() - 1);
+    ASSERT_EQ(packets.size(), 1);
+    ASSERT_FALSE(packets[0]->isValid());
+}
+
+TEST_F(DecoderFixture, CorruptedDataMessage)
+{
     constexpr size_t payloadDataSize = 8;
     constexpr uint8_t payloadType = 0x01;
     constexpr uint16_t deviceId = 3;
@@ -40,18 +57,38 @@ TEST_F(DecoderFixture, DecodeDataMessage)
     auto dataMsg = createDataMessage(payloadType, payloadMsg);
     auto cmpMsg = createCmpMessage(deviceId, cmpMessageTypeData, streamId, dataMsg);
 
+    auto dataMessageHeader = reinterpret_cast<DataMessageHeader*>(cmpMsg.data() + sizeof(CmpMessageHeader));
+    uint16_t newSize = swapEndian(dataMessageHeader->payloadLength) + 1;
+    dataMessageHeader->payloadLength = swapEndian(newSize);
+
     Decoder decoder;
     auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size());
     ASSERT_EQ(packets.size(), 1);
-
-    auto packet = packets[0];
-    ASSERT_EQ(packet->getVersion(), version);
-    ASSERT_EQ(packet->getDeviceId(), deviceId);
-    ASSERT_EQ(packet->getStreamId(), streamId);
-    ASSERT_EQ(static_cast<uint8_t>(packet->getMessageType()), cmpMessageTypeData);
+    ASSERT_FALSE(packets[0]->isValid());
 }
 
-TEST_F(DecoderFixture, DecodeCanMessage)
+TEST_F(DecoderFixture, MessageWithErrorFlag)
+{
+    constexpr size_t payloadDataSize = 8;
+    constexpr uint8_t payloadType = 0x01;
+    constexpr uint16_t deviceId = 3;
+    constexpr uint8_t cmpMessageTypeData = 0x01;
+    constexpr uint8_t streamId = 0x01;
+
+    std::vector<uint8_t> payloadMsg(payloadDataSize);
+    auto dataMsg = createDataMessage(payloadType, payloadMsg);
+    auto cmpMsg = createCmpMessage(deviceId, cmpMessageTypeData, streamId, dataMsg);
+
+    auto dataMessageHeader = reinterpret_cast<DataMessageHeader*>(cmpMsg.data() + sizeof(CmpMessageHeader));
+    dataMessageHeader->flags |= errorInPayload;
+
+    Decoder decoder;
+    auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size());
+    ASSERT_EQ(packets.size(), 1);
+    ASSERT_FALSE(packets[0]->isValid());
+}
+
+TEST_F(DecoderFixture, CanMessage)
 {
     constexpr size_t canDataSize = 8;
     constexpr uint32_t arbId = 33;

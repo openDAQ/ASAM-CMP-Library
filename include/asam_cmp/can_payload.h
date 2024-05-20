@@ -27,6 +27,9 @@ public:
     uint32_t getId() const;
     uint8_t getDataLength() const;
     const uint8_t* getData() const;
+
+private:
+    static constexpr uint16_t errorMask = 0x03FF;
 };
 
 END_NAMESPACE_ASAM_CMP
