@@ -6,18 +6,7 @@ BEGIN_NAMESPACE_ASAM_CMP
 Packet::Packet(const uint8_t* data, const size_t size)
 {
     auto header = reinterpret_cast<const MessageHeader*>(data);
-    if (data != nullptr && size >= sizeof(MessageHeader) && swapEndian(header->payloadLength) <= (size - sizeof(MessageHeader)) &&
-        ((header->flags & errorInPayload) == 0))
-    {
-        payload = create(static_cast<Payload::Type>(header->payloadType), data + sizeof(MessageHeader), size - sizeof(MessageHeader));
-    }
-    else
-        payload = create(Payload::Type::invalid, nullptr, 0);
-}
-
-bool Packet::isValid() const
-{
-    return payload->getType() != Payload::Type::invalid;
+    payload = create(static_cast<Payload::Type>(header->payloadType), data + sizeof(MessageHeader), size - sizeof(MessageHeader));
 }
 
 uint8_t Packet::getVersion() const
@@ -65,12 +54,22 @@ const Payload& Packet::getPayload() const
     return *payload;
 }
 
+bool Packet::isValidPacket(const uint8_t* data, const size_t size)
+{
+    auto header = reinterpret_cast<const MessageHeader*>(data);
+    return (size >= sizeof(MessageHeader) && swapEndian(header->payloadLength) <= (size - sizeof(MessageHeader)) &&
+            ((header->flags & errorInPayload) == 0));
+}
+
 std::unique_ptr<Payload> Packet::create(const Payload::Type type, const uint8_t* data, const size_t size)
 {
     switch (type)
     {
         case Payload::Type::can:
-            return std::make_unique<CanPayload>(data, size);
+            if (CanPayload::isValidPayload(data, size))
+                return std::make_unique<CanPayload>(data, size);
+            else
+                return std::make_unique<Payload>(Payload::Type::invalid, data, size);
         default:
             return std::make_unique<Payload>(Payload::Type::invalid, data, size);
     }

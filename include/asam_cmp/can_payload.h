@@ -28,6 +28,8 @@ public:
     uint8_t getDataLength() const;
     const uint8_t* getData() const;
 
+    static bool isValidPayload(const uint8_t* data, const size_t size);
+
 private:
     static constexpr uint16_t errorMask = 0x03FF;
 };

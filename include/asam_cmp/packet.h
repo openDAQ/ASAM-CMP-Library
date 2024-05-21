@@ -40,8 +40,6 @@ public:
 public:
     Packet(const uint8_t* data, const size_t size);
 
-    bool isValid() const;
-
     uint8_t getVersion() const;
     void setVersion(const uint8_t value);
     uint16_t getDeviceId() const;
@@ -52,8 +50,9 @@ public:
     MessageType getMessageType() const;
 
     void setPayload(const Payload& newPayload);
-
     const Payload& getPayload() const;
+
+    static bool isValidPacket(const uint8_t* data, const size_t size);
 
 protected:
     std::unique_ptr<Payload> create(const Payload::Type type, const uint8_t* data, const size_t size);

@@ -41,8 +41,7 @@ TEST_F(DecoderFixture, WrongHeaderSize)
 
     Decoder decoder;
     auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size() - 1);
-    ASSERT_EQ(packets.size(), 1);
-    ASSERT_FALSE(packets[0]->isValid());
+    ASSERT_EQ(packets.size(), 0);
 }
 
 TEST_F(DecoderFixture, CorruptedDataMessage)
@@ -63,8 +62,7 @@ TEST_F(DecoderFixture, CorruptedDataMessage)
 
     Decoder decoder;
     auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size());
-    ASSERT_EQ(packets.size(), 1);
-    ASSERT_FALSE(packets[0]->isValid());
+    ASSERT_EQ(packets.size(), 0);
 }
 
 TEST_F(DecoderFixture, MessageWithErrorFlag)
@@ -84,8 +82,7 @@ TEST_F(DecoderFixture, MessageWithErrorFlag)
 
     Decoder decoder;
     auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size());
-    ASSERT_EQ(packets.size(), 1);
-    ASSERT_FALSE(packets[0]->isValid());
+    ASSERT_EQ(packets.size(), 0);
 }
 
 TEST_F(DecoderFixture, CanMessage)
