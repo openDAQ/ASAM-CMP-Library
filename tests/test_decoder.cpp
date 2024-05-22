@@ -6,6 +6,7 @@
 
 #include "create_message.h"
 
+using ASAM::CMP::Payload;
 using ASAM::CMP::CanPayload;
 using ASAM::CMP::Decoder;
 using ASAM::CMP::swapEndian;
@@ -18,7 +19,7 @@ public:
         canData.resize(canDataSize);
         std::iota(canData.begin(), canData.end(), 0);
         auto canMsg = createCanDataMessage(arbId, canData);
-        auto dataMsg = createDataMessage(payloadTypeCan, canMsg);
+        dataMsg = createDataMessage(payloadTypeCan, canMsg);
         cmpMsg = createCmpMessage(deviceId, cmpMessageTypeData, streamId, dataMsg);
     }
 
@@ -33,6 +34,7 @@ protected:
 protected:
     std::vector<uint8_t> canData;
     std::vector<uint8_t> cmpMsg;
+    std::vector<uint8_t> dataMsg;
 };
 
 TEST_F(DecoderFixture, DataNull)
@@ -84,4 +86,17 @@ TEST_F(DecoderFixture, CanMessage)
     ASSERT_EQ(canPayload.getId(), arbId);
     ASSERT_EQ(canPayload.getDataLength(), canDataSize);
     ASSERT_TRUE(std::equal(canData.begin(), canData.end(), canPayload.getData()));
+}
+
+TEST_F(DecoderFixture, Aggregation)
+{
+    dataMsg.reserve(dataMsg.size() * 2);
+    dataMsg.insert(dataMsg.end(), dataMsg.begin(), dataMsg.end());
+    cmpMsg = createCmpMessage(deviceId, cmpMessageTypeData, streamId, dataMsg);
+
+    Decoder decoder;
+    auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size());
+    ASSERT_EQ(packets.size(), 2);
+    ASSERT_EQ(packets[0]->getPayload().getType(), Payload::Type::can);
+    ASSERT_EQ(packets[1]->getPayload().getType(), Payload::Type::can);
 }

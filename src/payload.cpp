@@ -15,4 +15,9 @@ Payload::Type Payload::getType() const
     return type;
 }
 
+size_t Payload::getSize() const
+{
+    return payloadData.size();
+}
+
 END_NAMESPACE_ASAM_CMP

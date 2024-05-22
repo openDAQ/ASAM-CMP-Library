@@ -32,13 +32,13 @@ public:
                 uint16_t vendorId;
             };
         };
-        uint8_t flags{0};
+        uint8_t commonFlags{0};
         uint8_t payloadType{0};
         uint16_t payloadLength{0};
     };
 
 public:
-    Packet(const uint8_t* data, const size_t size);
+    Packet(const uint8_t* data);
 
     uint8_t getVersion() const;
     void setVersion(const uint8_t value);
