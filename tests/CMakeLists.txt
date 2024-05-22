@@ -4,6 +4,10 @@ set(SRC_Include
 )
 
 set(SRC_Cpp testapp.cpp
+            test_packet.cpp
+            test_decoder.cpp
+            test_can_payload.cpp
+            create_message.h
 )
 
 add_executable(${TEST_APP} ${SRC_Cpp}
