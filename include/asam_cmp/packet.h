@@ -38,7 +38,7 @@ public:
     };
 
 public:
-    Packet(const uint8_t* data);
+    Packet(const uint8_t* data, const size_t size);
 
     uint8_t getVersion() const;
     void setVersion(const uint8_t value);
@@ -48,6 +48,7 @@ public:
     void setStreamId(const uint8_t value);
 
     MessageType getMessageType() const;
+    size_t getSize() const;
 
     void setPayload(const Payload& newPayload);
     const Payload& getPayload() const;

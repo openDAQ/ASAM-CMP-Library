@@ -20,13 +20,13 @@ std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std
         if (!Packet::isValidPacket(packetPtr, curSize))
             break;
 
-        auto packet = std::make_shared<Packet>(packetPtr);
+        auto packet = std::make_shared<Packet>(packetPtr, curSize);
 
         packet->setVersion(swapEndian(header->version));
         packet->setDeviceId(swapEndian(header->deviceId));
         packet->setStreamId(swapEndian(header->streamId));
 
-        auto packetSize = packet->getPayload().getSize() + sizeof(Packet::MessageHeader);
+        auto packetSize = packet->getSize() + sizeof(Packet::MessageHeader);
         packetPtr += packetSize;
         curSize -= packetSize;
 

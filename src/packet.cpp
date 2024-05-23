@@ -1,10 +1,18 @@
 #include <asam_cmp/can_payload.h>
 #include <asam_cmp/packet.h>
+#include <stdexcept>
 
 BEGIN_NAMESPACE_ASAM_CMP
 
-Packet::Packet(const uint8_t* data)
+Packet::Packet(const uint8_t* data, const size_t size)
 {
+#ifdef _DEBUG
+    if (data == nullptr || size < sizeof(MessageHeader))
+        throw std::invalid_argument("Not enough data");
+#else
+    size;
+#endif  // _DEBUG
+
     auto header = reinterpret_cast<const MessageHeader*>(data);
     payload = create(static_cast<Payload::Type>(header->payloadType), data + sizeof(MessageHeader), swapEndian(header->payloadLength));
 }
@@ -42,6 +50,11 @@ void Packet::setStreamId(const uint8_t value)
 Packet::MessageType Packet::getMessageType() const
 {
     return MessageType::Data;
+}
+
+size_t Packet::getSize() const
+{
+    return payload ? payload->getSize() : 0;
 }
 
 void Packet::setPayload(const Payload& newPayload)
