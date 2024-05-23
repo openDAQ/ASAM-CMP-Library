@@ -100,3 +100,15 @@ TEST_F(DecoderFixture, Aggregation)
     ASSERT_EQ(packets[0]->getPayload().getType(), Payload::Type::can);
     ASSERT_EQ(packets[1]->getPayload().getType(), Payload::Type::can);
 }
+
+TEST_F(DecoderFixture, AggregationInvalidData)
+{
+    dataMsg.reserve(dataMsg.size() * 2);
+    dataMsg.insert(dataMsg.end(), dataMsg.begin(), dataMsg.end());
+    cmpMsg = createCmpMessage(deviceId, cmpMessageTypeData, streamId, dataMsg);
+
+    Decoder decoder;
+    auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size() - 1);
+    ASSERT_EQ(packets.size(), 1);
+    ASSERT_EQ(packets[0]->getPayload().getType(), Payload::Type::can);
+}

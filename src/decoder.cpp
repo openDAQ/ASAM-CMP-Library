@@ -18,7 +18,7 @@ std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std
     while (curSize > 0)
     {
         if (!Packet::isValidPacket(packetPtr, curSize))
-            return std::vector<std::shared_ptr<Packet>>();
+            break;
 
         auto packet = std::make_shared<Packet>(packetPtr);
 
