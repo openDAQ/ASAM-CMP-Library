@@ -17,7 +17,7 @@ public:
 private:
 #pragma pack(push, 1)
 
-    struct CmpHeader
+    class CmpHeader
     {
         uint8_t version{1};
         uint8_t reserved{0};
@@ -25,6 +25,18 @@ private:
         uint8_t messageType{0};
         uint8_t streamId{0};
         uint16_t sequenceCounter{0};
+
+    public:
+        uint8_t getVersion() const;
+        void setVersion(const uint8_t newVersion);
+        uint16_t getDeviceId() const;
+        void setDeviceId(const uint16_t id);
+        uint8_t getMessageType() const;
+        void setMessageType(const uint8_t type);
+        uint8_t getStreamId() const;
+        void setStreamId(const uint8_t id);
+        uint16_t getSequenceCounter() const;
+        void setSequenceCounter(const uint16_t counter);
     };
 
     struct Endpoint

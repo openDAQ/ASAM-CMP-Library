@@ -28,7 +28,7 @@ public:
         lastSegment = 3
     };
 
-    struct MessageHeader
+    class MessageHeader
     {
         uint64_t timestamp{0};
         union
@@ -40,22 +40,29 @@ public:
                 uint16_t vendorId;
             };
         };
-        union
+
+        struct CommonFlags
         {
-            uint8_t commonFlags{0};
-            struct CommonFlagsFields
-            {
-                uint8_t recalc : 1;
-                uint8_t insync : 1;
-                SegmentType seg : 2;
-                uint8_t dir_on_if : 1;
-                uint8_t overflow : 1;
-                uint8_t error_in_payload : 1;
-                uint8_t reserved : 1;
-            } commonFlagsFields;
-        };
+            uint8_t recalc : 1;
+            uint8_t insync : 1;
+            SegmentType seg : 2;
+            uint8_t dir_on_if : 1;
+            uint8_t overflow : 1;
+            uint8_t error_in_payload : 1;
+            uint8_t reserved : 1;
+        } commonFlags;
         uint8_t payloadType{0};
         uint16_t payloadLength{0};
+
+    public:
+        SegmentType getSegmentType() const;
+        void setSegmentType(const SegmentType type);
+        bool isErrorInPayload() const;
+        void setErrorInPayload(bool error);
+        Payload::Type getPayloadType() const;
+        void setPayloadType(const Payload::Type type);
+        uint16_t getPayloadLength() const;
+        void setPayloadLength(const uint16_t length);
     };
 
 public:
@@ -97,7 +104,6 @@ private:
     uint8_t streamId{};
     uint16_t sequenceCounter{};
     SegmentType segmentType{};
-
 };
 
 END_NAMESPACE_ASAM_CMP

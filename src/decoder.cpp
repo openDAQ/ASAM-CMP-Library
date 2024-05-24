@@ -4,6 +4,56 @@
 
 BEGIN_NAMESPACE_ASAM_CMP
 
+uint8_t Decoder::CmpHeader::getVersion() const
+{
+    return version;
+}
+
+void Decoder::CmpHeader::setVersion(const uint8_t newVersion)
+{
+    version = newVersion;
+}
+
+uint16_t Decoder::CmpHeader::getDeviceId() const
+{
+    return swapEndian(deviceId);
+}
+
+void Decoder::CmpHeader::setDeviceId(const uint16_t id)
+{
+    deviceId = swapEndian(id);
+}
+
+uint8_t Decoder::CmpHeader::getMessageType() const
+{
+    return messageType;
+}
+
+void Decoder::CmpHeader::setMessageType(const uint8_t type)
+{
+    messageType = type;
+}
+
+uint8_t Decoder::CmpHeader::getStreamId() const
+{
+    return streamId;
+}
+
+void Decoder::CmpHeader::setStreamId(const uint8_t id)
+{
+    streamId = id;
+}
+
+uint16_t Decoder::CmpHeader::getSequenceCounter() const
+{
+    return swapEndian(sequenceCounter);
+}
+
+void Decoder::CmpHeader::setSequenceCounter(const uint16_t counter)
+{
+    sequenceCounter = swapEndian(counter);
+}
+
 std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std::size_t size)
 {
     if (data == nullptr)
@@ -13,8 +63,8 @@ std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std
 
     std::vector<std::shared_ptr<Packet>> packets;
     const auto header = reinterpret_cast<const CmpHeader*>(data);
-    const auto deviceId = swapEndian(header->deviceId);
-    const auto streamId = swapEndian(header->streamId);
+    const auto deviceId = header->getDeviceId();
+    const auto streamId = header->getStreamId();
     auto packetPtr = reinterpret_cast<const uint8_t*>(header + 1);
     int curSize = static_cast<int>(size - sizeof(CmpHeader));
     std::shared_ptr<Packet> packet;
@@ -30,7 +80,7 @@ std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std
         {
             packet = std::make_shared<Packet>(packetPtr, curSize);
 
-            packet->setVersion(header->version);
+            packet->setVersion(header->getVersion());
             packet->setDeviceId(deviceId);
             packet->setStreamId(streamId);
 

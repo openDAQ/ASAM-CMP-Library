@@ -5,6 +5,46 @@
 
 BEGIN_NAMESPACE_ASAM_CMP
 
+Packet::SegmentType Packet::MessageHeader::getSegmentType() const
+{
+    return commonFlags.seg;
+}
+
+void Packet::MessageHeader::setSegmentType(const SegmentType type)
+{
+    commonFlags.seg = type;
+}
+
+bool Packet::MessageHeader::isErrorInPayload() const
+{
+    return commonFlags.error_in_payload == 1;
+}
+
+void Packet::MessageHeader::setErrorInPayload(bool error)
+{
+    error ? commonFlags.error_in_payload = 1 : 0;
+}
+
+Payload::Type Packet::MessageHeader::getPayloadType() const
+{
+    return static_cast<Payload::Type>(payloadType);
+}
+
+void Packet::MessageHeader::setPayloadType(const Payload::Type type)
+{
+    payloadType = static_cast<uint8_t>(type);
+}
+
+uint16_t Packet::MessageHeader::getPayloadLength() const
+{
+    return swapEndian(payloadLength);
+}
+
+void Packet::MessageHeader::setPayloadLength(const uint16_t length)
+{
+    payloadLength = swapEndian(length);
+}
+
 Packet::Packet(const uint8_t* data, const size_t size)
 {
 #ifdef _DEBUG
@@ -15,17 +55,17 @@ Packet::Packet(const uint8_t* data, const size_t size)
 #endif  // _DEBUG
 
     auto header = reinterpret_cast<const MessageHeader*>(data);
-    payload = create(static_cast<Payload::Type>(header->payloadType), data + sizeof(MessageHeader), swapEndian(header->payloadLength));
+    payload = create(static_cast<Payload::Type>(header->getPayloadType()), data + sizeof(MessageHeader), header->getPayloadLength());
     if (payload->getType() != Payload::Type::invalid)
     {
-        segmentType = header->commonFlagsFields.seg;
+        segmentType = header->getSegmentType();
     }
 }
 
 bool Packet::addSegment(const uint8_t* data, const size_t size)
 {
     auto header = reinterpret_cast<const MessageHeader*>(data);
-    segmentType = header->commonFlagsFields.seg;
+    segmentType = header->getSegmentType();
 
     return payload->addSegment(data + sizeof(MessageHeader), size - sizeof(MessageHeader));
 }
@@ -98,18 +138,17 @@ const Payload& Packet::getPayload() const
 bool Packet::isValidPacket(const uint8_t* data, const size_t size)
 {
     auto header = reinterpret_cast<const MessageHeader*>(data);
-    return (size >= sizeof(MessageHeader) && swapEndian(header->payloadLength) <= (size - sizeof(MessageHeader)) &&
-            ((header->commonFlags & errorInPayload) == 0));
+    return (size >= sizeof(MessageHeader) && header->getPayloadLength() <= (size - sizeof(MessageHeader)) && !header->isErrorInPayload());
 }
 
 bool Packet::isSegmentedPacket(const uint8_t* data, const size_t)
 {
-    return reinterpret_cast<const MessageHeader*>(data)->commonFlagsFields.seg != SegmentType::unsegmented;
+    return reinterpret_cast<const MessageHeader*>(data)->getSegmentType() != SegmentType::unsegmented;
 }
 
 bool Packet::isFirstSegment(const uint8_t* data, const size_t)
 {
-    return reinterpret_cast<const MessageHeader*>(data)->commonFlagsFields.seg == SegmentType::firstSegment;
+    return reinterpret_cast<const MessageHeader*>(data)->getSegmentType() == SegmentType::firstSegment;
 }
 
 std::unique_ptr<Payload> Packet::create(const Payload::Type type, const uint8_t* data, const size_t size)
