@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+#include <numeric>
 
 #include <asam_cmp/packet.h>
 
@@ -95,4 +96,35 @@ TEST_F(PacketFixture, CanPayloadWrongDataLength)
     Packet packet(dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), Payload::Type::invalid);
+}
+
+TEST_F(PacketFixture, SegmentedPackets)
+{
+    constexpr size_t ethernetPacketSize = 1500 - sizeof(CmpMessageHeader);
+    constexpr size_t payloadSize = ethernetPacketSize - sizeof(DataMessageHeader);
+    constexpr size_t ethDataSize = payloadSize - sizeof(EthernetDataMessageHeader);
+    constexpr uint8_t payloadFormatEthernet = 0x08;
+
+    std::vector<uint8_t> ethData(ethDataSize);
+    auto payloadMsg = createEthernetDataMessage(ethData);
+    dataMsg = createDataMessage(payloadFormatEthernet, payloadMsg);
+    ASSERT_EQ(dataMsg.size(), ethernetPacketSize);
+
+    auto dataMessageHeader = reinterpret_cast<DataMessageHeader*>(dataMsg.data());
+    dataMessageHeader->commonFlagsFields.seg = DataMessageHeader::SegmentType::firstSegment;
+
+    Packet packet(dataMsg.data(), dataMsg.size());
+    ASSERT_EQ(packet.getSegmentType(), Packet::SegmentType::firstSegment);
+
+    dataMessageHeader->commonFlagsFields.seg = DataMessageHeader::SegmentType::intermediarySegment;
+    bool add = packet.addSegment(dataMsg.data(), dataMsg.size());
+    ASSERT_TRUE(add);
+    ASSERT_EQ(packet.getSegmentType(), Packet::SegmentType::intermediarySegment);
+    ASSERT_EQ(packet.getPayloadSize(), sizeof(EthernetDataMessageHeader) + 2 * ethDataSize);
+
+    dataMessageHeader->commonFlagsFields.seg = DataMessageHeader::SegmentType::lastSegment;
+    add = packet.addSegment(dataMsg.data(), dataMsg.size());
+    ASSERT_TRUE(add);
+    ASSERT_EQ(packet.getSegmentType(), Packet::SegmentType::lastSegment);
+    ASSERT_EQ(packet.getPayloadSize(), sizeof(EthernetDataMessageHeader) + 3 * ethDataSize);
 }

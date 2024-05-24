@@ -19,9 +19,31 @@ struct CmpMessageHeader
 
 struct DataMessageHeader
 {
+    enum class SegmentType : uint8_t
+    {
+        unsegmented = 0,
+        firstSegment = 1,
+        intermediarySegment = 2,
+        lastSegment = 3
+    };
+
     uint64_t timestamp{0};
     uint32_t interfaceId{0};
-    uint8_t flags{0};
+    union
+    {
+        uint8_t commonFlags{0};
+        struct CommonFlagsFields
+        {
+            uint8_t recalc : 1;
+            uint8_t insync : 1;
+            SegmentType seg : 2;
+            uint8_t dir_on_if : 1;
+            uint8_t overflow : 1;
+            uint8_t error_in_payload : 1;
+            uint8_t reserved : 1;
+        } commonFlagsFields;
+        
+    };
     uint8_t payloadType{0};
     uint16_t payloadLength{0};
 };
@@ -35,6 +57,13 @@ struct CanDataMessageHeader
     uint16_t errorPosition{0};
     uint8_t dlc{0};
     uint8_t dataLength{0};
+};
+
+struct EthernetDataMessageHeader
+{
+    uint16_t flags{0};
+    uint16_t reserved{0};
+    uint16_t dataLength{0};
 };
 
 #pragma pack(pop)
@@ -57,6 +86,14 @@ inline std::vector<uint8_t> createCanDataMessage(uint32_t arbId, const std::vect
     CanDataMessageHeader header;
     header.id = ASAM::CMP::swapEndian(arbId);
     header.dataLength = ASAM::CMP::swapEndian(static_cast<uint8_t>(data.size()));
+
+    return createMessage(header, data);
+}
+
+inline std::vector<uint8_t> createEthernetDataMessage(const std::vector<uint8_t>& data)
+{
+    EthernetDataMessageHeader header;
+    header.dataLength = ASAM::CMP::swapEndian(static_cast<uint16_t>(data.size()));
 
     return createMessage(header, data);
 }

@@ -1,4 +1,5 @@
 #include <asam_cmp/can_payload.h>
+#include <asam_cmp/ethernet_payload.h>
 #include <asam_cmp/packet.h>
 #include <stdexcept>
 
@@ -15,6 +16,18 @@ Packet::Packet(const uint8_t* data, const size_t size)
 
     auto header = reinterpret_cast<const MessageHeader*>(data);
     payload = create(static_cast<Payload::Type>(header->payloadType), data + sizeof(MessageHeader), swapEndian(header->payloadLength));
+    if (payload->getType() != Payload::Type::invalid)
+    {
+        segmentType = header->commonFlagsFields.seg;
+    }
+}
+
+bool Packet::addSegment(const uint8_t* data, const size_t size)
+{
+    auto header = reinterpret_cast<const MessageHeader*>(data);
+    segmentType = header->commonFlagsFields.seg;
+
+    return payload->addSegment(data + sizeof(MessageHeader), size - sizeof(MessageHeader));
 }
 
 uint8_t Packet::getVersion() const
@@ -47,14 +60,29 @@ void Packet::setStreamId(const uint8_t value)
     streamId = value;
 }
 
+uint16_t Packet::getSequenceCounter() const
+{
+    return sequenceCounter;
+}
+
+void Packet::setSequenceCounter(const uint16_t value)
+{
+    sequenceCounter = value;
+}
+
 Packet::MessageType Packet::getMessageType() const
 {
     return MessageType::Data;
 }
 
-size_t Packet::getSize() const
+size_t Packet::getPayloadSize() const
 {
     return payload ? payload->getSize() : 0;
+}
+
+Packet::SegmentType Packet::getSegmentType() const
+{
+    return segmentType;
 }
 
 void Packet::setPayload(const Payload& newPayload)
@@ -74,6 +102,16 @@ bool Packet::isValidPacket(const uint8_t* data, const size_t size)
             ((header->commonFlags & errorInPayload) == 0));
 }
 
+bool Packet::isSegmentedPacket(const uint8_t* data, const size_t)
+{
+    return reinterpret_cast<const MessageHeader*>(data)->commonFlagsFields.seg != SegmentType::unsegmented;
+}
+
+bool Packet::isFirstSegment(const uint8_t* data, const size_t)
+{
+    return reinterpret_cast<const MessageHeader*>(data)->commonFlagsFields.seg == SegmentType::firstSegment;
+}
+
 std::unique_ptr<Payload> Packet::create(const Payload::Type type, const uint8_t* data, const size_t size)
 {
     switch (type)
@@ -83,6 +121,8 @@ std::unique_ptr<Payload> Packet::create(const Payload::Type type, const uint8_t*
                 return std::make_unique<CanPayload>(data, size);
             else
                 return std::make_unique<Payload>(Payload::Type::invalid, data, size);
+        case Payload::Type::ethernet:
+            return std::make_unique<EthernetPayload>(data, size);
         default:
             return std::make_unique<Payload>(Payload::Type::invalid, data, size);
     }
