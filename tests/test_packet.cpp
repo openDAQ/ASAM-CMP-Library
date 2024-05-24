@@ -70,14 +70,6 @@ TEST_F(PacketFixture, GetPayload)
     ASSERT_EQ(payload.getType(), Payload::Type::can);
 }
 
-TEST_F(PacketFixture, CanPayloadWrongHeaderSize)
-{
-    auto wrongSize = sizeof(DataMessageHeader) + sizeof(CanDataMessageHeader) - 1;
-    Packet packet(dataMsg.data(), wrongSize);
-    auto& payload = packet.getPayload();
-    ASSERT_EQ(payload.getType(), Payload::Type::invalid);
-}
-
 TEST_F(PacketFixture, CanPayloadErrorFlags)
 {
     auto canHeader = reinterpret_cast<CanDataMessageHeader*>(dataMsg.data() + sizeof(DataMessageHeader));

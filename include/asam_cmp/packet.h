@@ -32,7 +32,7 @@ public:
                 uint16_t vendorId;
             };
         };
-        uint8_t flags{0};
+        uint8_t commonFlags{0};
         uint8_t payloadType{0};
         uint16_t payloadLength{0};
     };
@@ -48,6 +48,7 @@ public:
     void setStreamId(const uint8_t value);
 
     MessageType getMessageType() const;
+    size_t getSize() const;
 
     void setPayload(const Payload& newPayload);
     const Payload& getPayload() const;

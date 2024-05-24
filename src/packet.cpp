@@ -1,12 +1,20 @@
 #include <asam_cmp/can_payload.h>
 #include <asam_cmp/packet.h>
+#include <stdexcept>
 
 BEGIN_NAMESPACE_ASAM_CMP
 
 Packet::Packet(const uint8_t* data, const size_t size)
 {
+#ifdef _DEBUG
+    if (data == nullptr || size < sizeof(MessageHeader))
+        throw std::invalid_argument("Not enough data");
+#else
+    size;
+#endif  // _DEBUG
+
     auto header = reinterpret_cast<const MessageHeader*>(data);
-    payload = create(static_cast<Payload::Type>(header->payloadType), data + sizeof(MessageHeader), size - sizeof(MessageHeader));
+    payload = create(static_cast<Payload::Type>(header->payloadType), data + sizeof(MessageHeader), swapEndian(header->payloadLength));
 }
 
 uint8_t Packet::getVersion() const
@@ -44,6 +52,11 @@ Packet::MessageType Packet::getMessageType() const
     return MessageType::Data;
 }
 
+size_t Packet::getSize() const
+{
+    return payload ? payload->getSize() : 0;
+}
+
 void Packet::setPayload(const Payload& newPayload)
 {
     payload = std::make_unique<Payload>(newPayload);
@@ -58,7 +71,7 @@ bool Packet::isValidPacket(const uint8_t* data, const size_t size)
 {
     auto header = reinterpret_cast<const MessageHeader*>(data);
     return (size >= sizeof(MessageHeader) && swapEndian(header->payloadLength) <= (size - sizeof(MessageHeader)) &&
-            ((header->flags & errorInPayload) == 0));
+            ((header->commonFlags & errorInPayload) == 0));
 }
 
 std::unique_ptr<Payload> Packet::create(const Payload::Type type, const uint8_t* data, const size_t size)

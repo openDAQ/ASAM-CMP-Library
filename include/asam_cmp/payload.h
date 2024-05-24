@@ -24,6 +24,8 @@ public:
 
     Type getType() const;
 
+    size_t getSize() const;
+
 protected:
     Payload() = default;
 
