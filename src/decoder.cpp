@@ -83,30 +83,34 @@ std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std
             packet->setVersion(header->getVersion());
             packet->setDeviceId(deviceId);
             packet->setStreamId(streamId);
+            packet->setSequenceCounter(header->getSequenceCounter());
 
             if (packet->getSegmentType() == Packet::SegmentType::firstSegment)
             {
                 segmentedPackets[{deviceId, streamId}] = std::move(packet);
                 break;
             }
+            packets.push_back(packet);
         }
         else
         {
-            if (!segmentedPackets[{deviceId, streamId}]->addSegment(packetPtr, curSize))
+            if (segmentedPackets[{deviceId, streamId}])
             {
-                segmentedPackets.erase({deviceId, streamId});
-                break;
-            }
+                if (segmentedPackets[{deviceId, streamId}]->getSequenceCounter() + 1 != header->getSequenceCounter() ||
+                    !segmentedPackets[{deviceId, streamId}]->addSegment(packetPtr, curSize))
+                {
+                    segmentedPackets.erase({deviceId, streamId});
+                    break;
+                }
 
-            if (segmentedPackets[{deviceId, streamId}]->getSegmentType() == Packet::SegmentType::lastSegment)
-            {
-                packets.push_back(std::move(segmentedPackets[{deviceId, streamId}]));
-                segmentedPackets.erase({deviceId, streamId});
+                if (segmentedPackets[{deviceId, streamId}]->getSegmentType() == Packet::SegmentType::lastSegment)
+                {
+                    packets.push_back(std::move(segmentedPackets[{deviceId, streamId}]));
+                    segmentedPackets.erase({deviceId, streamId});
+                }
             }
             break;
         }
-
-        packets.push_back(packet);
 
         auto packetSize = packet->getPayloadSize() + sizeof(Packet::MessageHeader);
         packetPtr += packetSize;

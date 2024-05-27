@@ -66,6 +66,7 @@ bool Packet::addSegment(const uint8_t* data, const size_t size)
 {
     auto header = reinterpret_cast<const MessageHeader*>(data);
     segmentType = header->getSegmentType();
+    ++sequenceCounter;
 
     return payload->addSegment(data + sizeof(MessageHeader), size - sizeof(MessageHeader));
 }
