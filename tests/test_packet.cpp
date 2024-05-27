@@ -5,11 +5,11 @@
 
 #include "create_message.h"
 
+using ASAM::CMP::CanPayload;
+using ASAM::CMP::Decoder;
+using ASAM::CMP::EthernetPayload;
 using ASAM::CMP::Packet;
 using ASAM::CMP::Payload;
-using ASAM::CMP::CanPayload;
-using ASAM::CMP::EthernetPayload;
-using ASAM::CMP::Decoder;
 
 class PacketFixture : public ::testing::Test
 {
@@ -29,6 +29,26 @@ protected:
 protected:
     std::vector<uint8_t> dataMsg;
 };
+
+TEST_F(PacketFixture, AddSegment)
+{
+    constexpr uint16_t sequenceCounter = 7;
+
+    auto messageHeader = reinterpret_cast<Packet::MessageHeader*>(dataMsg.data());
+    messageHeader->setSegmentType(Packet::SegmentType::firstSegment);
+    messageHeader->setPayloadType(Payload::Type::ethernet);
+
+    Packet packet(dataMsg.data(), dataMsg.size());
+    packet.setSequenceCounter(sequenceCounter);
+    ASSERT_EQ(packet.getSegmentType(), Packet::SegmentType::firstSegment);
+
+    messageHeader->setSegmentType(Packet::SegmentType::intermediarySegment);
+    bool add = packet.addSegment(dataMsg.data(), dataMsg.size());
+    ASSERT_TRUE(add);
+    ASSERT_EQ(packet.getSegmentType(), Packet::SegmentType::intermediarySegment);
+    auto curSequenceCounter = packet.getSequenceCounter();
+    ASSERT_EQ(curSequenceCounter, sequenceCounter + 1);
+}
 
 TEST_F(PacketFixture, Version)
 {
@@ -58,6 +78,16 @@ TEST_F(PacketFixture, StreamId)
     packet.setStreamId(newId);
     auto id = packet.getStreamId();
     ASSERT_EQ(id, newId);
+}
+
+TEST_F(PacketFixture, SequenceCounter)
+{
+    constexpr uint8_t newSequenceCounter = 99;
+
+    Packet packet(dataMsg.data(), dataMsg.size());
+    packet.setSequenceCounter(newSequenceCounter);
+    auto sequenceCounter = packet.getSequenceCounter();
+    ASSERT_EQ(sequenceCounter, newSequenceCounter);
 }
 
 TEST_F(PacketFixture, MessageTypeData)

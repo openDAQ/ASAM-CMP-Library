@@ -55,8 +55,9 @@ Packet::Packet(const uint8_t* data, const size_t size)
 #endif  // _DEBUG
 
     auto header = reinterpret_cast<const MessageHeader*>(data);
-    payload = create(static_cast<Payload::Type>(header->getPayloadType()), data + sizeof(MessageHeader), header->getPayloadLength());
-    if (payload->getType() != Payload::Type::invalid)
+    if (isValidSegmentType(header->getSegmentType()))
+        payload = create(static_cast<Payload::Type>(header->getPayloadType()), data + sizeof(MessageHeader), header->getPayloadLength());
+    if (payload && payload->getType() != Payload::Type::invalid)
     {
         segmentType = header->getSegmentType();
     }
@@ -65,6 +66,9 @@ Packet::Packet(const uint8_t* data, const size_t size)
 bool Packet::addSegment(const uint8_t* data, const size_t size)
 {
     auto header = reinterpret_cast<const MessageHeader*>(data);
+    if (!isValidSegmentType(header->getSegmentType()))
+        return false;
+
     segmentType = header->getSegmentType();
     ++sequenceCounter;
 
@@ -166,6 +170,20 @@ std::unique_ptr<Payload> Packet::create(const Payload::Type type, const uint8_t*
         default:
             return std::make_unique<Payload>(Payload::Type::invalid, data, size);
     }
+}
+
+bool Packet::isValidSegmentType(SegmentType type)
+{
+    switch (segmentType)
+    {
+        case SegmentType::unsegmented:
+        case SegmentType::lastSegment:
+            return type == SegmentType::unsegmented || type == SegmentType::firstSegment;
+        case SegmentType::firstSegment:
+        case SegmentType::intermediarySegment:
+            return type == SegmentType::intermediarySegment || type == SegmentType::lastSegment;
+    }
+    return false;
 }
 
 END_NAMESPACE_ASAM_CMP

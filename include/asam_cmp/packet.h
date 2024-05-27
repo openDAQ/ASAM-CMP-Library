@@ -90,8 +90,9 @@ public:
     static bool isSegmentedPacket(const uint8_t* data, const size_t);
     static bool isFirstSegment(const uint8_t* data, const size_t);
 
-protected:
+private:
     std::unique_ptr<Payload> create(const Payload::Type type, const uint8_t* data, const size_t size);
+    bool isValidSegmentType(SegmentType type);
 
 private:
     constexpr static uint8_t errorInPayload = 0x40;
