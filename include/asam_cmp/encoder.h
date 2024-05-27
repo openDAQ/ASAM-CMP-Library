@@ -4,66 +4,81 @@
 #include <vector>
 #include <unordered_map>
 #include <queue>
+#include <iterator>
+#include <type_traits>
 
 #include <asam_cmp/common.h>
 #include <asam_cmp/packet.h>
 
 BEGIN_NAMESPACE_ASAM_CMP
 
+struct DataContext
+{
+    size_t minBytesPerMessage;
+    size_t maxBytesPerMessage;
+};
+
 class Encoder final
 {
 public:
-    Encoder(uint16_t deviceId, uint8_t streamId);
+    Encoder();
 
-    bool hasFrame() const;
-    std::vector<uint8_t> getCmpMessage();
-    void addPayload(uint32_t interfaceId, Payload::PayloadType payloadType, const void* payloadData, const size_t payloadSize);
+    //template <typename ForwardIterator,
+    //          typename = std::enable_if_t<std::is_same_v<typename std::iterator_traits<ForwardIterator>::value_type, Packet>>>
+    //std::vector<std::vector<uint8_t>> encode(ForwardIterator begin, ForwardIterator end, const DataContext& dataContext)
+    //{
+    //    static_assert(std::is_base_of<std::forward_iterator_tag, typename std::iterator_traits<ForwardIterator>::iterator_category>::value,
+    //                  "ForwardIterator must be a forward iterator.");
 
-private:
+    //    //TODO: should be replaced by logger
+    //    if (begin == end)
+    //        throw std::invalid_argument("Packets range should not be empty");
 
-    void addNewCMPFrame();
-    void addNewDataHeader(uint32_t interfaceId, Payload::PayloadType payloadType, uint16_t bytesToAdd, uint8_t segmentationFlag);
+    //    init(begin->getDeviceId(), begin->getStreamId(), dataContext)
 
-private:
-    /// the limit for one CMP message (CMP header + packets)
-    constexpr static uint32_t bytesPerCMPMessage{1500};
+    //    for (auto it = begin; it != end; ++it)
+    //        putPacket(*it);
 
-    constexpr static uint8_t segmentationFlagUnsegmented{0x00};
-    constexpr static uint8_t segmentationFlagFirstSegment{0x00};
-    constexpr static uint8_t segmentationFlagIntermediarySegment{0x00};
-    constexpr static uint8_t segmentationFlagLastSegment{0x00};
+    //    return getEncodedData();
+    //}
 
-    const uint16_t deviceId;
-    const uint8_t streamId;
-
-    uint32_t bytesLeft;
-    uint16_t sequenceCounter;
-
-    std::queue<std::vector<uint8_t>> cmpFrames;
-
-private:
-#pragma pack(push, 1)
-
-    struct CmpMessageHeader
+    template <typename ForwardPtrIterator,
+              typename = std::enable_if_t<std::is_same_v<typename std::iterator_traits<ForwardPtrIterator>::value_type, std::shared_ptr<Packet>>>>
+    std::vector<std::vector<uint8_t>> encode(ForwardPtrIterator begin, ForwardPtrIterator end, const DataContext& dataContext)
     {
-        uint8_t version{1};
-        uint8_t reserved{0};
-        uint16_t deviceId{0};
-        uint8_t messageType{0};
-        uint8_t streamId{0};
-        uint16_t sequenceCounter{0};
-    };
+        static_assert(
+            std::is_base_of<std::forward_iterator_tag, typename std::iterator_traits<ForwardPtrIterator>::iterator_category>::value,
+                      "ForwardIterator must be a forward iterator.");
 
-    struct DataMessageHeader
+        // TODO: should be replaced by logger
+        if (begin == end)
+            throw std::invalid_argument("Packets range should not be empty");
+
+        init((*begin)->getDeviceId(), (*begin)->getStreamId(), dataContext);
+
+        for (auto it = begin; it != end; ++it)
+            putPacket(*(*it));
+
+        return getEncodedData();
+    }
+
+    std::vector<std::vector<uint8_t>> encode(const Packet& packet, const DataContext& dataContext)
     {
-        uint64_t timestamp{0};
-        uint32_t interfaceId{0};
-        uint8_t flags{0};
-        uint8_t payloadType{0};
-        uint16_t payloadLength{0};
-    };
+        init(packet.getDeviceId(), packet.getStreamId(), dataContext);
+        putPacket(packet);
+        return getEncodedData();
+    }
 
-#pragma pack(pop)
+private:
+    void init(uint16_t deviceId, uint8_t streamId, const DataContext& bytesPerMessage);
+    void putPacket(const Packet& packet);
+    std::vector<std::vector<uint8_t>> getEncodedData();
+
+private:
+    static constexpr uint32_t defaultBytesPerMessage{1500};
+
+    class EncoderImpl;
+    std::shared_ptr<EncoderImpl> impl;
 };
 
 END_NAMESPACE_ASAM_CMP
