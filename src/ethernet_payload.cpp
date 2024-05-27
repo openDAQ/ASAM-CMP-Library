@@ -17,6 +17,11 @@ uint16_t EthernetPayload::Header::getDataLength() const
     return swapEndian(dataLength);
 }
 
+void EthernetPayload::Header::setDataLength(uint16_t newDataLength)
+{
+    dataLength = swapEndian(newDataLength);
+}
+
 void EthernetPayload::Header::increaseDataLength(uint16_t length)
 {
     dataLength = swapEndian(static_cast<uint16_t>(swapEndian(dataLength) + length));

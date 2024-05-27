@@ -7,6 +7,9 @@
 
 using ASAM::CMP::Packet;
 using ASAM::CMP::Payload;
+using ASAM::CMP::CanPayload;
+using ASAM::CMP::EthernetPayload;
+using ASAM::CMP::Decoder;
 
 class PacketFixture : public ::testing::Test
 {
@@ -20,7 +23,7 @@ public:
 
 protected:
     static constexpr size_t canDataSize = 8;
-    static constexpr uint8_t payloadType = 0x01;
+    static constexpr Payload::Type payloadType = Payload::Type::can;
     static constexpr uint32_t arbId = 87;
 
 protected:
@@ -73,8 +76,8 @@ TEST_F(PacketFixture, GetPayload)
 
 TEST_F(PacketFixture, CanPayloadErrorFlags)
 {
-    auto canHeader = reinterpret_cast<CanDataMessageHeader*>(dataMsg.data() + sizeof(DataMessageHeader));
-    canHeader->flags = 1;
+    auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(Packet::MessageHeader));
+    canHeader->setFlags(1);
     Packet packet(dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), Payload::Type::invalid);
@@ -82,8 +85,8 @@ TEST_F(PacketFixture, CanPayloadErrorFlags)
 
 TEST_F(PacketFixture, CanPayloadErrorPosition)
 {
-    auto canHeader = reinterpret_cast<CanDataMessageHeader*>(dataMsg.data() + sizeof(DataMessageHeader));
-    canHeader->errorPosition = 1;
+    auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(Packet::MessageHeader));
+    canHeader->setErrorPosition(1);
     Packet packet(dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), Payload::Type::invalid);
@@ -91,8 +94,8 @@ TEST_F(PacketFixture, CanPayloadErrorPosition)
 
 TEST_F(PacketFixture, CanPayloadWrongDataLength)
 {
-    auto canHeader = reinterpret_cast<CanDataMessageHeader*>(dataMsg.data() + sizeof(DataMessageHeader));
-    ++canHeader->dataLength;
+    auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(Packet::MessageHeader));
+    canHeader->setDataLength(canHeader->getDataLength() + 1);
     Packet packet(dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), Payload::Type::invalid);
@@ -100,31 +103,31 @@ TEST_F(PacketFixture, CanPayloadWrongDataLength)
 
 TEST_F(PacketFixture, SegmentedPackets)
 {
-    constexpr size_t ethernetPacketSize = 1500 - sizeof(CmpMessageHeader);
-    constexpr size_t payloadSize = ethernetPacketSize - sizeof(DataMessageHeader);
-    constexpr size_t ethDataSize = payloadSize - sizeof(EthernetDataMessageHeader);
-    constexpr uint8_t payloadFormatEthernet = 0x08;
+    constexpr size_t ethernetPacketSize = 1500 - sizeof(Decoder::CmpHeader);
+    constexpr size_t payloadSize = ethernetPacketSize - sizeof(Packet::MessageHeader);
+    constexpr size_t ethDataSize = payloadSize - sizeof(EthernetPayload::Header);
+    constexpr Payload::Type payloadFormatEthernet = Payload::Type::ethernet;
 
     std::vector<uint8_t> ethData(ethDataSize);
     auto payloadMsg = createEthernetDataMessage(ethData);
     dataMsg = createDataMessage(payloadFormatEthernet, payloadMsg);
     ASSERT_EQ(dataMsg.size(), ethernetPacketSize);
 
-    auto dataMessageHeader = reinterpret_cast<DataMessageHeader*>(dataMsg.data());
-    dataMessageHeader->commonFlagsFields.seg = DataMessageHeader::SegmentType::firstSegment;
+    auto dataMessageHeader = reinterpret_cast<Packet::MessageHeader*>(dataMsg.data());
+    dataMessageHeader->setSegmentType(Packet::SegmentType::firstSegment);
 
     Packet packet(dataMsg.data(), dataMsg.size());
     ASSERT_EQ(packet.getSegmentType(), Packet::SegmentType::firstSegment);
 
-    dataMessageHeader->commonFlagsFields.seg = DataMessageHeader::SegmentType::intermediarySegment;
+    dataMessageHeader->setSegmentType(Packet::SegmentType::intermediarySegment);
     bool add = packet.addSegment(dataMsg.data(), dataMsg.size());
     ASSERT_TRUE(add);
     ASSERT_EQ(packet.getSegmentType(), Packet::SegmentType::intermediarySegment);
-    ASSERT_EQ(packet.getPayloadSize(), sizeof(EthernetDataMessageHeader) + 2 * ethDataSize);
+    ASSERT_EQ(packet.getPayloadSize(), sizeof(EthernetPayload::Header) + 2 * ethDataSize);
 
-    dataMessageHeader->commonFlagsFields.seg = DataMessageHeader::SegmentType::lastSegment;
+    dataMessageHeader->setSegmentType(Packet::SegmentType::lastSegment);
     add = packet.addSegment(dataMsg.data(), dataMsg.size());
     ASSERT_TRUE(add);
     ASSERT_EQ(packet.getSegmentType(), Packet::SegmentType::lastSegment);
-    ASSERT_EQ(packet.getPayloadSize(), sizeof(EthernetDataMessageHeader) + 3 * ethDataSize);
+    ASSERT_EQ(packet.getPayloadSize(), sizeof(EthernetPayload::Header) + 3 * ethDataSize);
 }

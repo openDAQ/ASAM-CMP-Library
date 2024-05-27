@@ -12,9 +12,6 @@ BEGIN_NAMESPACE_ASAM_CMP
 class Decoder final
 {
 public:
-    std::vector<std::shared_ptr<Packet>> decode(const void* data, const std::size_t size);
-
-private:
 #pragma pack(push, 1)
 
     class CmpHeader
@@ -51,6 +48,9 @@ private:
     };
 
 #pragma pack(pop)
+
+public:
+    std::vector<std::shared_ptr<Packet>> decode(const void* data, const std::size_t size);
 
     using SegmentedPackets = std::map<Endpoint, std::shared_ptr<Packet>>;
     // TODO replace std::map by std::unoredered_map, but we need to implement hash function for Endpoint

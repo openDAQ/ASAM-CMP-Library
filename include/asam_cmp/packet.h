@@ -50,7 +50,7 @@ public:
             uint8_t overflow : 1;
             uint8_t error_in_payload : 1;
             uint8_t reserved : 1;
-        } commonFlags;
+        } commonFlags{0};
         uint8_t payloadType{0};
         uint16_t payloadLength{0};
 

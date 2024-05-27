@@ -23,8 +23,12 @@ public:
         static constexpr uint16_t errorMask = 0xFF03;
 
     public:
+        uint16_t getFlags() const;
+        void setFlags(const uint16_t flags);
         uint32_t getId() const;
         void setId(const uint32_t newId);
+        uint16_t getErrorPosition() const;
+        void setErrorPosition(const uint16_t position);
         bool hasError() const;
         uint8_t getDataLength() const;
         void setDataLength(const uint8_t length);
