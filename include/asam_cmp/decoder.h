@@ -1,7 +1,7 @@
 #pragma once
 
-#include <map>
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include <asam_cmp/common.h>
@@ -36,25 +36,32 @@ public:
         void setSequenceCounter(const uint16_t counter);
     };
 
+public:
+    std::vector<std::shared_ptr<Packet>> decode(const void* data, const std::size_t size);
+
+private:
     struct Endpoint
     {
         uint16_t deviceId{0};
         uint8_t streamId{0};
 
-        bool const operator<(const Endpoint& rhs) const
+        bool const operator==(const Endpoint& rhs) const
         {
-            return deviceId < rhs.deviceId || (deviceId == rhs.deviceId && streamId < rhs.streamId);
+            return (deviceId == rhs.deviceId) && (streamId == rhs.streamId);
+        }
+    };
+
+    struct EndpointHash
+    {
+        std::size_t operator()(const Endpoint& k) const
+        {
+            return std::hash<uint32_t>()(k.deviceId | (k.streamId << 16));
         }
     };
 
 #pragma pack(pop)
 
-public:
-    std::vector<std::shared_ptr<Packet>> decode(const void* data, const std::size_t size);
-
-    using SegmentedPackets = std::map<Endpoint, std::shared_ptr<Packet>>;
-    // TODO replace std::map by std::unoredered_map, but we need to implement hash function for Endpoint
-    // using SegmetedPackets = std::unordered_map<Endpoint, std::shared_ptr<Packet>>;
+    using SegmentedPackets = std::unordered_map<Endpoint, std::shared_ptr<Packet>, EndpointHash>;
 
 private:
     SegmentedPackets segmentedPackets;
