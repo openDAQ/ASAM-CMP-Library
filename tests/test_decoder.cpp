@@ -19,7 +19,7 @@ public:
     DecoderFixture()
     {
         canData.resize(canDataSize);
-        std::iota(canData.begin(), canData.end(), 0);
+        std::iota(canData.begin(), canData.end(), uint8_t{});
         auto canMsg = createCanDataMessage(arbId, canData);
         dataMsg = createDataMessage(payloadTypeCan, canMsg);
         cmpMsg = createCmpMessage(deviceId, cmpMessageTypeData, streamId, dataMsg);
@@ -27,7 +27,7 @@ public:
 
 protected:
     static constexpr size_t canDataSize = 8;
-    static constexpr int32_t arbId = 33;
+    static constexpr uint32_t arbId = 33;
     static constexpr Payload::Type payloadTypeCan = Payload::Type::can;
     static constexpr uint16_t deviceId = 3;
     static constexpr uint8_t cmpMessageTypeData = 0x01;

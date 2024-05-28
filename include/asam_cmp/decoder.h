@@ -53,9 +53,9 @@ private:
 
     struct EndpointHash
     {
-        std::size_t operator()(const Endpoint& k) const
+        std::size_t operator()(const Endpoint& rhs) const
         {
-            return std::hash<uint32_t>()(k.deviceId | (k.streamId << 16));
+            return std::hash<uint32_t>()(rhs.deviceId | (rhs.streamId << 16));
         }
     };
 
