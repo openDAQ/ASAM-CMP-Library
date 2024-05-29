@@ -5,24 +5,35 @@
 
 BEGIN_NAMESPACE_ASAM_CMP
 
+uint8_t Packet::MessageHeader::getCommonFlags() const
+{
+    return commonFlags;
+}
+
+void Packet::MessageHeader::setCommonFlags(const uint8_t newFlags)
+{
+    commonFlags = newFlags;
+}
+
+bool Packet::MessageHeader::getCommonFlag(const CommonFlags mask) const
+{
+    return (commonFlags & static_cast<uint16_t>(mask)) != 0;
+}
+
+void Packet::MessageHeader::setCommonFlag(const CommonFlags mask, const bool value)
+{
+    commonFlags = value ? (commonFlags | static_cast<uint16_t>(mask)) : (commonFlags & ~static_cast<uint16_t>(mask));
+}
+
 Packet::SegmentType Packet::MessageHeader::getSegmentType() const
 {
-    return commonFlags.seg;
+    return static_cast<SegmentType>((commonFlags & to_underlying(CommonFlags::seg)) >> segShift);
 }
 
 void Packet::MessageHeader::setSegmentType(const SegmentType type)
 {
-    commonFlags.seg = type;
-}
-
-bool Packet::MessageHeader::isErrorInPayload() const
-{
-    return commonFlags.error_in_payload == 1;
-}
-
-void Packet::MessageHeader::setErrorInPayload(bool error)
-{
-    error ? commonFlags.error_in_payload = 1 : 0;
+    commonFlags &= ~to_underlying(CommonFlags::seg);
+    commonFlags |= to_underlying(type) << segShift;
 }
 
 Payload::Type Packet::MessageHeader::getPayloadType() const
@@ -143,7 +154,8 @@ const Payload& Packet::getPayload() const
 bool Packet::isValidPacket(const uint8_t* data, const size_t size)
 {
     auto header = reinterpret_cast<const MessageHeader*>(data);
-    return (size >= sizeof(MessageHeader) && header->getPayloadLength() <= (size - sizeof(MessageHeader)) && !header->isErrorInPayload());
+    return (size >= sizeof(MessageHeader) && header->getPayloadLength() <= (size - sizeof(MessageHeader)) &&
+            !header->getCommonFlag(CommonFlags::errorInPayload));
 }
 
 bool Packet::isSegmentedPacket(const uint8_t* data, const size_t)

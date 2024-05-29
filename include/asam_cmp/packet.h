@@ -28,12 +28,22 @@ public:
         lastSegment = 3
     };
 
+    enum class CommonFlags : uint8_t
+    {
+        recalc = 0x01,
+        insync = 0x02,
+        seg = 0x0C,
+        diOnIf = 0x10,
+        overflow = 0x20,
+        errorInPayload = 0x40
+    };
+
     class MessageHeader
     {
-        uint64_t timestamp{0};
+        uint64_t timestamp{};
         union
         {
-            uint32_t interfaceId{0};
+            uint32_t interfaceId{};
             struct V
             {
                 uint16_t reserved;
@@ -41,24 +51,20 @@ public:
             };
         };
 
-        struct CommonFlags
-        {
-            uint8_t recalc : 1;
-            uint8_t insync : 1;
-            SegmentType seg : 2;
-            uint8_t dir_on_if : 1;
-            uint8_t overflow : 1;
-            uint8_t error_in_payload : 1;
-            uint8_t reserved : 1;
-        } commonFlags{0};
-        uint8_t payloadType{0};
-        uint16_t payloadLength{0};
+        uint8_t commonFlags{};
+        uint8_t payloadType{};
+        uint16_t payloadLength{};
+
+        static constexpr uint8_t segShift = 2;
 
     public:
+        uint8_t getCommonFlags() const;
+        void setCommonFlags(const uint8_t newFlags);
+        bool getCommonFlag(const CommonFlags mask) const;
+        void setCommonFlag(const CommonFlags mask, const bool value);
+
         SegmentType getSegmentType() const;
         void setSegmentType(const SegmentType type);
-        bool isErrorInPayload() const;
-        void setErrorInPayload(bool error);
         Payload::Type getPayloadType() const;
         void setPayloadType(const Payload::Type type);
         uint16_t getPayloadLength() const;

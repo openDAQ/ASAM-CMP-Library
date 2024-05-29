@@ -66,7 +66,7 @@ TEST_F(DecoderFixture, CorruptedDataMessage)
 TEST_F(DecoderFixture, MessageWithErrorFlag)
 {
     auto dataMessageHeader = reinterpret_cast<Packet::MessageHeader*>(cmpMsg.data() + sizeof(Decoder::CmpHeader));
-    dataMessageHeader->setErrorInPayload(true);
+    dataMessageHeader->setCommonFlag(Packet::CommonFlags::errorInPayload, true);
 
     Decoder decoder;
     auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size());
