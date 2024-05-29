@@ -50,7 +50,7 @@ TEST_F(DecoderFixture, WrongHeaderSize)
 {
     Decoder decoder;
     auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size() - 1);
-    ASSERT_EQ(packets.size(), 0);
+    ASSERT_EQ(packets.size(), 0u);
 }
 
 TEST_F(DecoderFixture, CorruptedDataMessage)
@@ -60,7 +60,7 @@ TEST_F(DecoderFixture, CorruptedDataMessage)
 
     Decoder decoder;
     auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size());
-    ASSERT_EQ(packets.size(), 0);
+    ASSERT_EQ(packets.size(), 0u);
 }
 
 TEST_F(DecoderFixture, MessageWithErrorFlag)
@@ -70,14 +70,14 @@ TEST_F(DecoderFixture, MessageWithErrorFlag)
 
     Decoder decoder;
     auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size());
-    ASSERT_EQ(packets.size(), 0);
+    ASSERT_EQ(packets.size(), 0u);
 }
 
 TEST_F(DecoderFixture, CanMessage)
 {
     Decoder decoder;
     auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size());
-    ASSERT_EQ(packets.size(), 1);
+    ASSERT_EQ(packets.size(), 1u);
 
     auto packet = packets[0];
     auto& payload = packet->getPayload();
@@ -97,7 +97,7 @@ TEST_F(DecoderFixture, Aggregation)
 
     Decoder decoder;
     auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size());
-    ASSERT_EQ(packets.size(), 2);
+    ASSERT_EQ(packets.size(), 2u);
     ASSERT_EQ(packets[0]->getPayload().getType(), Payload::Type::can);
     ASSERT_EQ(packets[1]->getPayload().getType(), Payload::Type::can);
 }
@@ -110,7 +110,7 @@ TEST_F(DecoderFixture, AggregationInvalidData)
 
     Decoder decoder;
     auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size() - 1);
-    ASSERT_EQ(packets.size(), 1);
+    ASSERT_EQ(packets.size(), 1u);
     ASSERT_EQ(packets[0]->getPayload().getType(), Payload::Type::can);
 }
 
@@ -149,7 +149,7 @@ TEST_F(DecoderFixture, SegmentationOneStream)
     cmpMessageHeader->setSequenceCounter(cmpMessageHeader->getSequenceCounter() + 1);
     dataMessageHeader->setSegmentType(Packet::SegmentType::lastSegment);
     packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
-    ASSERT_EQ(packets.size(), 1);
+    ASSERT_EQ(packets.size(), 1u);
     ASSERT_EQ(packets[0]->getPayloadSize(), sizeof(EthernetPayload::Header) + segmentCount * ethDataSize);
 }
 
@@ -198,14 +198,14 @@ TEST_F(DecoderFixture, SegmentationMultipleStreams)
     cmpMessageHeader->setSequenceCounter(cmpMessageHeader->getSequenceCounter() + 1);
     dataMessageHeader->setSegmentType(Packet::SegmentType::lastSegment);
     packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
-    ASSERT_EQ(packets.size(), 1);
+    ASSERT_EQ(packets.size(), 1u);
     ASSERT_EQ(packets[0]->getStreamId(), streamId);
     ASSERT_EQ(packets[0]->getPayloadSize(), sizeof(EthernetPayload::Header) + segmentCount * ethDataSize);
 
     cmpMessageHeader->setStreamId(streamId2);
     dataMessageHeader->setSegmentType(Packet::SegmentType::lastSegment);
     packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
-    ASSERT_EQ(packets.size(), 1);
+    ASSERT_EQ(packets.size(), 1u);
     ASSERT_EQ(packets[0]->getStreamId(), streamId2);
     ASSERT_EQ(packets[0]->getPayloadSize(), sizeof(EthernetPayload::Header) + segmentCount * ethDataSize);
 }
@@ -255,14 +255,14 @@ TEST_F(DecoderFixture, SegmentationMultipleDevices)
     cmpMessageHeader->setSequenceCounter(cmpMessageHeader->getSequenceCounter() + 1);
     dataMessageHeader->setSegmentType(Packet::SegmentType::lastSegment);
     packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
-    ASSERT_EQ(packets.size(), 1);
+    ASSERT_EQ(packets.size(), 1u);
     ASSERT_EQ(packets[0]->getDeviceId(), deviceId);
     ASSERT_EQ(packets[0]->getPayloadSize(), sizeof(EthernetPayload::Header) + segmentCount * ethDataSize);
 
     cmpMessageHeader->setDeviceId(deviceId2);
     dataMessageHeader->setSegmentType(Packet::SegmentType::lastSegment);
     packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
-    ASSERT_EQ(packets.size(), 1);
+    ASSERT_EQ(packets.size(), 1u);
     ASSERT_EQ(packets[0]->getDeviceId(), deviceId2);
     ASSERT_EQ(packets[0]->getPayloadSize(), sizeof(EthernetPayload::Header) + segmentCount * ethDataSize);
 }
@@ -289,7 +289,7 @@ TEST_F(DecoderFixture, SegmentedUnsegemnted)
     cmpMessageHeader->setStreamId(streamId);
     dataMessageHeader->setSegmentType(Packet::SegmentType::unsegmented);
     auto packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
-    ASSERT_EQ(packets.size(), 1);
+    ASSERT_EQ(packets.size(), 1u);
     ASSERT_EQ(packets[0]->getStreamId(), streamId);
 
     cmpMessageHeader->setStreamId(streamId2);
@@ -301,7 +301,7 @@ TEST_F(DecoderFixture, SegmentedUnsegemnted)
     cmpMessageHeader->setStreamId(streamId);
     dataMessageHeader->setSegmentType(Packet::SegmentType::unsegmented);
     packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
-    ASSERT_EQ(packets.size(), 1);
+    ASSERT_EQ(packets.size(), 1u);
     ASSERT_EQ(packets[0]->getStreamId(), streamId);
 
     cmpMessageHeader->setStreamId(streamId2);
@@ -313,7 +313,7 @@ TEST_F(DecoderFixture, SegmentedUnsegemnted)
     cmpMessageHeader->setStreamId(streamId);
     dataMessageHeader->setSegmentType(Packet::SegmentType::unsegmented);
     packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
-    ASSERT_EQ(packets.size(), 1);
+    ASSERT_EQ(packets.size(), 1u);
     ASSERT_EQ(packets[0]->getStreamId(), streamId);
     ASSERT_EQ(packets[0]->getPayloadSize(), ethPayload.size());
 
@@ -321,7 +321,7 @@ TEST_F(DecoderFixture, SegmentedUnsegemnted)
     cmpMessageHeader->setSequenceCounter(cmpMessageHeader->getSequenceCounter() + 1);
     dataMessageHeader->setSegmentType(Packet::SegmentType::lastSegment);
     packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
-    ASSERT_EQ(packets.size(), 1);
+    ASSERT_EQ(packets.size(), 1u);
     ASSERT_EQ(packets[0]->getStreamId(), streamId2);
     ASSERT_EQ(packets[0]->getPayloadSize(), sizeof(EthernetPayload::Header) + segmentCount * ethDataSize);
 }
