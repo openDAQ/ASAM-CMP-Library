@@ -165,6 +165,13 @@ void Encoder::init(uint16_t deviceId, uint8_t streamId, const DataContext& dataC
     impl->init(deviceId, streamId, dataContext);
 }
 
+std::vector<std::vector<uint8_t>> Encoder::encode(const Packet& packet, const DataContext& dataContext)
+{
+    init(packet.getDeviceId(), packet.getStreamId(), dataContext);
+    putPacket(packet);
+    return getEncodedData();
+}
+
 void Encoder::putPacket(const Packet& packet)
 {
     //TODO: should be replaced by logger

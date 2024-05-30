@@ -4,6 +4,7 @@
 #include <asam_cmp/packet.h>
 
 #include "create_message.h"
+#include "utilities.h"
 
 using ASAM::CMP::CanPayload;
 using ASAM::CMP::Decoder;
@@ -102,3 +103,10 @@ TEST_F(PacketFixture, CanPayloadWrongDataLength)
     ASSERT_EQ(payload.getType(), Payload::Type::invalid);
 }
 
+TEST_F(PacketFixture, Copy)
+{
+    Packet packet(dataMsg.data(), dataMsg.size());
+    Packet packetCopy(packet);
+
+    ASSERT_TRUE(ASAM::CMP::isSamePacket(packet, packetCopy));
+}

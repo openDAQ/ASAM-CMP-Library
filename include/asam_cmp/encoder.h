@@ -23,51 +23,21 @@ class Encoder final
 public:
     Encoder();
 
-    //template <typename ForwardIterator,
-    //          typename = std::enable_if_t<std::is_same_v<typename std::iterator_traits<ForwardIterator>::value_type, Packet>>>
-    //std::vector<std::vector<uint8_t>> encode(ForwardIterator begin, ForwardIterator end, const DataContext& dataContext)
-    //{
-    //    static_assert(std::is_base_of<std::forward_iterator_tag, typename std::iterator_traits<ForwardIterator>::iterator_category>::value,
-    //                  "ForwardIterator must be a forward iterator.");
+    template <typename ForwardIterator>
+    std::vector<std::vector<uint8_t>> encode(
+        ForwardIterator begin,
+        ForwardIterator end,
+        const DataContext& dataContext,
+        std::enable_if_t<std::is_same<typename std::iterator_traits<ForwardIterator>::value_type, Packet>::value, int> = 0);
 
-    //    //TODO: should be replaced by logger
-    //    if (begin == end)
-    //        throw std::invalid_argument("Packets range should not be empty");
+    template <typename ForwardPtrIterator>
+    std::vector<std::vector<uint8_t>> encode(
+        ForwardPtrIterator begin,
+        ForwardPtrIterator end,
+        const DataContext& dataContext,
+        std::enable_if_t<std::is_same<typename std::iterator_traits<ForwardPtrIterator>::value_type, std::shared_ptr<Packet>>::value, int> = 0);
 
-    //    init(begin->getDeviceId(), begin->getStreamId(), dataContext)
-
-    //    for (auto it = begin; it != end; ++it)
-    //        putPacket(*it);
-
-    //    return getEncodedData();
-    //}
-
-    template <typename ForwardPtrIterator,
-              typename = std::enable_if_t<std::is_same_v<typename std::iterator_traits<ForwardPtrIterator>::value_type, std::shared_ptr<Packet>>>>
-    std::vector<std::vector<uint8_t>> encode(ForwardPtrIterator begin, ForwardPtrIterator end, const DataContext& dataContext)
-    {
-        static_assert(
-            std::is_base_of<std::forward_iterator_tag, typename std::iterator_traits<ForwardPtrIterator>::iterator_category>::value,
-                      "ForwardIterator must be a forward iterator.");
-
-        // TODO: should be replaced by logger
-        if (begin == end)
-            throw std::invalid_argument("Packets range should not be empty");
-
-        init((*begin)->getDeviceId(), (*begin)->getStreamId(), dataContext);
-
-        for (auto it = begin; it != end; ++it)
-            putPacket(*(*it));
-
-        return getEncodedData();
-    }
-
-    std::vector<std::vector<uint8_t>> encode(const Packet& packet, const DataContext& dataContext)
-    {
-        init(packet.getDeviceId(), packet.getStreamId(), dataContext);
-        putPacket(packet);
-        return getEncodedData();
-    }
+    std::vector<std::vector<uint8_t>> encode(const Packet& packet, const DataContext& dataContext);
 
 private:
     void init(uint16_t deviceId, uint8_t streamId, const DataContext& bytesPerMessage);
@@ -80,5 +50,48 @@ private:
     class EncoderImpl;
     std::shared_ptr<EncoderImpl> impl;
 };
+
+template <typename ForwardIterator>
+std::vector<std::vector<uint8_t>> Encoder::encode(
+    ForwardIterator begin,
+    ForwardIterator end,
+    const DataContext& dataContext,
+    std::enable_if_t<std::is_same<typename std::iterator_traits<ForwardIterator>::value_type, Packet>::value, int>)
+{
+    static_assert(std::is_base_of<std::forward_iterator_tag, typename std::iterator_traits<ForwardIterator>::iterator_category>::value,
+                  "ForwardIterator must be a forward iterator.");
+
+    // TODO: should be replaced by logger
+    if (begin == end)
+        throw std::invalid_argument("Packets range should not be empty");
+
+    init(begin->getDeviceId(), begin->getStreamId(), dataContext);
+
+        for (auto it = begin; it != end; ++it) putPacket(*it);
+
+    return getEncodedData();
+}
+
+template <typename ForwardPtrIterator>
+std::vector<std::vector<uint8_t>> Encoder::encode(
+    ForwardPtrIterator begin,
+    ForwardPtrIterator end,
+    const DataContext& dataContext,
+    std::enable_if_t<std::is_same<typename std::iterator_traits<ForwardPtrIterator>::value_type, std::shared_ptr<Packet>>::value, int>)
+{
+    static_assert(std::is_base_of<std::forward_iterator_tag, typename std::iterator_traits<ForwardPtrIterator>::iterator_category>::value,
+                  "ForwardIterator must be a forward iterator.");
+
+    // TODO: should be replaced by logger
+    if (begin == end)
+        throw std::invalid_argument("Packets range should not be empty");
+
+    init((*begin)->getDeviceId(), (*begin)->getStreamId(), dataContext);
+
+    for (auto it = begin; it != end; ++it)
+        putPacket(*(*it));
+
+    return getEncodedData();
+}
 
 END_NAMESPACE_ASAM_CMP

@@ -5,6 +5,7 @@
 #include <asam_cmp/can_payload.h>
 
 #include "create_message.h"
+#include "utilities.h"
 
 using ASAM::CMP::CanPayloadBase;
 using ASAM::CMP::CanFdPayload;
@@ -246,4 +247,20 @@ TEST_F(CanPayloadTest, Data)
 {
     CanPayloadBase* payload = canPayload.get();
     ASSERT_TRUE(std::equal(data.begin(), data.end(), payload->getData()));
+}
+
+TEST_F(CanPayloadTest, TestCopy)
+{
+    constexpr size_t canDataSize = 64;
+    constexpr uint32_t arbId = 78;
+
+    std::vector<uint8_t> data(canDataSize);
+    std::iota(data.begin(), data.end(), 0);
+    auto message = createCanDataMessage(arbId, data);
+
+    CanPayload payload(message.data(), message.size());
+
+    CanPayload payloadCopy(payload);
+
+    ASSERT_TRUE(ASAM::CMP::isSamePayload(payload, payloadCopy));
 }

@@ -10,6 +10,13 @@ Payload::Payload(const Type type, const uint8_t* data, const size_t size)
         memcpy(payloadData.data(), data, size);
 }
 
+Payload::Payload(const Payload& other)
+    : type(other.type)
+{
+    payloadData.resize(other.payloadData.size());
+    memcpy(payloadData.data(), other.payloadData.data(), payloadData.size());
+}
+
 Payload::Type Payload::getType() const
 {
     return type;

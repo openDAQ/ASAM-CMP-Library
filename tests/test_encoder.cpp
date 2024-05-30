@@ -5,6 +5,7 @@
 #include <asam_cmp/encoder.h>
 #include <asam_cmp/decoder.h>
 #include "create_message.h"
+#include "utilities.h"
 
 using ASAM::CMP::CanPayload;
 using ASAM::CMP::Decoder;
@@ -44,7 +45,7 @@ public:
         return createCmpMessage(init.deviceId, init.cmpMessageTypeData, init.streamId, dataMsg);
     }
 
-    std::vector<PacketPtr> composePackets(size_t cnt, const std::vector<size_t>& packet_size)
+    std::vector<PacketPtr> composePacketsPtrs(size_t cnt, const std::vector<size_t>& packet_size)
     {
         EXPECT_EQ(packet_size.size(), cnt);
 
@@ -64,44 +65,47 @@ public:
         return result;
     }
 
-    bool isSamePayload(const Payload& lhs, const Payload& rhs)
+    std::vector<Packet> composePackets(size_t cnt, const std::vector<size_t>& packet_size)
     {
-        if (lhs.getType() != rhs.getType())
-            return false;
+        EXPECT_EQ(packet_size.size(), cnt);
 
-        if (lhs.getSize() != rhs.getSize())
-            return false;
+        std::vector<PacketPtr> resultPtrs;
+        resultPtrs.reserve(cnt);
 
-        const uint8_t* lhsRaw = lhs.getRawPayload();
-        const uint8_t* rhsRaw = rhs.getRawPayload();
+        Decoder decoder;
 
-        for (size_t i = 0; i < lhs.getSize(); ++i)
-            if (lhsRaw[i] != rhsRaw[i])
-                return false;
+        for (int i = 0; i < cnt; ++i)
+        {
+            auto cmpMsg = composeMessage(MessageInit(packet_size[i]));
+            auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size());
+            std::copy(begin(packets), end(packets), std::back_inserter(resultPtrs));
+        }
 
-        return true;
-    }
+        EXPECT_EQ(resultPtrs.size(), cnt);
 
-    bool isSamePacket(const Packet& lhs, const Packet& rhs)
-    {
-        if (lhs.getDeviceId() != rhs.getDeviceId())
-            return false;
+        std::vector<Packet> result;
+        result.reserve(cnt);
+        for (const auto& e : resultPtrs)
+        {
+            result.push_back(*(e.get()));
+        }
 
-        if (lhs.getMessageType() != rhs.getMessageType())
-            return false;
-
-        if (lhs.getPayloadSize() != rhs.getPayloadSize())
-            return false;
-
-        if (lhs.getStreamId() != rhs.getStreamId())
-            return false;
-
-        if (lhs.getVersion() != rhs.getVersion())
-            return false;
-
-        return isSamePayload(lhs.getPayload(), rhs.getPayload());
+        return result;
     }
 };
+
+TEST_F(EncoderFixture, CorrectnessRef)
+{
+    auto packets = composePacketsPtrs(1, {8});
+    Encoder encoder;
+    auto encodedData = encoder.encode(begin(packets), end(packets), {64, 1500});
+
+    Decoder decoder;
+    auto checker = decoder.decode(encodedData[0].data(), encodedData[0].size());
+
+    ASSERT_EQ(checker.size(), 2);
+    ASSERT_TRUE(ASAM::CMP::isSamePacket(*(packets[0].get()), *(checker[0].get())));
+}
 
 TEST_F(EncoderFixture, Correctness)
 {
@@ -112,13 +116,18 @@ TEST_F(EncoderFixture, Correctness)
     Decoder decoder;
     auto checker = decoder.decode(encodedData[0].data(), encodedData[0].size());
 
+<<<<<<< HEAD
     ASSERT_EQ(checker.size(), 2u);
     ASSERT_TRUE(isSamePacket(*(packets[0].get()), *(checker[0].get())));
+=======
+    ASSERT_EQ(checker.size(), 2);
+    ASSERT_TRUE(ASAM::CMP::isSamePacket(packets[0], *(checker[0].get())));
+>>>>>>> 1ff90ac (<DSRT-365> Copy constructors added, ecnode for range of Packets added)
 }
 
 TEST_F(EncoderFixture, Aggregation)
 {
-    auto packets = composePackets(5, {8,8,8,8,8});
+    auto packets = composePacketsPtrs(5, {8, 8, 8, 8, 8});
     Encoder encoder;
     auto encodedData = encoder.encode(begin(packets), end(packets), {64, 1500});
     ASSERT_EQ(encodedData.size(), 1u);

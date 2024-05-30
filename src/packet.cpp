@@ -69,6 +69,15 @@ Packet::Packet(const uint8_t* data, const size_t size)
     payload = create(static_cast<Payload::Type>(header->getPayloadType()), data + sizeof(MessageHeader), header->getPayloadLength());
 }
 
+Packet::Packet(const Packet& another)
+    : version(another.version)
+    , deviceId(another.deviceId)
+    , streamId(another.streamId)
+    , payload(new Payload(*(another.payload.get())))
+{
+    
+}
+
 uint8_t Packet::getVersion() const
 {
     return version;

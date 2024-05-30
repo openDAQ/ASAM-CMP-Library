@@ -20,6 +20,8 @@ public:
 
 public:
     Payload(const Type type, const uint8_t* data, const size_t size);
+    Payload(const Payload& other);
+
     virtual ~Payload() = default;
 
     Type getType() const;

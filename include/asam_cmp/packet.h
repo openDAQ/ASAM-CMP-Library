@@ -73,6 +73,7 @@ public:
 
 public:
     Packet(const uint8_t* data, const size_t size);
+    Packet(const Packet& another);
 
     uint8_t getVersion() const;
     void setVersion(const uint8_t value);
