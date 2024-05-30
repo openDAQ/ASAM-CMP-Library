@@ -121,6 +121,7 @@ TEST_F(DecoderFixture, SegmentationOneStream)
         ethernetPacketSize - sizeof(Decoder::CmpHeader) - sizeof(Packet::MessageHeader) - sizeof(EthernetPayload::Header);
     constexpr Payload::Type payloadFormatEthernet = Payload::Type::ethernet;
     constexpr size_t segmentCount = 4;
+    constexpr size_t payloadSizeAll = (segmentCount) * (ethDataSize + sizeof(EthernetPayload::Header));
 
     std::vector<uint8_t> ethData(ethDataSize);
     auto ethPayload = createEthernetDataMessage(ethData);
@@ -150,7 +151,7 @@ TEST_F(DecoderFixture, SegmentationOneStream)
     dataMessageHeader->setSegmentType(Packet::SegmentType::lastSegment);
     packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
     ASSERT_EQ(packets.size(), 1u);
-    ASSERT_EQ(packets[0]->getPayloadSize(), sizeof(EthernetPayload::Header) + segmentCount * ethDataSize);
+    ASSERT_EQ(packets[0]->getPayloadSize(), payloadSizeAll);
 }
 
 TEST_F(DecoderFixture, SegmentationMultipleStreams)
@@ -161,6 +162,7 @@ TEST_F(DecoderFixture, SegmentationMultipleStreams)
     constexpr Payload::Type payloadFormatEthernet = Payload::Type::ethernet;
     constexpr uint8_t streamId2 = streamId + 1;
     constexpr size_t segmentCount = 3;
+    constexpr size_t payloadSizeAll = (segmentCount) * (ethDataSize + sizeof(EthernetPayload::Header));
 
     std::vector<uint8_t> ethData(ethDataSize);
     auto ethPayload = createEthernetDataMessage(ethData);
@@ -200,14 +202,14 @@ TEST_F(DecoderFixture, SegmentationMultipleStreams)
     packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
     ASSERT_EQ(packets.size(), 1u);
     ASSERT_EQ(packets[0]->getStreamId(), streamId);
-    ASSERT_EQ(packets[0]->getPayloadSize(), sizeof(EthernetPayload::Header) + segmentCount * ethDataSize);
+    ASSERT_EQ(packets[0]->getPayloadSize(), payloadSizeAll);
 
     cmpMessageHeader->setStreamId(streamId2);
     dataMessageHeader->setSegmentType(Packet::SegmentType::lastSegment);
     packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
     ASSERT_EQ(packets.size(), 1u);
     ASSERT_EQ(packets[0]->getStreamId(), streamId2);
-    ASSERT_EQ(packets[0]->getPayloadSize(), sizeof(EthernetPayload::Header) + segmentCount * ethDataSize);
+    ASSERT_EQ(packets[0]->getPayloadSize(), payloadSizeAll);
 }
 
 TEST_F(DecoderFixture, SegmentationMultipleDevices)
@@ -218,6 +220,7 @@ TEST_F(DecoderFixture, SegmentationMultipleDevices)
     constexpr Payload::Type payloadFormatEthernet = Payload::Type::ethernet;
     static constexpr uint16_t deviceId2 = deviceId + 1;
     constexpr size_t segmentCount = 3;
+    constexpr size_t payloadSizeAll = (segmentCount) * (ethDataSize + sizeof(EthernetPayload::Header));
 
     std::vector<uint8_t> ethData(ethDataSize);
     auto ethPayload = createEthernetDataMessage(ethData);
@@ -257,14 +260,14 @@ TEST_F(DecoderFixture, SegmentationMultipleDevices)
     packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
     ASSERT_EQ(packets.size(), 1u);
     ASSERT_EQ(packets[0]->getDeviceId(), deviceId);
-    ASSERT_EQ(packets[0]->getPayloadSize(), sizeof(EthernetPayload::Header) + segmentCount * ethDataSize);
+    ASSERT_EQ(packets[0]->getPayloadSize(), payloadSizeAll);
 
     cmpMessageHeader->setDeviceId(deviceId2);
     dataMessageHeader->setSegmentType(Packet::SegmentType::lastSegment);
     packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
     ASSERT_EQ(packets.size(), 1u);
     ASSERT_EQ(packets[0]->getDeviceId(), deviceId2);
-    ASSERT_EQ(packets[0]->getPayloadSize(), sizeof(EthernetPayload::Header) + segmentCount * ethDataSize);
+    ASSERT_EQ(packets[0]->getPayloadSize(), payloadSizeAll);
 }
 
 TEST_F(DecoderFixture, SegmentedUnsegemnted)
@@ -275,6 +278,7 @@ TEST_F(DecoderFixture, SegmentedUnsegemnted)
     constexpr Payload::Type payloadFormatEthernet = Payload::Type::ethernet;
     static constexpr uint8_t streamId2 = streamId + 1;
     constexpr size_t segmentCount = 3;
+    constexpr size_t payloadSizeAll = (segmentCount) * (ethDataSize + sizeof(EthernetPayload::Header));
 
     std::vector<uint8_t> ethData(ethDataSize);
     auto ethPayload = createEthernetDataMessage(ethData);
@@ -323,7 +327,7 @@ TEST_F(DecoderFixture, SegmentedUnsegemnted)
     packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
     ASSERT_EQ(packets.size(), 1u);
     ASSERT_EQ(packets[0]->getStreamId(), streamId2);
-    ASSERT_EQ(packets[0]->getPayloadSize(), sizeof(EthernetPayload::Header) + segmentCount * ethDataSize);
+    ASSERT_EQ(packets[0]->getPayloadSize(), payloadSizeAll);
 }
 
 TEST_F(DecoderFixture, SegmentationWrongSequenceCounter)

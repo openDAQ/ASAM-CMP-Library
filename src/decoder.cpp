@@ -76,48 +76,108 @@ std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std
             break;
         }
 
-        if (!Packet::isSegmentedPacket(packetPtr, curSize) || Packet::isFirstSegment(packetPtr, curSize))
+        if (!Packet::isSegmentedPacket(packetPtr, curSize))
         {
             packet = std::make_shared<Packet>(packetPtr, curSize);
 
             packet->setVersion(header->getVersion());
             packet->setDeviceId(deviceId);
             packet->setStreamId(streamId);
-            packet->setSequenceCounter(header->getSequenceCounter());
 
-            if (packet->getSegmentType() == Packet::SegmentType::firstSegment)
-            {
-                segmentedPackets[{deviceId, streamId}] = std::move(packet);
-                break;
-            }
             packets.push_back(packet);
         }
         else
         {
-            if (segmentedPackets[{deviceId, streamId}])
+            if (Packet::isFirstSegment(packetPtr, curSize))
             {
-                if (segmentedPackets[{deviceId, streamId}]->getSequenceCounter() + 1 != header->getSequenceCounter() ||
-                    !segmentedPackets[{deviceId, streamId}]->addSegment(packetPtr, curSize))
+                SegmentedPacket segmentedPacket(packetPtr, curSize, header->getSequenceCounter());
+                segmentedPackets[{deviceId, streamId}] = std::move(segmentedPacket);
+            }
+            else
+            {
+                if (!segmentedPackets[{deviceId, streamId}].addSegment(packetPtr, curSize, header->getSequenceCounter()))
                 {
                     segmentedPackets.erase({deviceId, streamId});
-                    break;
                 }
-
-                if (segmentedPackets[{deviceId, streamId}]->getSegmentType() == Packet::SegmentType::lastSegment)
+                else if (segmentedPackets[{deviceId, streamId}].isAssembled())
                 {
-                    packets.push_back(std::move(segmentedPackets[{deviceId, streamId}]));
+                    packet = segmentedPackets[{deviceId, streamId}].getPacket();
+
+                    packet->setVersion(header->getVersion());
+                    packet->setDeviceId(deviceId);
+                    packet->setStreamId(streamId);
+                    packets.push_back(packet);
+                    
                     segmentedPackets.erase({deviceId, streamId});
                 }
             }
             break;
         }
 
-        auto packetSize = packet->getPayloadSize() + sizeof(Packet::MessageHeader);
+        const auto packetSize = packet->getPayloadSize() + sizeof(Packet::MessageHeader);
         packetPtr += packetSize;
         curSize -= static_cast<int>(packetSize);
     }
 
     return packets;
+}
+
+Decoder::SegmentedPacket::SegmentedPacket(const uint8_t* data, const size_t size, uint16_t sequenceCounter)
+    : nSegment(sequenceCounter)
+    , segmentType(SegmentType::firstSegment)
+{
+    payload.resize(size);
+    memcpy(payload.data(), data, size);
+}
+
+bool Decoder::SegmentedPacket::addSegment(const uint8_t* data, const size_t size, uint16_t sequenceCounter)
+{
+    if (sequenceCounter != nSegment + 1)
+        return false;
+
+    const SegmentType type = reinterpret_cast<const MessageHeader*>(data)->getSegmentType();
+    if (!isValidSegmentType(type))
+        return false;
+
+    const auto curPayloadSize = payload.size();
+    const auto newPayloadSize = size - sizeof(MessageHeader);
+    payload.resize(curPayloadSize + newPayloadSize);
+    memcpy(payload.data() + curPayloadSize, data + sizeof(MessageHeader), newPayloadSize);
+    getHeader()->setPayloadLength(static_cast<uint16_t>(payload.size()) - sizeof(MessageHeader));
+
+    ++nSegment;
+    segmentType = type;
+
+    return true;
+}
+
+bool Decoder::SegmentedPacket::isAssembled() const
+{
+    return segmentType == SegmentType::lastSegment;
+}
+
+std::shared_ptr<Packet> Decoder::SegmentedPacket::getPacket()
+{
+    return std::make_shared<Packet>(payload.data(), payload.size());
+}
+
+Decoder::SegmentedPacket::MessageHeader* Decoder::SegmentedPacket::getHeader()
+{
+    return reinterpret_cast<MessageHeader*>(payload.data());
+}
+
+bool Decoder::SegmentedPacket::isValidSegmentType(SegmentType type) const
+{
+    switch (segmentType)
+    {
+        case SegmentType::unsegmented:
+        case SegmentType::lastSegment:
+            return type == SegmentType::unsegmented || type == SegmentType::firstSegment;
+        case SegmentType::firstSegment:
+        case SegmentType::intermediarySegment:
+            return type == SegmentType::intermediarySegment || type == SegmentType::lastSegment;
+    }
+    return false;
 }
 
 END_NAMESPACE_ASAM_CMP

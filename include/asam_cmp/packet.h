@@ -23,9 +23,9 @@ public:
     enum class SegmentType : uint8_t
     {
         unsegmented = 0,
-        firstSegment = 1,
-        intermediarySegment = 2,
-        lastSegment = 3
+        firstSegment = 0x04,
+        intermediarySegment = 0x08,
+        lastSegment = 0x0C
     };
 
     enum class CommonFlags : uint8_t
@@ -40,10 +40,10 @@ public:
 
     class MessageHeader
     {
-        uint64_t timestamp{};
+        uint64_t timestamp{0};
         union
         {
-            uint32_t interfaceId{};
+            uint32_t interfaceId{0};
             struct V
             {
                 uint16_t reserved;
@@ -51,9 +51,9 @@ public:
             };
         };
 
-        uint8_t commonFlags{};
-        uint8_t payloadType{};
-        uint16_t payloadLength{};
+        uint8_t commonFlags{0};
+        uint8_t payloadType{0};
+        uint16_t payloadLength{0};
 
         static constexpr uint8_t segShift = 2;
 
@@ -74,20 +74,15 @@ public:
 public:
     Packet(const uint8_t* data, const size_t size);
 
-    bool addSegment(const uint8_t* data, const size_t size);
-
     uint8_t getVersion() const;
     void setVersion(const uint8_t value);
     uint16_t getDeviceId() const;
     void setDeviceId(const uint16_t value);
     uint8_t getStreamId() const;
     void setStreamId(const uint8_t value);
-    uint16_t getSequenceCounter() const;
-    void setSequenceCounter(const uint16_t value);
 
     MessageType getMessageType() const;
     size_t getPayloadSize() const;
-    SegmentType getSegmentType() const;
 
     void setPayload(const Payload& newPayload);
     const Payload& getPayload() const;
@@ -98,7 +93,6 @@ public:
 
 private:
     std::unique_ptr<Payload> create(const Payload::Type type, const uint8_t* data, const size_t size);
-    bool isValidSegmentType(SegmentType type);
 
 private:
     constexpr static uint8_t errorInPayload = 0x40;
@@ -106,11 +100,9 @@ private:
 private:
     std::unique_ptr<Payload> payload;
 
-    uint8_t version{};
-    uint16_t deviceId{};
-    uint8_t streamId{};
-    uint16_t sequenceCounter{};
-    SegmentType segmentType{};
+    uint8_t version{0};
+    uint16_t deviceId{0};
+    uint8_t streamId{0};
 };
 
 END_NAMESPACE_ASAM_CMP

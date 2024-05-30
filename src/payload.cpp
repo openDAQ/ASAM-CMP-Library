@@ -10,11 +10,6 @@ Payload::Payload(const Type type, const uint8_t* data, const size_t size)
         memcpy(payloadData.data(), data, size);
 }
 
-bool Payload::addSegment(const uint8_t*, const size_t)
-{
-    return false;
-}
-
 Payload::Type Payload::getType() const
 {
     return type;

@@ -36,6 +36,8 @@ public:
         void setSequenceCounter(const uint16_t counter);
     };
 
+#pragma pack(pop)
+
 public:
     std::vector<std::shared_ptr<Packet>> decode(const void* data, const std::size_t size);
 
@@ -59,9 +61,30 @@ private:
         }
     };
 
-#pragma pack(pop)
+    class SegmentedPacket final
+    {
+        using SegmentType = Packet::SegmentType;
+        using MessageHeader = Packet::MessageHeader;
 
-    using SegmentedPackets = std::unordered_map<Endpoint, std::shared_ptr<Packet>, EndpointHash>;
+    public:
+        SegmentedPacket() = default;
+        SegmentedPacket(const uint8_t* data, const size_t size, uint16_t sequenceCounter);
+
+        bool addSegment(const uint8_t* data, const size_t size, uint16_t sequenceCounter);
+
+        bool isAssembled() const;
+        std::shared_ptr<Packet> getPacket();
+
+    private:
+        MessageHeader* getHeader();
+        bool isValidSegmentType(SegmentType type) const;
+
+        std::vector<uint8_t> payload;
+        uint16_t nSegment{0};
+        SegmentType segmentType{SegmentType::unsegmented};
+    };
+
+    using SegmentedPackets = std::unordered_map<Endpoint, SegmentedPacket, EndpointHash>;
 
 private:
     SegmentedPackets segmentedPackets;

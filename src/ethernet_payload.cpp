@@ -35,32 +35,11 @@ void EthernetPayload::Header::setDataLength(uint16_t newDataLength)
     dataLength = swapEndian(newDataLength);
 }
 
-void EthernetPayload::Header::increaseDataLength(uint16_t length)
-{
-    dataLength = swapEndian(static_cast<uint16_t>(swapEndian(dataLength) + length));
-}
-
 EthernetPayload::EthernetPayload(const uint8_t* data, const size_t size)
 {
     payloadData.resize(size);
     memcpy(payloadData.data(), data, size);
     type = Type::ethernet;
-}
-
-bool EthernetPayload::addSegment(const uint8_t* data, const size_t size)
-{
-    const auto header = reinterpret_cast<const Header*>(data);
-    if (size < header->getDataLength() + sizeof(Header))
-        return false;
-
-    const auto oldPayloadSize = payloadData.size();
-    const auto newDataSize = header->getDataLength();
-    payloadData.resize(oldPayloadSize + newDataSize);
-    memcpy(payloadData.data() + oldPayloadSize, data + sizeof(Header), newDataSize);
-
-    getHeader()->increaseDataLength(newDataSize);
-
-    return true;
 }
 
 uint16_t EthernetPayload::getFlags() const

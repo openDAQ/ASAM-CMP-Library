@@ -30,25 +30,6 @@ protected:
     std::vector<uint8_t> dataMsg;
 };
 
-TEST_F(PacketFixture, AddSegment)
-{
-    constexpr uint16_t sequenceCounter = 7;
-
-    auto messageHeader = reinterpret_cast<Packet::MessageHeader*>(dataMsg.data());
-    messageHeader->setSegmentType(Packet::SegmentType::firstSegment);
-    messageHeader->setPayloadType(Payload::Type::ethernet);
-
-    Packet packet(dataMsg.data(), dataMsg.size());
-    packet.setSequenceCounter(sequenceCounter);
-    ASSERT_EQ(packet.getSegmentType(), Packet::SegmentType::firstSegment);
-
-    messageHeader->setSegmentType(Packet::SegmentType::intermediarySegment);
-    bool add = packet.addSegment(dataMsg.data(), dataMsg.size());
-    ASSERT_TRUE(add);
-    ASSERT_EQ(packet.getSegmentType(), Packet::SegmentType::intermediarySegment);
-    auto curSequenceCounter = packet.getSequenceCounter();
-    ASSERT_EQ(curSequenceCounter, sequenceCounter + 1);
-}
 
 TEST_F(PacketFixture, Version)
 {
@@ -78,16 +59,6 @@ TEST_F(PacketFixture, StreamId)
     packet.setStreamId(newId);
     auto id = packet.getStreamId();
     ASSERT_EQ(id, newId);
-}
-
-TEST_F(PacketFixture, SequenceCounter)
-{
-    constexpr uint8_t newSequenceCounter = 99;
-
-    Packet packet(dataMsg.data(), dataMsg.size());
-    packet.setSequenceCounter(newSequenceCounter);
-    auto sequenceCounter = packet.getSequenceCounter();
-    ASSERT_EQ(sequenceCounter, newSequenceCounter);
 }
 
 TEST_F(PacketFixture, MessageTypeData)
@@ -131,33 +102,3 @@ TEST_F(PacketFixture, CanPayloadWrongDataLength)
     ASSERT_EQ(payload.getType(), Payload::Type::invalid);
 }
 
-TEST_F(PacketFixture, SegmentedPackets)
-{
-    constexpr size_t ethernetPacketSize = 1500 - sizeof(Decoder::CmpHeader);
-    constexpr size_t payloadSize = ethernetPacketSize - sizeof(Packet::MessageHeader);
-    constexpr size_t ethDataSize = payloadSize - sizeof(EthernetPayload::Header);
-    constexpr Payload::Type payloadFormatEthernet = Payload::Type::ethernet;
-
-    std::vector<uint8_t> ethData(ethDataSize);
-    auto payloadMsg = createEthernetDataMessage(ethData);
-    dataMsg = createDataMessage(payloadFormatEthernet, payloadMsg);
-    ASSERT_EQ(dataMsg.size(), ethernetPacketSize);
-
-    auto dataMessageHeader = reinterpret_cast<Packet::MessageHeader*>(dataMsg.data());
-    dataMessageHeader->setSegmentType(Packet::SegmentType::firstSegment);
-
-    Packet packet(dataMsg.data(), dataMsg.size());
-    ASSERT_EQ(packet.getSegmentType(), Packet::SegmentType::firstSegment);
-
-    dataMessageHeader->setSegmentType(Packet::SegmentType::intermediarySegment);
-    bool add = packet.addSegment(dataMsg.data(), dataMsg.size());
-    ASSERT_TRUE(add);
-    ASSERT_EQ(packet.getSegmentType(), Packet::SegmentType::intermediarySegment);
-    ASSERT_EQ(packet.getPayloadSize(), sizeof(EthernetPayload::Header) + 2 * ethDataSize);
-
-    dataMessageHeader->setSegmentType(Packet::SegmentType::lastSegment);
-    add = packet.addSegment(dataMsg.data(), dataMsg.size());
-    ASSERT_TRUE(add);
-    ASSERT_EQ(packet.getSegmentType(), Packet::SegmentType::lastSegment);
-    ASSERT_EQ(packet.getPayloadSize(), sizeof(EthernetPayload::Header) + 3 * ethDataSize);
-}

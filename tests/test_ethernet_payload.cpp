@@ -27,16 +27,6 @@ protected:
     std::vector<uint8_t> message;
 };
 
-TEST_F(EthernetPayloadTest, AddSegment)
-{
-    EthernetPayload payload(message.data(), message.size());
-    payload.addSegment(message.data(), message.size());
-    ASSERT_EQ(payload.getSize(), message.size() + data.size());
-    data.reserve(data.size() * 2);
-    data.insert(data.end(), data.begin(), data.end());
-    ASSERT_TRUE(std::equal(data.begin(), data.end(), payload.getData()));
-}
-
 TEST_F(EthernetPayloadTest, Properties)
 {
     EthernetPayload payload(message.data(), message.size());

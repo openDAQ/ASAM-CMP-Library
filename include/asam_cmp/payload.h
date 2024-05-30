@@ -22,8 +22,6 @@ public:
     Payload(const Type type, const uint8_t* data, const size_t size);
     virtual ~Payload() = default;
 
-    virtual bool addSegment(const uint8_t*, const size_t);
-
     Type getType() const;
     size_t getSize() const;
 

@@ -34,14 +34,11 @@ public:
         void setFlag(Flags mask, bool value);
         uint16_t getDataLength() const;
         void setDataLength(uint16_t newDataLength);
-        void increaseDataLength(uint16_t length);
     };
 #pragma pack(pop)
 
 public:
     EthernetPayload(const uint8_t* data, const size_t size);
-
-    bool addSegment(const uint8_t* data, const size_t size) override;
 
     uint16_t getFlags() const;
     void setFlags(const uint16_t newFlags);
