@@ -20,4 +20,10 @@ size_t Payload::getSize() const
     return payloadData.size();
 }
 
+const uint8_t* Payload::getRawPayload() const
+{
+    return payloadData.data();
+}
+
+
 END_NAMESPACE_ASAM_CMP
