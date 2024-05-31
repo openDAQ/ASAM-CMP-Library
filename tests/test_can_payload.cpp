@@ -255,7 +255,7 @@ TEST_F(CanPayloadTest, TestCopy)
     constexpr uint32_t arbId = 78;
 
     std::vector<uint8_t> data(canDataSize);
-    std::iota(data.begin(), data.end(), 0);
+    std::iota(data.begin(), data.end(), (uint8_t)0);
     auto message = createCanDataMessage(arbId, data);
 
     CanPayload payload(message.data(), message.size());

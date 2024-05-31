@@ -72,7 +72,7 @@ public:
 
         Decoder decoder;
 
-        for (int i = 0; i < initStructures.size(); ++i)
+        for (size_t i = 0; i < initStructures.size(); ++i)
         {
             auto cmpMsg = composeMessage(initStructures[i]);
             auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size());
@@ -102,7 +102,7 @@ TEST_F(EncoderFixture, CorrectnessRef)
     Decoder decoder;
     auto checker = decoder.decode(encodedData[0].data(), encodedData[0].size());
 
-    ASSERT_EQ(checker.size(), 2);
+    ASSERT_EQ(checker.size(), (size_t)2);
     ASSERT_TRUE(ASAM::CMP::isSamePacket(*(packets[0].get()), *(checker[0].get())));
 }
 
@@ -133,19 +133,42 @@ TEST_F(EncoderFixture, Segmmentation)
 {
     std::vector<MessageInit> initStructures = {
         MessageInit(8,  3, 1),
-        MessageInit(60, 3, 1),
+        MessageInit(8,  3, 1),
+        MessageInit(100, 3, 1),
+        MessageInit(8,  3, 1),
         MessageInit(8,  3, 1)
     };
 
     auto packetsPtrs = composePacketsPtrs(initStructures);
     Encoder encoder;
-    auto encodedData = encoder.encode(begin(packetsPtrs), end(packetsPtrs), {64, 90});
+    auto encodedData = encoder.encode(begin(packetsPtrs), end(packetsPtrs), {64, 100});
 
-    ASSERT_EQ(encodedData.size(), 4);
-    ASSERT_EQ(encodedData[0].size(), 64);
-    ASSERT_EQ(encodedData[1].size(), 90);
-    ASSERT_EQ(encodedData[2].size(), 64);
-    ASSERT_EQ(encodedData[2].size(), 64);
+    ASSERT_EQ(encodedData.size(), (size_t)4);
+    //Packet had spare space but segmentation should be done from new message
+    ASSERT_EQ(encodedData[0].size(), (size_t)88);
+    //Full packet length
+    ASSERT_EQ(encodedData[1].size(), (size_t)100);
+    // There was enough space for one small packet but it filled up to min size with nulls because segmentation should be isolated
+    ASSERT_EQ(encodedData[2].size(), (size_t)64);
+    // Two small packets
+    ASSERT_EQ(encodedData[3].size(), (size_t)88);
+}
+
+TEST_F(EncoderFixture, LargePacketInSeparateMessage)
+{
+    std::vector<MessageInit> initStructures = {
+        MessageInit(8, 3, 1), MessageInit(8, 3, 1), MessageInit(60, 3, 1), MessageInit(8, 3, 1), MessageInit(8, 3, 1)};
+
+    auto packetsPtrs = composePacketsPtrs(initStructures);
+    Encoder encoder;
+    auto encodedData = encoder.encode(begin(packetsPtrs), end(packetsPtrs), {64, 100});
+
+    ASSERT_EQ(encodedData.size(), (size_t) 3);
+    // There was enough space for a piece of new packet, but segmentation should starts from new message
+    ASSERT_EQ(encodedData[0].size(), (size_t) 88);
+    // Big packet fits a single message
+    ASSERT_EQ(encodedData[1].size(), (size_t) 100);
+    ASSERT_EQ(encodedData[2].size(), (size_t) 88);
 }
 
 TEST_F(EncoderFixture, EmptyRange)
