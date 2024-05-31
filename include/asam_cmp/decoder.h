@@ -57,7 +57,7 @@ private:
     {
         std::size_t operator()(const Endpoint& rhs) const
         {
-            return std::hash<uint32_t>()(rhs.deviceId | (rhs.streamId << 16));
+            return (rhs.deviceId | (rhs.streamId << 16));
         }
     };
 
