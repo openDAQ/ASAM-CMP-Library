@@ -200,15 +200,7 @@ void Encoder::putPacket(const Packet& packet)
     if (packet.getMessageType() != Packet::MessageType::Data)
         throw std::runtime_error("Non-data message types are not implemented");
 
-    switch (packet.getPayload().getType())
-    {
-        case Payload::Type::can:
-            impl->addPayload(0, Payload::Type::can, packet.getPayload().getRawPayload(), packet.getPayload().getSize());
-            break;
-        default:
-            //TODO: should be replaced by logger
-            throw std::runtime_error("Provided Payload type is not supported");
-    }
+    impl->addPayload(0, packet.getPayload().getType(), packet.getPayload().getRawPayload(), packet.getPayload().getSize());
 }
 
 std::vector<std::vector<uint8_t>> Encoder::getEncodedData()
