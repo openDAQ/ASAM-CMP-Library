@@ -68,9 +68,9 @@ private:
 
     public:
         SegmentedPacket() = default;
-        SegmentedPacket(const uint8_t* data, const size_t size, uint16_t sequenceCounter);
+        SegmentedPacket(const uint8_t* data, const size_t size, uint8_t version, int8_t messageType, uint16_t sequenceCounter);
 
-        bool addSegment(const uint8_t* data, const size_t size, uint16_t sequenceCounter);
+        bool addSegment(const uint8_t* data, const size_t size, uint8_t version, int8_t messageType, uint16_t sequenceCounter);
 
         bool isAssembled() const;
         std::shared_ptr<Packet> getPacket();
@@ -80,8 +80,10 @@ private:
         bool isValidSegmentType(SegmentType type) const;
 
         std::vector<uint8_t> payload;
-        uint16_t nSegment{0};
         SegmentType segmentType{SegmentType::unsegmented};
+        uint8_t curVersion{0};
+        uint8_t curMessageType{0};
+        uint16_t curSegment{0};
     };
 
     using SegmentedPackets = std::unordered_map<Endpoint, SegmentedPacket, EndpointHash>;

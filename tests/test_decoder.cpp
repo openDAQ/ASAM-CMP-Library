@@ -398,3 +398,61 @@ TEST_F(DecoderFixture, SegmentationWrongSequenceCounter)
     packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
     ASSERT_TRUE(packets.empty());
 }
+
+TEST_F(DecoderFixture, SegmentationWrongVersion)
+{
+    constexpr size_t ethernetPacketSize = 1500;
+    constexpr size_t ethDataSize =
+        ethernetPacketSize - sizeof(Decoder::CmpHeader) - sizeof(Packet::MessageHeader) - sizeof(EthernetPayload::Header);
+    constexpr Payload::Type payloadFormatEthernet = Payload::Type::ethernet;
+
+    std::vector<uint8_t> ethData(ethDataSize);
+    auto ethPayload = createEthernetDataMessage(ethData);
+    auto dataMsgEth = createDataMessage(payloadFormatEthernet, ethPayload);
+    auto cmpMsgEth = createCmpMessage(deviceId, cmpMessageTypeData, streamId, dataMsgEth);
+    ASSERT_EQ(cmpMsgEth.size(), ethernetPacketSize);
+
+    auto cmpMessageHeader = reinterpret_cast<Decoder::CmpHeader*>(cmpMsgEth.data());
+    cmpMessageHeader->setSequenceCounter(1);
+    auto dataMessageHeader = reinterpret_cast<Packet::MessageHeader*>(cmpMsgEth.data() + sizeof(Decoder::CmpHeader));
+    dataMessageHeader->setSegmentType(Packet::SegmentType::firstSegment);
+
+    Decoder decoder;
+    auto packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
+    ASSERT_TRUE(packets.empty());
+
+    cmpMessageHeader->setSequenceCounter(cmpMessageHeader->getSequenceCounter() + 1);
+    cmpMessageHeader->setVersion(cmpMessageHeader->getVersion() + 1);
+    dataMessageHeader->setSegmentType(Packet::SegmentType::lastSegment);
+    packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
+    ASSERT_TRUE(packets.empty());
+}
+
+TEST_F(DecoderFixture, SegmentationWrongMessageType)
+{
+    constexpr size_t ethernetPacketSize = 1500;
+    constexpr size_t ethDataSize =
+        ethernetPacketSize - sizeof(Decoder::CmpHeader) - sizeof(Packet::MessageHeader) - sizeof(EthernetPayload::Header);
+    constexpr Payload::Type payloadFormatEthernet = Payload::Type::ethernet;
+
+    std::vector<uint8_t> ethData(ethDataSize);
+    auto ethPayload = createEthernetDataMessage(ethData);
+    auto dataMsgEth = createDataMessage(payloadFormatEthernet, ethPayload);
+    auto cmpMsgEth = createCmpMessage(deviceId, cmpMessageTypeData, streamId, dataMsgEth);
+    ASSERT_EQ(cmpMsgEth.size(), ethernetPacketSize);
+
+    auto cmpMessageHeader = reinterpret_cast<Decoder::CmpHeader*>(cmpMsgEth.data());
+    cmpMessageHeader->setSequenceCounter(1);
+    auto dataMessageHeader = reinterpret_cast<Packet::MessageHeader*>(cmpMsgEth.data() + sizeof(Decoder::CmpHeader));
+    dataMessageHeader->setSegmentType(Packet::SegmentType::firstSegment);
+
+    Decoder decoder;
+    auto packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
+    ASSERT_TRUE(packets.empty());
+
+    cmpMessageHeader->setSequenceCounter(cmpMessageHeader->getSequenceCounter() + 1);
+    cmpMessageHeader->setMessageType(cmpMessageHeader->getMessageType() + 1);
+    dataMessageHeader->setSegmentType(Packet::SegmentType::lastSegment);
+    packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
+    ASSERT_TRUE(packets.empty());
+}
