@@ -2,7 +2,7 @@
 
 BEGIN_NAMESPACE_ASAM_CMP
 
-bool isSamePayload(const Payload& lhs, const Payload& rhs)
+bool isEqualPayloads(const Payload& lhs, const Payload& rhs)
 {
     if (lhs.getType() != rhs.getType())
         return false;
@@ -37,7 +37,7 @@ bool isSamePacket(const Packet& lhs, const Packet& rhs)
     if (lhs.getVersion() != rhs.getVersion())
         return false;
 
-    return isSamePayload(lhs.getPayload(), rhs.getPayload());
+    return isEqualPayloads(lhs.getPayload(), rhs.getPayload()) && (lhs.getPayload().getRawPayload() != rhs.getPayload().getRawPayload());
 }
 
 END_NAMESPACE_ASAM_CMP

@@ -262,5 +262,5 @@ TEST_F(CanPayloadTest, TestCopy)
 
     CanPayload payloadCopy(payload);
 
-    ASSERT_TRUE(ASAM::CMP::isSamePayload(payload, payloadCopy));
+    ASSERT_TRUE(ASAM::CMP::isEqualPayloads(payload, payloadCopy));
 }

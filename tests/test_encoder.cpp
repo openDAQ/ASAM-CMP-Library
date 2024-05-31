@@ -123,10 +123,19 @@ TEST_F(EncoderFixture, Correctness)
 TEST_F(EncoderFixture, Aggregation)
 {
     std::vector<MessageInit> initStructures(5, MessageInit(8, 3));
-    auto packets = composePacketsPtrs(initStructures);
+    auto packetsPtrs = composePacketsPtrs(initStructures);
     Encoder encoder;
-    auto encodedData = encoder.encode(begin(packets), end(packets), {64, 1500});
-    ASSERT_EQ(encodedData.size(), 1u);
+    auto encodedData = encoder.encode(begin(packetsPtrs), end(packetsPtrs), {64, 1500});
+    ASSERT_EQ(encodedData.size(), (size_t)1);
+
+    Decoder decoder;
+    auto decodedData = decoder.decode(encodedData[0].data(), encodedData[0].size());
+
+    ASSERT_EQ(packetsPtrs.size(), decodedData.size());
+    for (size_t i = 0; i < packetsPtrs.size(); ++i)
+    {
+        ASSERT_TRUE(ASAM::CMP::isSamePacket(*(packetsPtrs[i].get()), *(decodedData[i].get())));
+    }
 }
 
 TEST_F(EncoderFixture, Segmmentation)
