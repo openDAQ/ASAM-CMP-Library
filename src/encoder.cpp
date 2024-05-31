@@ -58,6 +58,14 @@ public:
         {
             size_t currentPayloadPos = 0;
             bool isSegmented = (!cmpFrames.empty() && bytesLeft < sizeof(DataMessageHeader) + payloadSize);
+
+            if (isSegmented)
+            {
+                cmpFrames.back().resize(std::max(cmpFrames.back().size() - bytesLeft, minBytesPerMessage), 0);
+                addNewCMPFrame();
+                isSegmented = (!cmpFrames.empty() && bytesLeft < sizeof(DataMessageHeader) + payloadSize);
+            }
+
             int segmentInd = 0;
 
             while (currentPayloadPos < payloadSize)
@@ -84,6 +92,12 @@ public:
                 ++segmentInd;
                 currentPayloadPos += bytesToAdd;
                 bytesLeft -= bytesToAdd;
+
+                if (segmentationFlag == segmentationFlagLastSegment)
+                {
+                    cmpFrames.back().resize(std::max(cmpFrames.back().size() - bytesLeft, minBytesPerMessage), 0);
+                    addNewCMPFrame();
+                }
             }
         }
 

@@ -47,46 +47,42 @@ public:
         return createCmpMessage(init.deviceId, init.cmpMessageTypeData, init.streamId, dataMsg);
     }
 
-    std::vector<PacketPtr> composePacketsPtrs(size_t cnt, const std::vector<MessageInit>& initStructures)
+    std::vector<PacketPtr> composePacketsPtrs(const std::vector<MessageInit>& initStructures)
     {
-        EXPECT_EQ(initStructures.size(), cnt);
-
         std::vector<PacketPtr> result;
-        result.reserve(cnt);
+        result.reserve(initStructures.size());
 
         Decoder decoder;
 
-        for (size_t i = 0; i < cnt; ++i)
+        for (size_t i = 0; i < initStructures.size(); ++i)
         {
             auto cmpMsg = composeMessage(initStructures[i]);
             auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size());
             std::copy(begin(packets), end(packets), std::back_inserter(result));
         }
 
-        EXPECT_EQ(result.size(), cnt);
+        EXPECT_EQ(result.size(), initStructures.size());
         return result;
     }
 
-    std::vector<Packet> composePackets(size_t cnt, const std::vector<MessageInit>& initStructures)
+    std::vector<Packet> composePackets(const std::vector<MessageInit>& initStructures)
     {
-        EXPECT_EQ(initStructures.size(), cnt);
-
         std::vector<PacketPtr> resultPtrs;
-        resultPtrs.reserve(cnt);
+        resultPtrs.reserve(initStructures.size());
 
         Decoder decoder;
 
-        for (int i = 0; i < cnt; ++i)
+        for (int i = 0; i < initStructures.size(); ++i)
         {
             auto cmpMsg = composeMessage(initStructures[i]);
             auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size());
             std::copy(begin(packets), end(packets), std::back_inserter(resultPtrs));
         }
 
-        EXPECT_EQ(resultPtrs.size(), cnt);
+        EXPECT_EQ(resultPtrs.size(), initStructures.size());
 
         std::vector<Packet> result;
-        result.reserve(cnt);
+        result.reserve(initStructures.size());
         for (const auto& e : resultPtrs)
         {
             result.push_back(*(e.get()));
@@ -99,7 +95,7 @@ public:
 TEST_F(EncoderFixture, CorrectnessRef)
 {
     std::vector<MessageInit> initStructures = { MessageInit(8, 3) };
-    auto packets = composePacketsPtrs(1, initStructures);
+    auto packets = composePacketsPtrs(initStructures);
     Encoder encoder;
     auto encodedData = encoder.encode(begin(packets), end(packets), {64, 1500});
 
@@ -113,7 +109,7 @@ TEST_F(EncoderFixture, CorrectnessRef)
 TEST_F(EncoderFixture, Correctness)
 {
     std::vector<MessageInit> initStructures = {MessageInit(8, 3)};
-    auto packets = composePackets(1, initStructures);
+    auto packets = composePackets(initStructures);
     Encoder encoder;
     auto encodedData = encoder.encode(begin(packets), end(packets), {64, 1500});
 
@@ -127,20 +123,39 @@ TEST_F(EncoderFixture, Correctness)
 TEST_F(EncoderFixture, Aggregation)
 {
     std::vector<MessageInit> initStructures(5, MessageInit(8, 3));
-    auto packets = composePacketsPtrs(5, initStructures);
+    auto packets = composePacketsPtrs(initStructures);
     Encoder encoder;
     auto encodedData = encoder.encode(begin(packets), end(packets), {64, 1500});
     ASSERT_EQ(encodedData.size(), 1u);
+}
+
+TEST_F(EncoderFixture, Segmmentation)
+{
+    std::vector<MessageInit> initStructures = {
+        MessageInit(8,  3, 1),
+        MessageInit(60, 3, 1),
+        MessageInit(8,  3, 1)
+    };
+
+    auto packetsPtrs = composePacketsPtrs(initStructures);
+    Encoder encoder;
+    auto encodedData = encoder.encode(begin(packetsPtrs), end(packetsPtrs), {64, 90});
+
+    ASSERT_EQ(encodedData.size(), 4);
+    ASSERT_EQ(encodedData[0].size(), 64);
+    ASSERT_EQ(encodedData[1].size(), 90);
+    ASSERT_EQ(encodedData[2].size(), 64);
+    ASSERT_EQ(encodedData[2].size(), 64);
 }
 
 TEST_F(EncoderFixture, EmptyRange)
 {
     Encoder encoder;
 
-    auto packetsPtrs = composePacketsPtrs(0, {});
+    auto packetsPtrs = composePacketsPtrs({});
     EXPECT_THROW(encoder.encode(begin(packetsPtrs), end(packetsPtrs), {64, 1500}), std::invalid_argument);
 
-    auto packets = composePackets(0, {});
+    auto packets = composePackets({});
     EXPECT_THROW(encoder.encode(begin(packets), end(packets), {64, 1500}), std::invalid_argument);
 }
 
@@ -151,7 +166,7 @@ TEST_F(EncoderFixture, WrongDeviceId)
     std::vector<MessageInit> initStructures = {
         MessageInit(8, 3), MessageInit(8, 5)
     };
-    auto packetsPtrs = composePacketsPtrs(2, initStructures);
+    auto packetsPtrs = composePacketsPtrs(initStructures);
     EXPECT_THROW(encoder.encode(begin(packetsPtrs), end(packetsPtrs), {64, 1500}), std::runtime_error);
 
 }
@@ -161,6 +176,6 @@ TEST_F(EncoderFixture, WrongStreamId)
     Encoder encoder;
 
     std::vector<MessageInit> initStructures = {MessageInit(8, 3, 1), MessageInit(8, 3, 2)};
-    auto packetsPtrs = composePacketsPtrs(2, initStructures);
+    auto packetsPtrs = composePacketsPtrs(initStructures);
     EXPECT_THROW(encoder.encode(begin(packetsPtrs), end(packetsPtrs), {64, 1500}), std::runtime_error);
 }
