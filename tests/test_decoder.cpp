@@ -330,6 +330,44 @@ TEST_F(DecoderFixture, SegmentedUnsegemnted)
     ASSERT_EQ(packets[0]->getPayloadSize(), payloadSizeAll);
 }
 
+TEST_F(DecoderFixture, SegmentedUnsegemntedSameStreams)
+{
+    constexpr size_t ethernetPacketSize = 1500;
+    constexpr size_t ethDataSize =
+        ethernetPacketSize - sizeof(Decoder::CmpHeader) - sizeof(Packet::MessageHeader) - sizeof(EthernetPayload::Header);
+    constexpr Payload::Type payloadFormatEthernet = Payload::Type::ethernet;
+
+    std::vector<uint8_t> ethData(ethDataSize);
+    auto ethPayload = createEthernetDataMessage(ethData);
+    auto dataMsgEth = createDataMessage(payloadFormatEthernet, ethPayload);
+    auto cmpMsgEth = createCmpMessage(deviceId, cmpMessageTypeData, streamId, dataMsgEth);
+    ASSERT_EQ(cmpMsgEth.size(), ethernetPacketSize);
+
+    auto dataMessageHeader = reinterpret_cast<Packet::MessageHeader*>(cmpMsgEth.data() + sizeof(Decoder::CmpHeader));
+    auto cmpMessageHeader = reinterpret_cast<Decoder::CmpHeader*>(cmpMsgEth.data());
+    Decoder decoder;
+
+    cmpMessageHeader->setStreamId(streamId);
+    dataMessageHeader->setSegmentType(Packet::SegmentType::unsegmented);
+    auto packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
+    ASSERT_EQ(packets.size(), 1u);
+
+    cmpMessageHeader->setSequenceCounter(1);
+    dataMessageHeader->setSegmentType(Packet::SegmentType::firstSegment);
+    packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
+    ASSERT_TRUE(packets.empty());
+
+    dataMessageHeader->setSegmentType(Packet::SegmentType::unsegmented);
+    packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
+    ASSERT_EQ(packets.size(), 1u);
+    ASSERT_EQ(packets[0]->getStreamId(), streamId);
+
+    cmpMessageHeader->setSequenceCounter(cmpMessageHeader->getSequenceCounter() + 1);
+    dataMessageHeader->setSegmentType(Packet::SegmentType::lastSegment);
+    packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
+    ASSERT_EQ(packets.size(), 0);
+}
+
 TEST_F(DecoderFixture, SegmentationWrongSequenceCounter)
 {
     constexpr size_t ethernetPacketSize = 1500;

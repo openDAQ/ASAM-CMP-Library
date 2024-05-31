@@ -78,6 +78,8 @@ std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std
 
         if (!Packet::isSegmentedPacket(packetPtr, curSize))
         {
+            segmentedPackets.erase({deviceId, streamId});
+
             packet = std::make_shared<Packet>(packetPtr, curSize);
 
             packet->setVersion(header->getVersion());
@@ -107,7 +109,7 @@ std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std
                     packet->setDeviceId(deviceId);
                     packet->setStreamId(streamId);
                     packets.push_back(packet);
-                    
+
                     segmentedPackets.erase({deviceId, streamId});
                 }
             }
