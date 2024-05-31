@@ -345,7 +345,7 @@ TEST_F(DecoderFixture, SegmentedUnsegemntedSameStreams)
     cmpMessageHeader->setSequenceCounter(cmpMessageHeader->getSequenceCounter() + 1);
     dataMessageHeader->setSegmentType(Packet::SegmentType::lastSegment);
     packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
-    ASSERT_EQ(packets.size(), 0);
+    ASSERT_EQ(packets.size(), 0u);
 }
 
 TEST_F(DecoderFixture, SegmentationWrongSequenceCounter)
