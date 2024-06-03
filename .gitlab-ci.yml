@@ -70,7 +70,7 @@ variables:
     $cmake = Start-Process cmake -ArgumentList "-G ""$env:CMAKE_GENERATOR"" -A $env:ARCHITECTURE ../.." -NoNewWindow -Wait -PassThru
     if ($cmake.ExitCode -ne 0) { exit 1 }
     
-.compile-counters:
+.compile-asam_cmp:
   tags:
     - rtcore-bb
   stage: build
@@ -91,22 +91,22 @@ variables:
 win32_debug_compile:
   extends:
     - .vs2017_msvc_win32_debug
-    - .compile-counters
+    - .compile-asam_cmp
 
 win32_release_compile:
   extends:
     - .vs2017_msvc_win32_release
-    - .compile-counters
+    - .compile-asam_cmp
 
 win64_debug_compile:
   extends:
     - .vs2017_msvc_win64_debug
-    - .compile-counters
+    - .compile-asam_cmp
 
 win64_release_compile:
   extends:
     - .vs2017_msvc_win64_release
-    - .compile-counters
+    - .compile-asam_cmp
 
 
 #####################################
@@ -199,7 +199,7 @@ win64_release_warnings:
     # Use the env variable since we don't run gtest directly
     - $env:GTEST_OUTPUT = "xml:$CI_PROJECT_DIR/${env:TEST_PATH}/junit_reports/"
     - cd "$CI_PROJECT_DIR/$env:BUILD_PATH/bin/$env:DSRT_CONFIG/"
-    - Start-Process -Wait "test_counter_module.exe"
+    - Start-Process -Wait "test_asam_cmp.exe"
   artifacts:
     expire_in: 1 week
     reports:
