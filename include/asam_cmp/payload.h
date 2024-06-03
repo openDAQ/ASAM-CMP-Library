@@ -23,7 +23,6 @@ public:
     virtual ~Payload() = default;
 
     Type getType() const;
-
     size_t getSize() const;
     const uint8_t* getRawPayload() const;
 

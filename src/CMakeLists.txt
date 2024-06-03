@@ -6,6 +6,7 @@ set(SRC_Headers ../include/${LIB_NAME}/common.h
                 ../include/${LIB_NAME}/packet.h
                 ../include/${LIB_NAME}/payload.h
                 ../include/${LIB_NAME}/can_payload.h
+                ../include/${LIB_NAME}/ethernet_payload.h
 )
 
 set(SRC_Sources decoder.cpp
@@ -13,6 +14,7 @@ set(SRC_Sources decoder.cpp
                 packet.cpp
                 payload.cpp
                 can_payload.cpp
+                ethernet_payload.cpp
 )
 
 add_library(${LIB_NAME} STATIC ${SRC_Headers} ${SRC_Sources})

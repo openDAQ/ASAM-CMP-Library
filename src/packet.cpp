@@ -1,8 +1,60 @@
 #include <asam_cmp/can_payload.h>
+#include <asam_cmp/ethernet_payload.h>
 #include <asam_cmp/packet.h>
 #include <stdexcept>
 
 BEGIN_NAMESPACE_ASAM_CMP
+
+uint8_t Packet::MessageHeader::getCommonFlags() const
+{
+    return commonFlags;
+}
+
+void Packet::MessageHeader::setCommonFlags(const uint8_t newFlags)
+{
+    commonFlags = newFlags;
+}
+
+bool Packet::MessageHeader::getCommonFlag(const CommonFlags mask) const
+{
+    return (commonFlags & static_cast<uint16_t>(mask)) != 0;
+}
+
+void Packet::MessageHeader::setCommonFlag(const CommonFlags mask, const bool value)
+{
+    commonFlags = value ? (commonFlags | static_cast<uint16_t>(mask)) : (commonFlags & ~static_cast<uint16_t>(mask));
+}
+
+Packet::SegmentType Packet::MessageHeader::getSegmentType() const
+{
+    return static_cast<SegmentType>((commonFlags & to_underlying(CommonFlags::seg)));
+}
+
+void Packet::MessageHeader::setSegmentType(const SegmentType type)
+{
+    commonFlags &= ~to_underlying(CommonFlags::seg);
+    commonFlags |= to_underlying(type);
+}
+
+Payload::Type Packet::MessageHeader::getPayloadType() const
+{
+    return static_cast<Payload::Type>(payloadType);
+}
+
+void Packet::MessageHeader::setPayloadType(const Payload::Type type)
+{
+    payloadType = static_cast<uint8_t>(type);
+}
+
+uint16_t Packet::MessageHeader::getPayloadLength() const
+{
+    return swapEndian(payloadLength);
+}
+
+void Packet::MessageHeader::setPayloadLength(const uint16_t length)
+{
+    payloadLength = swapEndian(length);
+}
 
 Packet::Packet(const uint8_t* data, const size_t size)
 {
@@ -14,7 +66,7 @@ Packet::Packet(const uint8_t* data, const size_t size)
 #endif  // _DEBUG
 
     auto header = reinterpret_cast<const MessageHeader*>(data);
-    payload = create(static_cast<Payload::Type>(header->payloadType), data + sizeof(MessageHeader), swapEndian(header->payloadLength));
+    payload = create(static_cast<Payload::Type>(header->getPayloadType()), data + sizeof(MessageHeader), header->getPayloadLength());
 }
 
 uint8_t Packet::getVersion() const
@@ -52,7 +104,7 @@ Packet::MessageType Packet::getMessageType() const
     return MessageType::Data;
 }
 
-size_t Packet::getSize() const
+size_t Packet::getPayloadSize() const
 {
     return payload ? payload->getSize() : 0;
 }
@@ -70,8 +122,18 @@ const Payload& Packet::getPayload() const
 bool Packet::isValidPacket(const uint8_t* data, const size_t size)
 {
     auto header = reinterpret_cast<const MessageHeader*>(data);
-    return (size >= sizeof(MessageHeader) && swapEndian(header->payloadLength) <= (size - sizeof(MessageHeader)) &&
-            ((header->commonFlags & errorInPayload) == 0));
+    return (size >= sizeof(MessageHeader) && header->getPayloadLength() <= (size - sizeof(MessageHeader)) &&
+            !header->getCommonFlag(CommonFlags::errorInPayload));
+}
+
+bool Packet::isSegmentedPacket(const uint8_t* data, const size_t)
+{
+    return reinterpret_cast<const MessageHeader*>(data)->getSegmentType() != SegmentType::unsegmented;
+}
+
+bool Packet::isFirstSegment(const uint8_t* data, const size_t)
+{
+    return reinterpret_cast<const MessageHeader*>(data)->getSegmentType() == SegmentType::firstSegment;
 }
 
 std::unique_ptr<Payload> Packet::create(const Payload::Type type, const uint8_t* data, const size_t size)
@@ -81,6 +143,11 @@ std::unique_ptr<Payload> Packet::create(const Payload::Type type, const uint8_t*
         case Payload::Type::can:
             if (CanPayload::isValidPayload(data, size))
                 return std::make_unique<CanPayload>(data, size);
+            else
+                return std::make_unique<Payload>(Payload::Type::invalid, data, size);
+        case Payload::Type::ethernet:
+            if (EthernetPayload::isValidPayload(data, size))
+                return std::make_unique<EthernetPayload>(data, size);
             else
                 return std::make_unique<Payload>(Payload::Type::invalid, data, size);
         default:

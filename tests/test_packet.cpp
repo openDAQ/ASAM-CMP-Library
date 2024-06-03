@@ -1,9 +1,13 @@
 #include <gtest/gtest.h>
+#include <numeric>
 
 #include <asam_cmp/packet.h>
 
 #include "create_message.h"
 
+using ASAM::CMP::CanPayload;
+using ASAM::CMP::Decoder;
+using ASAM::CMP::EthernetPayload;
 using ASAM::CMP::Packet;
 using ASAM::CMP::Payload;
 
@@ -19,12 +23,13 @@ public:
 
 protected:
     static constexpr size_t canDataSize = 8;
-    static constexpr uint8_t payloadType = 0x01;
+    static constexpr Payload::Type payloadType = Payload::Type::can;
     static constexpr uint32_t arbId = 87;
 
 protected:
     std::vector<uint8_t> dataMsg;
 };
+
 
 TEST_F(PacketFixture, Version)
 {
@@ -72,8 +77,8 @@ TEST_F(PacketFixture, GetPayload)
 
 TEST_F(PacketFixture, CanPayloadErrorFlags)
 {
-    auto canHeader = reinterpret_cast<CanDataMessageHeader*>(dataMsg.data() + sizeof(DataMessageHeader));
-    canHeader->flags = 1;
+    auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(Packet::MessageHeader));
+    canHeader->setFlags(1);
     Packet packet(dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), Payload::Type::invalid);
@@ -81,8 +86,8 @@ TEST_F(PacketFixture, CanPayloadErrorFlags)
 
 TEST_F(PacketFixture, CanPayloadErrorPosition)
 {
-    auto canHeader = reinterpret_cast<CanDataMessageHeader*>(dataMsg.data() + sizeof(DataMessageHeader));
-    canHeader->errorPosition = 1;
+    auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(Packet::MessageHeader));
+    canHeader->setErrorPosition(1);
     Packet packet(dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), Payload::Type::invalid);
@@ -90,9 +95,10 @@ TEST_F(PacketFixture, CanPayloadErrorPosition)
 
 TEST_F(PacketFixture, CanPayloadWrongDataLength)
 {
-    auto canHeader = reinterpret_cast<CanDataMessageHeader*>(dataMsg.data() + sizeof(DataMessageHeader));
-    ++canHeader->dataLength;
+    auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(Packet::MessageHeader));
+    canHeader->setDataLength(canHeader->getDataLength() + 1);
     Packet packet(dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), Payload::Type::invalid);
 }
+
