@@ -24,6 +24,7 @@ inline std::vector<uint8_t> createCanDataMessage(const uint32_t arbId, const std
     ASAM::CMP::CanPayload::Header header;
     header.setId(arbId);
     header.setDataLength(static_cast<uint8_t>(data.size()));
+    header.setDlc(0x0F);
 
     return createMessage(header, data);
 }

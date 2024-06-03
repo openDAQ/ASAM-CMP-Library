@@ -1,48 +1,19 @@
 #pragma once
 
 #include <asam_cmp/common.h>
-#include <asam_cmp/payload.h>
+#include <asam_cmp/can_basic_payload.h>
 
 BEGIN_NAMESPACE_ASAM_CMP
 
-class CanPayload : public Payload
+class CanPayload : public CanBasicPayload
 {
-public:
-#pragma pack(push, 1)
-    class Header
-    {
-        uint16_t flags{0};
-        uint16_t reserved{0};
-        uint32_t id{0};
-        uint32_t crc{0};
-        uint16_t errorPosition{0};
-        uint8_t dlc{0};
-        uint8_t dataLength{0};
-
-    private:
-        static constexpr uint16_t errorMask = 0xFF03;
-
-    public:
-        uint16_t getFlags() const;
-        void setFlags(const uint16_t flags);
-        uint32_t getId() const;
-        void setId(const uint32_t newId);
-        uint16_t getErrorPosition() const;
-        void setErrorPosition(const uint16_t position);
-        bool hasError() const;
-        uint8_t getDataLength() const;
-        void setDataLength(const uint8_t length);
-    };
-#pragma pack(pop)
-
 public:
     CanPayload(const uint8_t* data, const size_t size);
 
-    uint32_t getId() const;
-    uint8_t getDataLength() const;
-    const uint8_t* getData() const;
-
-    static bool isValidPayload(const uint8_t* data, const size_t size);
+    bool getRtr() const;
+    void setRtr(const bool rtr);
+    uint16_t getCrc() const;
+    void setCrc(const uint16_t crc);
 };
 
 END_NAMESPACE_ASAM_CMP

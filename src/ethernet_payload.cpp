@@ -36,10 +36,8 @@ void EthernetPayload::Header::setDataLength(uint16_t newDataLength)
 }
 
 EthernetPayload::EthernetPayload(const uint8_t* data, const size_t size)
+    : Payload(Type::ethernet, data, size)
 {
-    payloadData.resize(size);
-    memcpy(payloadData.data(), data, size);
-    type = Type::ethernet;
 }
 
 uint16_t EthernetPayload::getFlags() const
