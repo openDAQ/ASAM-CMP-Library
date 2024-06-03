@@ -13,6 +13,7 @@ using ASAM::CMP::DataContext;
 using ASAM::CMP::Payload;
 using ASAM::CMP::swapEndian;
 using ASAM::CMP::Packet;
+using PayloadType = ASAM::CMP::Payload::Type;
 using PacketPtr = std::shared_ptr<ASAM::CMP::Packet>;
 
 class EncoderFixture : public ::testing::Test
@@ -27,7 +28,7 @@ public:
 
         size_t canDataSize;
         const int32_t arbId = 33;
-        const uint8_t payloadTypeCan = 0x01;
+        const PayloadType payloadTypeCan = PayloadType::can;
         const uint16_t deviceId = 3;
         uint8_t cmpMessageTypeData = 0x01;
         const uint8_t streamId = 0x01;
@@ -36,7 +37,7 @@ public:
     std::vector<uint8_t> composeMessage(const MessageInit& init)
     {
         std::vector<uint8_t> canData(init.canDataSize);
-        std::iota(canData.begin(), canData.end(), 0);
+        std::iota(canData.begin(), canData.end(), uint8_t{});
         auto canMsg = createCanDataMessage(init.arbId, canData);
         auto dataMsg = createDataMessage(init.payloadTypeCan, canMsg);
 
@@ -52,7 +53,7 @@ public:
 
         Decoder decoder;
 
-        for (int i = 0; i < cnt; ++i)
+        for (size_t i = 0; i < cnt; ++i)
         {
             auto cmpMsg = composeMessage(MessageInit(packet_size[i]));
             auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size());
@@ -89,7 +90,7 @@ public:
         if (lhs.getMessageType() != rhs.getMessageType())
             return false;
 
-        if (lhs.getSize() != rhs.getSize())
+        if (lhs.getPayloadSize() != rhs.getPayloadSize())
             return false;
 
         if (lhs.getStreamId() != rhs.getStreamId())
@@ -111,7 +112,7 @@ TEST_F(EncoderFixture, Correctness)
     Decoder decoder;
     auto checker = decoder.decode(encodedData[0].data(), encodedData[0].size());
 
-    ASSERT_EQ(checker.size(), 2);
+    ASSERT_EQ(checker.size(), 2u);
     ASSERT_TRUE(isSamePacket(*(packets[0].get()), *(checker[0].get())));
 }
 
@@ -120,7 +121,7 @@ TEST_F(EncoderFixture, Aggregation)
     auto packets = composePackets(5, {8,8,8,8,8});
     Encoder encoder;
     auto encodedData = encoder.encode(begin(packets), end(packets), {64, 1500});
-    ASSERT_EQ(encodedData.size(), 1);
+    ASSERT_EQ(encodedData.size(), 1u);
 }
 
 TEST_F(EncoderFixture, WrongMessageType)
