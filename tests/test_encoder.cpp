@@ -96,7 +96,11 @@ TEST_F(EncoderFixture, CorrectnessRef)
 {
     std::vector<MessageInit> initStructures = { MessageInit(8, 3) };
     auto packets = composePacketsPtrs(initStructures);
+
     Encoder encoder;
+
+    encoder.setDeviceId(3);
+    encoder.setStreamId(1);
     auto encodedData = encoder.encode(begin(packets), end(packets), {64, 1500});
 
     Decoder decoder;
@@ -110,7 +114,10 @@ TEST_F(EncoderFixture, Correctness)
 {
     std::vector<MessageInit> initStructures = {MessageInit(8, 3)};
     auto packets = composePackets(initStructures);
+
     Encoder encoder;
+    encoder.setDeviceId(3);
+    encoder.setStreamId(1);
     auto encodedData = encoder.encode(begin(packets), end(packets), {64, 1500});
 
     Decoder decoder;
@@ -124,7 +131,10 @@ TEST_F(EncoderFixture, Aggregation)
 {
     std::vector<MessageInit> initStructures(5, MessageInit(8, 3));
     auto packetsPtrs = composePacketsPtrs(initStructures);
+
     Encoder encoder;
+    encoder.setDeviceId(3);
+    encoder.setStreamId(1);
     auto encodedData = encoder.encode(begin(packetsPtrs), end(packetsPtrs), {64, 1500});
     ASSERT_EQ(encodedData.size(), (size_t)1);
 
@@ -150,6 +160,8 @@ TEST_F(EncoderFixture, Segmmentation)
 
     auto packetsPtrs = composePacketsPtrs(initStructures);
     Encoder encoder;
+    encoder.setDeviceId(3);
+    encoder.setStreamId(1);
     auto encodedData = encoder.encode(begin(packetsPtrs), end(packetsPtrs), {64, 100});
 
     ASSERT_EQ(encodedData.size(), (size_t)4);
@@ -167,9 +179,11 @@ TEST_F(EncoderFixture, LargePacketInSeparateMessage)
 {
     std::vector<MessageInit> initStructures = {
         MessageInit(8, 3, 1), MessageInit(8, 3, 1), MessageInit(60, 3, 1), MessageInit(8, 3, 1), MessageInit(8, 3, 1)};
-
     auto packetsPtrs = composePacketsPtrs(initStructures);
+
     Encoder encoder;
+    encoder.setDeviceId(3);
+    encoder.setStreamId(1);
     auto encodedData = encoder.encode(begin(packetsPtrs), end(packetsPtrs), {64, 100});
 
     ASSERT_EQ(encodedData.size(), (size_t) 3);
@@ -183,6 +197,8 @@ TEST_F(EncoderFixture, LargePacketInSeparateMessage)
 TEST_F(EncoderFixture, EmptyRange)
 {
     Encoder encoder;
+    encoder.setDeviceId(3);
+    encoder.setStreamId(1);
 
     auto packetsPtrs = composePacketsPtrs({});
     EXPECT_THROW(encoder.encode(begin(packetsPtrs), end(packetsPtrs), {64, 1500}), std::invalid_argument);
@@ -191,23 +207,4 @@ TEST_F(EncoderFixture, EmptyRange)
     EXPECT_THROW(encoder.encode(begin(packets), end(packets), {64, 1500}), std::invalid_argument);
 }
 
-TEST_F(EncoderFixture, WrongDeviceId)
-{
-    Encoder encoder;
-
-    std::vector<MessageInit> initStructures = {
-        MessageInit(8, 3), MessageInit(8, 5)
-    };
-    auto packetsPtrs = composePacketsPtrs(initStructures);
-    EXPECT_THROW(encoder.encode(begin(packetsPtrs), end(packetsPtrs), {64, 1500}), std::runtime_error);
-
-}
-
-TEST_F(EncoderFixture, WrongStreamId)
-{
-    Encoder encoder;
-
-    std::vector<MessageInit> initStructures = {MessageInit(8, 3, 1), MessageInit(8, 3, 2)};
-    auto packetsPtrs = composePacketsPtrs(initStructures);
-    EXPECT_THROW(encoder.encode(begin(packetsPtrs), end(packetsPtrs), {64, 1500}), std::runtime_error);
-}
+//TODO: test if packet has non-data dataType (not implemented yet)

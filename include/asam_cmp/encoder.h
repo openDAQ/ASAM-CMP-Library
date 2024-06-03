@@ -39,14 +39,19 @@ public:
 
     std::vector<std::vector<uint8_t>> encode(const Packet& packet, const DataContext& dataContext);
 
+    void setDeviceId(uint16_t deviceId);
+    void setStreamId(uint8_t streamId);
+
+    uint16_t getDeviceId() const;
+    uint8_t getStreamId() const;
+    uint16_t getSequenceCounter() const;
+
 private:
-    void init(uint16_t deviceId, uint8_t streamId, const DataContext& bytesPerMessage);
+    void init(const DataContext& bytesPerMessage);
     void putPacket(const Packet& packet);
     std::vector<std::vector<uint8_t>> getEncodedData();
 
 private:
-    static constexpr uint32_t defaultBytesPerMessage{1500};
-
     class EncoderImpl;
     std::shared_ptr<EncoderImpl> impl;
 };
@@ -65,7 +70,7 @@ std::vector<std::vector<uint8_t>> Encoder::encode(
     if (begin == end)
         throw std::invalid_argument("Packets range should not be empty");
 
-    init(begin->getDeviceId(), begin->getStreamId(), dataContext);
+    init(dataContext);
 
         for (auto it = begin; it != end; ++it) putPacket(*it);
 
@@ -86,7 +91,7 @@ std::vector<std::vector<uint8_t>> Encoder::encode(
     if (begin == end)
         throw std::invalid_argument("Packets range should not be empty");
 
-    init((*begin)->getDeviceId(), (*begin)->getStreamId(), dataContext);
+    init(dataContext);
 
     for (auto it = begin; it != end; ++it)
         putPacket(*(*it));
