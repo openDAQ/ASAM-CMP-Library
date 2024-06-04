@@ -5,7 +5,9 @@ set(SRC_Headers ../include/${LIB_NAME}/common.h
                 ../include/${LIB_NAME}/encoder.h
                 ../include/${LIB_NAME}/packet.h
                 ../include/${LIB_NAME}/payload.h
+                ../include/${LIB_NAME}/can_payload_base.h
                 ../include/${LIB_NAME}/can_payload.h
+                ../include/${LIB_NAME}/can_fd_payload.h
                 ../include/${LIB_NAME}/ethernet_payload.h
 )
 
@@ -13,7 +15,9 @@ set(SRC_Sources decoder.cpp
                 encoder.cpp
                 packet.cpp
                 payload.cpp
+                can_payload_base.cpp
                 can_payload.cpp
+                can_fd_payload.cpp
                 ethernet_payload.cpp
 )
 
