@@ -3,11 +3,13 @@
 #include <numeric>
 
 #include <asam_cmp/can_payload.h>
+#include <asam_cmp/analog_payload.h>
 #include <asam_cmp/decoder.h>
 
 #include "create_message.h"
 
 using ASAM::CMP::CanPayload;
+using ASAM::CMP::AnalogPayload;
 using ASAM::CMP::Decoder;
 using ASAM::CMP::EthernetPayload;
 using ASAM::CMP::Packet;
@@ -99,6 +101,28 @@ TEST_F(DecoderFixture, CanMessage)
     ASSERT_EQ(canPayload.getId(), arbId);
     ASSERT_EQ(canPayload.getDataLength(), canDataSize);
     ASSERT_TRUE(std::equal(canData.begin(), canData.end(), canPayload.getData()));
+}
+
+TEST_F(DecoderFixture, AnalogMessage)
+{
+    constexpr size_t dataSize = 32;
+    std::vector<uint8_t> data(dataSize);
+    auto payloadDataAn = createAnalogDataMessage(data);
+    auto dataMsgAn = createDataMessage(Payload::Type::analog, payloadDataAn);
+    auto cmpMsgAn = createCmpMessage(deviceId, cmpMessageTypeData, streamId, dataMsgAn);
+
+    Decoder decoder;
+    auto packets = decoder.decode(cmpMsgAn.data(), cmpMsgAn.size());
+    ASSERT_EQ(packets.size(), 1u);
+
+    auto packet = packets[0];
+    auto& payload = packet->getPayload();
+    ASSERT_EQ(payload.getType(), Payload::Type::analog);
+
+    auto& analogPayload = static_cast<const AnalogPayload&>(payload);
+    ASSERT_EQ(analogPayload.getSampleDt(), AnalogPayload::SampleDt::aInt16);
+    ASSERT_EQ(analogPayload.getSamplesCount(), dataSize / sizeof(uint16_t));
+    ASSERT_TRUE(std::equal(data.begin(), data.end(), analogPayload.getData()));
 }
 
 TEST_F(DecoderFixture, Aggregation)
