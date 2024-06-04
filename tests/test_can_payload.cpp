@@ -6,9 +6,9 @@
 
 #include "create_message.h"
 
-using ASAM::CMP::CanPayloadBase;
 using ASAM::CMP::CanFdPayload;
 using ASAM::CMP::CanPayload;
+using ASAM::CMP::CanPayloadBase;
 using ASAM::CMP::Payload;
 
 class CanPayloadTest : public ::testing::Test
@@ -33,6 +33,18 @@ protected:
     std::unique_ptr<CanPayload> canPayload;
     std::unique_ptr<CanFdPayload> canFdPayload;
 };
+
+TEST_F(CanPayloadTest, TypeCan)
+{
+    CanPayloadBase* payload = canPayload.get();
+    ASSERT_EQ(payload->getType(), Payload::Type::can);
+}
+
+TEST_F(CanPayloadTest, TypeCanFd)
+{
+    CanPayloadBase* payload = canFdPayload.get();
+    ASSERT_EQ(payload->getType(), Payload::Type::canFd);
+}
 
 TEST_F(CanPayloadTest, Flags)
 {
@@ -225,12 +237,6 @@ TEST_F(CanPayloadTest, ErrorPosition)
     ASSERT_EQ(payload->getErrorPosition(), errorPosition);
 }
 
-TEST_F(CanPayloadTest, DataLength)
-{
-    CanPayloadBase* payload = canPayload.get();
-    ASSERT_EQ(payload->getDataLength(), canDataSize);
-}
-
 TEST_F(CanPayloadTest, Dlc)
 {
     // For data size 64, dlc is 0x0F
@@ -242,12 +248,24 @@ TEST_F(CanPayloadTest, Dlc)
     ASSERT_EQ(payload->getDlc(), dlc);
 }
 
+TEST_F(CanPayloadTest, DataLength)
+{
+    CanPayloadBase* payload = canPayload.get();
+    ASSERT_EQ(payload->getDataLength(), canDataSize);
+}
+
 TEST_F(CanPayloadTest, Data)
 {
     CanPayloadBase* payload = canPayload.get();
     ASSERT_TRUE(std::equal(data.begin(), data.end(), payload->getData()));
 }
 
+TEST_F(CanPayloadTest, IsValidPayload)
+{
+    data.resize(canDataSize);
+    auto message = createCanDataMessage(arbId, data);
+    ASSERT_TRUE(CanPayloadBase::isValidPayload(message.data(), message.size()));
+}
 TEST_F(CanPayloadTest, Copy)
 {
     auto payloadCopy(*canPayload);
