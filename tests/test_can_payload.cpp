@@ -251,16 +251,7 @@ TEST_F(CanPayloadTest, Data)
 
 TEST_F(CanPayloadTest, TestCopy)
 {
-    constexpr size_t canDataSize = 64;
-    constexpr uint32_t arbId = 78;
+    CanPayload payloadCopy(*canPayload);
 
-    std::vector<uint8_t> data(canDataSize);
-    std::iota(data.begin(), data.end(), (uint8_t)0);
-    auto message = createCanDataMessage(arbId, data);
-
-    CanPayload payload(message.data(), message.size());
-
-    CanPayload payloadCopy(payload);
-
-    ASSERT_TRUE(ASAM::CMP::isEqualPayloads(payload, payloadCopy));
+    ASSERT_TRUE(ASAM::CMP::isEqualPayloads(*canPayload, payloadCopy));
 }

@@ -28,9 +28,6 @@ bool isSamePacket(const Packet& lhs, const Packet& rhs)
     if (lhs.getMessageType() != rhs.getMessageType())
         return false;
 
-    if (lhs.getSize() != rhs.getSize())
-        return false;
-
     if (lhs.getStreamId() != rhs.getStreamId())
         return false;
 

@@ -42,7 +42,7 @@ public:
         std::vector<uint8_t> canData(init.canDataSize);
         std::iota(canData.begin(), canData.end(), uint8_t{});
         auto canMsg = createCanDataMessage(init.arbId, canData);
-        auto dataMsg = createDataMessage(init.payloadTypeCan, canMsg);
+        auto dataMsg = createDataMessage(static_cast<ASAM::CMP::Payload::Type>(init.payloadTypeCan), canMsg);
 
         return createCmpMessage(init.deviceId, init.cmpMessageTypeData, init.streamId, dataMsg);
     }

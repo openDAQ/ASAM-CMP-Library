@@ -29,4 +29,27 @@ constexpr typename std::underlying_type<T>::type to_underlying(T value) noexcept
     return static_cast<typename std::underlying_type<T>::type>(value);
 }
 
+#pragma pack(push, 1)
+
+struct CmpMessageHeader
+{
+    uint8_t version{1};
+    uint8_t reserved{0};
+    uint16_t deviceId{0};
+    uint8_t messageType{0};
+    uint8_t streamId{0};
+    uint16_t sequenceCounter{0};
+};
+
+struct DataMessageHeader
+{
+    uint64_t timestamp{0};
+    uint32_t interfaceId{0};
+    uint8_t flags{0};
+    uint8_t payloadType{0};
+    uint16_t payloadLength{0};
+};
+
+#pragma pack(pop)
+
 END_NAMESPACE_ASAM_CMP
