@@ -41,6 +41,7 @@ public:
 
     void setDeviceId(uint16_t deviceId);
     void setStreamId(uint8_t streamId);
+    void restart();
 
     uint16_t getDeviceId() const;
     uint8_t getStreamId() const;
@@ -51,9 +52,31 @@ private:
     void putPacket(const Packet& packet);
     std::vector<std::vector<uint8_t>> getEncodedData();
 
+    bool checkIfIsSegmented(const size_t payloadSize);
+    uint8_t buildegmentationFlag(bool isSegmented, int segmentInd, uint16_t bytesToAdd, size_t payloadSize, size_t currentPayloadPos) const;
+    void clearEncodingMetadata(bool clearSequenceCounter = false);
+
+    void setMessageType(ASAM::CMP::Packet::MessageType type);
+    void addPayload(uint32_t interfaceId, Payload::Type payloadType, const uint8_t* payloadData, const size_t payloadSize);
+    void addNewCMPFrame();
+    void addNewDataHeader(uint32_t interfaceId, Payload::Type payloadType, uint16_t bytesToAdd, uint8_t segmentationFlag);
+
 private:
-    class EncoderImpl;
-    std::shared_ptr<EncoderImpl> impl;
+    constexpr static uint8_t segmentationFlagUnsegmented{0x00};
+    constexpr static uint8_t segmentationFlagFirstSegment{0x01};
+    constexpr static uint8_t segmentationFlagIntermediarySegment{0x10};
+    constexpr static uint8_t segmentationFlagLastSegment{0x11};
+
+    size_t minBytesPerMessage;
+    size_t maxBytesPerMessage;
+    uint16_t deviceId;
+    uint8_t streamId;
+
+    size_t bytesLeft;
+    uint16_t sequenceCounter;
+
+    ASAM::CMP::Packet::MessageType messageType;
+    std::vector<std::vector<uint8_t>> cmpFrames;
 };
 
 template <typename ForwardIterator>
@@ -72,7 +95,8 @@ std::vector<std::vector<uint8_t>> Encoder::encode(
 
     init(dataContext);
 
-        for (auto it = begin; it != end; ++it) putPacket(*it);
+    for (auto it = begin; it != end; ++it)
+        putPacket(*it);
 
     return getEncodedData();
 }

@@ -207,4 +207,20 @@ TEST_F(EncoderFixture, EmptyRange)
     EXPECT_THROW(encoder.encode(begin(packets), end(packets), {64, 1500}), std::invalid_argument);
 }
 
+TEST_F(EncoderFixture, TestSequenceCounter)
+{
+    std::vector<MessageInit> initStructures = {
+        MessageInit(8, 3, 1), MessageInit(8, 3, 1), MessageInit(100, 3, 1), MessageInit(8, 3, 1), MessageInit(8, 3, 1)};
+
+    auto packetsPtrs = composePacketsPtrs(initStructures);
+    Encoder encoder;
+    encoder.setDeviceId(3);
+    encoder.setStreamId(1);
+    auto encodedData = encoder.encode(begin(packetsPtrs), end(packetsPtrs), {64, 100});
+
+    ASSERT_EQ(encoder.getSequenceCounter(), (uint16_t) 4);
+    encoder.restart();
+    ASSERT_EQ(encoder.getSequenceCounter(), (uint16_t) 0);
+}
+
 //TODO: test if packet has non-data dataType (not implemented yet)
