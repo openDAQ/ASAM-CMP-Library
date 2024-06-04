@@ -5,7 +5,7 @@
 
 BEGIN_NAMESPACE_ASAM_CMP
 
-class CanFdPayload : public CanBasicPayload
+class CanFdPayload : public CanPayloadBase
 {
 public:
     CanFdPayload(const uint8_t* data, const size_t size);

@@ -1,11 +1,11 @@
 #pragma once
 
 #include <asam_cmp/common.h>
-#include <asam_cmp/can_basic_payload.h>
+#include <asam_cmp/can_payload_base.h>
 
 BEGIN_NAMESPACE_ASAM_CMP
 
-class CanPayload : public CanBasicPayload
+class CanPayload : public CanPayloadBase
 {
 public:
     CanPayload(const uint8_t* data, const size_t size);

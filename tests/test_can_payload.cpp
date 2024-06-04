@@ -6,7 +6,7 @@
 
 #include "create_message.h"
 
-using ASAM::CMP::CanBasicPayload;
+using ASAM::CMP::CanPayloadBase;
 using ASAM::CMP::CanFdPayload;
 using ASAM::CMP::CanPayload;
 using ASAM::CMP::Payload;
@@ -36,12 +36,12 @@ protected:
 
 TEST_F(CanPayloadTest, Flags)
 {
-    constexpr CanBasicPayload::Flags passiveAckErr = CanBasicPayload::Flags::passiveAckErr;
-    constexpr CanBasicPayload::Flags crcDelErr = CanBasicPayload::Flags::crcDelErr;
-    constexpr CanBasicPayload::Flags esi = CanBasicPayload::Flags::esi;
+    constexpr CanPayloadBase::Flags passiveAckErr = CanPayloadBase::Flags::passiveAckErr;
+    constexpr CanPayloadBase::Flags crcDelErr = CanPayloadBase::Flags::crcDelErr;
+    constexpr CanPayloadBase::Flags esi = CanPayloadBase::Flags::esi;
     int16_t newFlags = to_underlying(passiveAckErr) | to_underlying(crcDelErr);
 
-    CanBasicPayload* payload = canPayload.get();
+    CanPayloadBase* payload = canPayload.get();
     payload->setFlags(newFlags);
 
     ASSERT_EQ(payload->getFlags(), newFlags);
@@ -62,7 +62,7 @@ TEST_F(CanPayloadTest, Flags)
 TEST_F(CanPayloadTest, Id)
 {
     constexpr uint32_t newId = 123;
-    CanBasicPayload* payload = canPayload.get();
+    CanPayloadBase* payload = canPayload.get();
     payload->setId(newId);
     ASSERT_EQ(payload->getId(), newId);
 }
@@ -70,14 +70,14 @@ TEST_F(CanPayloadTest, Id)
 TEST_F(CanPayloadTest, IdMax)
 {
     constexpr uint32_t newId = 0x1FFFFFFF;
-    CanBasicPayload* payload = canPayload.get();
+    CanPayloadBase* payload = canPayload.get();
     payload->setId(newId);
     ASSERT_EQ(payload->getId(), newId);
 }
 
 TEST_F(CanPayloadTest, Rsvd)
 {
-    CanBasicPayload* payload = canPayload.get();
+    CanPayloadBase* payload = canPayload.get();
     payload->setRsvd(true);
     ASSERT_TRUE(payload->getRsvd());
 }
@@ -96,7 +96,7 @@ TEST_F(CanPayloadTest, Rrs)
 
 TEST_F(CanPayloadTest, Ide)
 {
-    CanBasicPayload* payload = canPayload.get();
+    CanPayloadBase* payload = canPayload.get();
     payload->setIde(true);
     ASSERT_TRUE(payload->getIde());
 }
@@ -220,14 +220,14 @@ TEST_F(CanPayloadTest, ErrorPosition)
 {
     constexpr uint16_t errorPosition = 3456;
 
-    CanBasicPayload* payload = canPayload.get();
+    CanPayloadBase* payload = canPayload.get();
     payload->setErrorPosition(errorPosition);
     ASSERT_EQ(payload->getErrorPosition(), errorPosition);
 }
 
 TEST_F(CanPayloadTest, DataLength)
 {
-    CanBasicPayload* payload = canPayload.get();
+    CanPayloadBase* payload = canPayload.get();
     ASSERT_EQ(payload->getDataLength(), canDataSize);
 }
 
@@ -237,13 +237,13 @@ TEST_F(CanPayloadTest, Dlc)
     constexpr uint8_t dataSize = 64;
     constexpr uint8_t dlc = 0x0F;
 
-    CanBasicPayload* payload = canPayload.get();
+    CanPayloadBase* payload = canPayload.get();
     ASSERT_EQ(payload->getDataLength(), dataSize);
     ASSERT_EQ(payload->getDlc(), dlc);
 }
 
 TEST_F(CanPayloadTest, Data)
 {
-    CanBasicPayload* payload = canPayload.get();
+    CanPayloadBase* payload = canPayload.get();
     ASSERT_TRUE(std::equal(data.begin(), data.end(), payload->getData()));
 }
