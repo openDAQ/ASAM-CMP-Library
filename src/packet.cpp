@@ -1,4 +1,5 @@
 #include <asam_cmp/can_payload.h>
+#include <asam_cmp/capture_module_payload.h>
 #include <asam_cmp/ethernet_payload.h>
 #include <asam_cmp/packet.h>
 #include <stdexcept>
@@ -43,7 +44,7 @@ Payload::Type Packet::MessageHeader::getPayloadType() const
 
 void Packet::MessageHeader::setPayloadType(const Payload::Type type)
 {
-    payloadType = static_cast<uint8_t>(type);
+    payloadType = to_underlying(type);
 }
 
 uint16_t Packet::MessageHeader::getPayloadLength() const
@@ -56,7 +57,8 @@ void Packet::MessageHeader::setPayloadLength(const uint16_t length)
     payloadLength = swapEndian(length);
 }
 
-Packet::Packet(const uint8_t* data, const size_t size)
+Packet::Packet(const MessageType msgType, const uint8_t* data, const size_t size)
+    : messageType(msgType)
 {
 #ifdef _DEBUG
     if (data == nullptr || size < sizeof(MessageHeader))
@@ -101,7 +103,7 @@ void Packet::setStreamId(const uint8_t value)
 
 Packet::MessageType Packet::getMessageType() const
 {
-    return MessageType::Data;
+    return messageType;
 }
 
 size_t Packet::getPayloadSize() const
@@ -138,21 +140,49 @@ bool Packet::isFirstSegment(const uint8_t* data, const size_t)
 
 std::unique_ptr<Payload> Packet::create(const Payload::Type type, const uint8_t* data, const size_t size)
 {
+    switch (messageType)
+    {
+        case MessageType::data:
+            return createDataPayload(type, data, size);
+            break;
+        case MessageType::status:
+            return createStatusPayload(type, data, size);
+            break;
+    }
+
+    return std::make_unique<Payload>(Payload::Type::invalid, data, size);
+}
+
+std::unique_ptr<Payload> Packet::createDataPayload(const Payload::Type type, const uint8_t* data, const size_t size)
+{
     switch (type)
     {
         case Payload::Type::can:
             if (CanPayload::isValidPayload(data, size))
                 return std::make_unique<CanPayload>(data, size);
-            else
-                return std::make_unique<Payload>(Payload::Type::invalid, data, size);
+            break;
         case Payload::Type::ethernet:
             if (EthernetPayload::isValidPayload(data, size))
                 return std::make_unique<EthernetPayload>(data, size);
-            else
-                return std::make_unique<Payload>(Payload::Type::invalid, data, size);
+            break;
         default:
             return std::make_unique<Payload>(Payload::Type::invalid, data, size);
     }
+
+    return std::make_unique<Payload>(Payload::Type::invalid, data, size);
+}
+
+std::unique_ptr<Payload> Packet::createStatusPayload(const Payload::Type type, const uint8_t* data, const size_t size)
+{
+    switch (type)
+    {
+        case Payload::Type::cmStatMsg:
+            if (CaptureModulePayload::isValidPayload(data, size))
+                return std::make_unique<CaptureModulePayload>(data, size);
+            break;
+    }
+
+    return std::make_unique<Payload>(Payload::Type::invalid, data, size);
 }
 
 END_NAMESPACE_ASAM_CMP

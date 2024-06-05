@@ -30,7 +30,7 @@ public:
         const int32_t arbId = 33;
         const PayloadType payloadTypeCan = PayloadType::can;
         const uint16_t deviceId = 3;
-        uint8_t cmpMessageTypeData = 0x01;
+        Packet::MessageType cmpMessageTypeData = Packet::MessageType::data;
         const uint8_t streamId = 0x01;
     };
 

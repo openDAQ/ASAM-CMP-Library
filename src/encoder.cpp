@@ -176,7 +176,7 @@ void Encoder::putPacket(const Packet& packet)
         throw std::runtime_error("Provided device id doesn't match");
 
     //TODO: should be removed once other types are implemented
-    if (packet.getMessageType() != Packet::MessageType::Data)
+    if (packet.getMessageType() != Packet::MessageType::data)
         throw std::runtime_error("Non-data message types are not implemented");
 
     switch (packet.getPayload().getType())

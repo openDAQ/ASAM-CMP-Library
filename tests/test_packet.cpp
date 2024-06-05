@@ -30,12 +30,11 @@ protected:
     std::vector<uint8_t> dataMsg;
 };
 
-
 TEST_F(PacketFixture, Version)
 {
     constexpr uint8_t newVersion = 99;
 
-    Packet packet(dataMsg.data(), dataMsg.size());
+    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
     packet.setVersion(newVersion);
     auto version = packet.getVersion();
     ASSERT_EQ(version, newVersion);
@@ -45,7 +44,7 @@ TEST_F(PacketFixture, DeviceId)
 {
     constexpr uint8_t newId = 99;
 
-    Packet packet(dataMsg.data(), dataMsg.size());
+    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
     packet.setDeviceId(newId);
     auto id = packet.getDeviceId();
     ASSERT_EQ(id, newId);
@@ -55,7 +54,7 @@ TEST_F(PacketFixture, StreamId)
 {
     constexpr uint8_t newId = 99;
 
-    Packet packet(dataMsg.data(), dataMsg.size());
+    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
     packet.setStreamId(newId);
     auto id = packet.getStreamId();
     ASSERT_EQ(id, newId);
@@ -63,23 +62,42 @@ TEST_F(PacketFixture, StreamId)
 
 TEST_F(PacketFixture, MessageTypeData)
 {
-    Packet packet(dataMsg.data(), dataMsg.size());
+    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
     auto type = packet.getMessageType();
-    ASSERT_EQ(type, Packet::MessageType::Data);
+    ASSERT_EQ(type, Packet::MessageType::data);
 }
 
 TEST_F(PacketFixture, GetPayload)
 {
-    Packet packet(dataMsg.data(), dataMsg.size());
+    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), Payload::Type::can);
+}
+
+TEST_F(PacketFixture, CaptureModulePayload)
+{
+    static constexpr std::string_view deviceDescription = "Device Description";
+    static constexpr std::string_view serialNumber = "Serial Number";
+    static constexpr std::string_view hardwareVersion = "Hardware Version";
+    static constexpr std::string_view softwareVersion = "Software Version";
+    constexpr size_t dataSize = 32;
+
+    std::vector<uint8_t> data(dataSize);
+    std::iota(data.begin(), data.end(), 0);
+    auto payloadMsg = createCaptureModuleDataMessage(deviceDescription, serialNumber, hardwareVersion, softwareVersion, data);
+
+    auto cmDataMsg = createDataMessage(Payload::Type::cmStatMsg, payloadMsg);
+
+    Packet packet(Packet::MessageType::status, cmDataMsg.data(), cmDataMsg.size());
+    auto& payload = packet.getPayload();
+    ASSERT_EQ(payload.getType(), Payload::Type::cmStatMsg);
 }
 
 TEST_F(PacketFixture, CanPayloadErrorFlags)
 {
     auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(Packet::MessageHeader));
     canHeader->setFlags(1);
-    Packet packet(dataMsg.data(), dataMsg.size());
+    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), Payload::Type::invalid);
 }
@@ -88,7 +106,7 @@ TEST_F(PacketFixture, CanPayloadErrorPosition)
 {
     auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(Packet::MessageHeader));
     canHeader->setErrorPosition(1);
-    Packet packet(dataMsg.data(), dataMsg.size());
+    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), Payload::Type::invalid);
 }
@@ -97,8 +115,7 @@ TEST_F(PacketFixture, CanPayloadWrongDataLength)
 {
     auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(Packet::MessageHeader));
     canHeader->setDataLength(canHeader->getDataLength() + 1);
-    Packet packet(dataMsg.data(), dataMsg.size());
+    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), Payload::Type::invalid);
 }
-
