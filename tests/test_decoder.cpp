@@ -111,7 +111,7 @@ TEST_F(DecoderFixture, CaptureModuleMessage)
     constexpr size_t dataSize = 32;
 
     std::vector<uint8_t> data(dataSize);
-    std::iota(data.begin(), data.end(), 0);
+    std::iota(data.begin(), data.end(), uint8_t{0});
     auto payloadMsg = createCaptureModuleDataMessage(deviceDescription, serialNumber, hardwareVersion, softwareVersion, data);
     auto cmDataMsg = createDataMessage(Payload::Type::cmStatMsg, payloadMsg);
     auto cmDmpMsg = createCmpMessage(deviceId, Packet::MessageType::status, streamId, cmDataMsg);
