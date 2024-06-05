@@ -20,7 +20,12 @@ public:
 
 public:
     Payload(const Type type, const uint8_t* data, const size_t size);
-    Payload(const Payload& other);
+    Payload(const Payload& other) noexcept;
+    Payload(Payload&& other) noexcept;
+
+    Payload& operator=(const Payload& other) noexcept;
+    Payload& operator=(Payload&& other) noexcept;
+    friend bool operator==(const Payload& lhs, const Payload& rhs) noexcept;
 
     virtual ~Payload() = default;
 
@@ -34,6 +39,9 @@ protected:
 protected:
     std::vector<uint8_t> payloadData;
     Type type{Type::invalid};
+
+private:
+    friend void swap(Payload& lhs, Payload& rhs) noexcept;
 };
 
 END_NAMESPACE_ASAM_CMP

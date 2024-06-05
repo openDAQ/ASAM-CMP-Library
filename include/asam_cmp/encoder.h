@@ -53,7 +53,7 @@ private:
     std::vector<std::vector<uint8_t>> getEncodedData();
 
     bool checkIfIsSegmented(const size_t payloadSize);
-    uint8_t buildegmentationFlag(bool isSegmented, int segmentInd, uint16_t bytesToAdd, size_t payloadSize, size_t currentPayloadPos) const;
+    uint8_t buildSegmentationFlag(bool isSegmented, int segmentInd, uint16_t bytesToAdd, size_t payloadSize, size_t currentPayloadPos) const;
     void clearEncodingMetadata(bool clearSequenceCounter = false);
 
     void setMessageType(ASAM::CMP::Packet::MessageType type);
@@ -89,10 +89,6 @@ std::vector<std::vector<uint8_t>> Encoder::encode(
     static_assert(std::is_base_of<std::forward_iterator_tag, typename std::iterator_traits<ForwardIterator>::iterator_category>::value,
                   "ForwardIterator must be a forward iterator.");
 
-    // TODO: should be replaced by logger
-    if (begin == end)
-        throw std::invalid_argument("Packets range should not be empty");
-
     init(dataContext);
 
     for (auto it = begin; it != end; ++it)
@@ -110,10 +106,6 @@ std::vector<std::vector<uint8_t>> Encoder::encode(
 {
     static_assert(std::is_base_of<std::forward_iterator_tag, typename std::iterator_traits<ForwardPtrIterator>::iterator_category>::value,
                   "ForwardIterator must be a forward iterator.");
-
-    // TODO: should be replaced by logger
-    if (begin == end)
-        throw std::invalid_argument("Packets range should not be empty");
 
     init(dataContext);
 

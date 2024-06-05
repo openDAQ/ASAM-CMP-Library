@@ -5,7 +5,6 @@
 #include <asam_cmp/encoder.h>
 #include <asam_cmp/decoder.h>
 #include "create_message.h"
-#include "utilities.h"
 
 using ASAM::CMP::CanPayload;
 using ASAM::CMP::Decoder;
@@ -107,7 +106,7 @@ TEST_F(EncoderFixture, CorrectnessRef)
     auto checker = decoder.decode(encodedData[0].data(), encodedData[0].size());
 
     ASSERT_EQ(checker.size(), (size_t)2);
-    ASSERT_TRUE(ASAM::CMP::isSamePacket(*(packets[0].get()), *(checker[0].get())));
+    ASSERT_TRUE(*packets[0] == *checker[0]);
 }
 
 TEST_F(EncoderFixture, Correctness)
@@ -124,7 +123,7 @@ TEST_F(EncoderFixture, Correctness)
     auto checker = decoder.decode(encodedData[0].data(), encodedData[0].size());
 
     ASSERT_EQ(checker.size(), 2u);
-    ASSERT_TRUE(ASAM::CMP::isSamePacket(packets[0], *(checker[0].get())));
+    ASSERT_TRUE(packets[0] == *checker[0]);
 }
 
 TEST_F(EncoderFixture, Aggregation)
@@ -144,7 +143,7 @@ TEST_F(EncoderFixture, Aggregation)
     ASSERT_EQ(packetsPtrs.size(), decodedData.size());
     for (size_t i = 0; i < packetsPtrs.size(); ++i)
     {
-        ASSERT_TRUE(ASAM::CMP::isSamePacket(*(packetsPtrs[i].get()), *(decodedData[i].get())));
+        ASSERT_TRUE(*packetsPtrs[i] == *decodedData[i]);
     }
 }
 
@@ -192,19 +191,6 @@ TEST_F(EncoderFixture, LargePacketInSeparateMessage)
     // Big packet fits a single message
     ASSERT_EQ(encodedData[1].size(), (size_t) 100);
     ASSERT_EQ(encodedData[2].size(), (size_t) 88);
-}
-
-TEST_F(EncoderFixture, EmptyRange)
-{
-    Encoder encoder;
-    encoder.setDeviceId(3);
-    encoder.setStreamId(1);
-
-    auto packetsPtrs = composePacketsPtrs({});
-    EXPECT_THROW(encoder.encode(begin(packetsPtrs), end(packetsPtrs), {64, 1500}), std::invalid_argument);
-
-    auto packets = composePackets({});
-    EXPECT_THROW(encoder.encode(begin(packets), end(packets), {64, 1500}), std::invalid_argument);
 }
 
 TEST_F(EncoderFixture, TestSequenceCounter)

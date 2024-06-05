@@ -65,3 +65,43 @@ TEST_F(EthernetPayloadTest, Flags)
     ASSERT_TRUE(payload.getFlag(txPortDown));
     ASSERT_TRUE(payload.getFlag(frameTooLongErr));
 }
+
+TEST_F(EthernetPayloadTest, Copy)
+{
+    EthernetPayload payload(message.data(), message.size());
+    auto payloadCopy(payload);
+
+    ASSERT_TRUE(payload == payloadCopy);
+}
+
+TEST_F(EthernetPayloadTest, CopyAssignment)
+{
+    EthernetPayload payload(message.data(), message.size());
+    EthernetPayload payloadCopy(nullptr, 0);
+
+    payloadCopy = payload;
+    ASSERT_TRUE(payload == payloadCopy);
+}
+
+TEST_F(EthernetPayloadTest, Move)
+{
+    EthernetPayload payload(message.data(), message.size());
+    EthernetPayload payloadChecker(payload);
+
+    EthernetPayload payloadCopy(std::move(payload));
+
+    ASSERT_TRUE(payloadCopy == payloadChecker);
+    ASSERT_FALSE(payloadCopy == payload);
+}
+
+TEST_F(EthernetPayloadTest, MoveAssignment)
+{
+    EthernetPayload payload(message.data(), message.size());
+    EthernetPayload payloadChecker(payload);
+
+    EthernetPayload payloadCopy(nullptr, 0);
+    payloadCopy = std::move(payload);
+
+    ASSERT_TRUE(payloadCopy == payloadChecker);
+    ASSERT_FALSE(payloadCopy == payload);
+}

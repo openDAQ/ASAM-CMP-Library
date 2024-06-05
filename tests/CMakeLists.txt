@@ -9,9 +9,7 @@ set(SRC_Cpp testapp.cpp
             test_encoder.cpp
             test_can_payload.cpp
             test_ethernet_payload.cpp
-            utilities.cpp
             create_message.h
-            utilities.h
 )
 
 add_executable(${TEST_APP} ${SRC_Cpp}

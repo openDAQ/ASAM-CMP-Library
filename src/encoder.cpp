@@ -99,7 +99,7 @@ void Encoder::addPayload(uint32_t interfaceId, Payload::Type payloadType, const 
         uint16_t bytesToAdd =
             static_cast<uint16_t>(std::min(static_cast<size_t>(bytesLeft - sizeof(DataMessageHeader)), payloadSize - currentPayloadPos));
 
-        uint8_t isSegmentedFlag = buildegmentationFlag(isSegmented, segmentInd, bytesToAdd, payloadSize, currentPayloadPos);
+        uint8_t isSegmentedFlag = buildSegmentationFlag(isSegmented, segmentInd, bytesToAdd, payloadSize, currentPayloadPos);
         uint8_t flag = isSegmentedFlag;
         addNewDataHeader(interfaceId, payloadType, bytesToAdd, flag);
 
@@ -156,7 +156,7 @@ bool Encoder::checkIfIsSegmented(const size_t payloadSize)
     return isSegmented;
 }
 
-uint8_t Encoder::buildegmentationFlag(bool isSegmented, int segmentInd, uint16_t bytesToAdd, size_t payloadSize, size_t currentPayloadPos) const
+uint8_t Encoder::buildSegmentationFlag(bool isSegmented, int segmentInd, uint16_t bytesToAdd, size_t payloadSize, size_t currentPayloadPos) const
 {
     uint8_t segmentationFlag = segmentationFlagUnsegmented;
     if (isSegmented)

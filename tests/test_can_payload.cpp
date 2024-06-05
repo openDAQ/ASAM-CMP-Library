@@ -5,7 +5,6 @@
 #include <asam_cmp/can_payload.h>
 
 #include "create_message.h"
-#include "utilities.h"
 
 using ASAM::CMP::CanPayloadBase;
 using ASAM::CMP::CanFdPayload;
@@ -249,9 +248,38 @@ TEST_F(CanPayloadTest, Data)
     ASSERT_TRUE(std::equal(data.begin(), data.end(), payload->getData()));
 }
 
-TEST_F(CanPayloadTest, TestCopy)
+TEST_F(CanPayloadTest, Copy)
 {
-    CanPayload payloadCopy(*canPayload);
+    auto payloadCopy(*canPayload);
 
-    ASSERT_TRUE(ASAM::CMP::isEqualPayloads(*canPayload, payloadCopy));
+    ASSERT_TRUE(*canPayload == payloadCopy);
+}
+
+TEST_F(CanPayloadTest, CopyAssignment)
+{
+    Payload checker(*canPayload);
+    Payload payloadCopy(ASAM::CMP::Payload::Type::invalid, nullptr, 0);
+    
+    payloadCopy = checker;
+    ASSERT_TRUE(checker == payloadCopy);
+}
+
+TEST_F(CanPayloadTest, Move)
+{
+    CanPayload checker(*canPayload);
+    CanPayload payloadCopy(std::move(checker));
+
+    ASSERT_TRUE(*canPayload == payloadCopy);
+    ASSERT_FALSE(checker == payloadCopy);
+}
+
+TEST_F(CanPayloadTest, MoveAssignment)
+{
+    CanPayload checker(*canPayload);
+    CanPayload payloadCopy(nullptr, 0);
+
+    payloadCopy = std::move(checker);
+
+    ASSERT_TRUE(*canPayload == payloadCopy);
+    ASSERT_FALSE(checker == payloadCopy);
 }
