@@ -69,7 +69,7 @@ Packet::Packet(const uint8_t* data, const size_t size)
     payload = create(static_cast<Payload::Type>(header->getPayloadType()), data + sizeof(MessageHeader), header->getPayloadLength());
 }
 
-Packet::Packet(const Packet& other) noexcept
+Packet::Packet(const Packet& other)
     : version(other.version)
     , deviceId(other.deviceId)
     , streamId(other.streamId)
@@ -78,12 +78,11 @@ Packet::Packet(const Packet& other) noexcept
 }
 
 Packet::Packet(Packet&& other) noexcept
-    : Packet()
 {
     swap(*this, other);
 }
 
-Packet& Packet::operator=(const Packet& other) noexcept
+Packet& Packet::operator=(const Packet& other)
 {
     if (!(*this == other))
     {
@@ -95,11 +94,7 @@ Packet& Packet::operator=(const Packet& other) noexcept
 
 Packet& Packet::operator=(Packet&& other) noexcept
 {
-    if (!(*this == other))
-    {
-        Packet tmp(std::move(other));
-        swap(*this, tmp);
-    }
+    swap(*this, other);
     return *this;
 }
 

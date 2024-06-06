@@ -20,10 +20,10 @@ public:
 
 public:
     Payload(const Type type, const uint8_t* data, const size_t size);
-    Payload(const Payload& other) noexcept;
+    Payload(const Payload& other);
     Payload(Payload&& other) noexcept;
 
-    Payload& operator=(const Payload& other) noexcept;
+    Payload& operator=(const Payload& other);
     Payload& operator=(Payload&& other) noexcept;
     friend bool operator==(const Payload& lhs, const Payload& rhs) noexcept;
 
@@ -32,9 +32,6 @@ public:
     Type getType() const;
     size_t getSize() const;
     const uint8_t* getRawPayload() const;
-
-protected:
-    Payload() = default;
 
 protected:
     std::vector<uint8_t> payloadData;

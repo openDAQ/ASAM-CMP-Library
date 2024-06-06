@@ -10,7 +10,7 @@ Payload::Payload(const Type type, const uint8_t* data, const size_t size)
         memcpy(payloadData.data(), data, size);
 }
 
-Payload::Payload(const Payload& other) noexcept
+Payload::Payload(const Payload& other)
     : type(other.type)
 {
     payloadData.resize(other.payloadData.size());
@@ -18,7 +18,6 @@ Payload::Payload(const Payload& other) noexcept
 }
 
 Payload::Payload(Payload&& other) noexcept
-    : Payload()
 {
     swap(*this, other);
 }
@@ -44,7 +43,7 @@ void swap(Payload& lhs, Payload& rhs) noexcept
     std::swap(lhs.payloadData, rhs.payloadData);
 }
 
-Payload& Payload::operator=(const Payload& other) noexcept
+Payload& Payload::operator=(const Payload& other)
 {
     if (!(*this == other))
     {
