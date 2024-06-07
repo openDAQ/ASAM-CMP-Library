@@ -266,6 +266,7 @@ TEST_F(CanPayloadTest, IsValidPayload)
     auto message = createCanDataMessage(arbId, data);
     ASSERT_TRUE(CanPayloadBase::isValidPayload(message.data(), message.size()));
 }
+
 TEST_F(CanPayloadTest, Copy)
 {
     auto payloadCopy(*canPayload);
