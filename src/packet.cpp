@@ -1,6 +1,5 @@
 #include <asam_cmp/can_payload.h>
 #include <asam_cmp/ethernet_payload.h>
-#include <asam_cmp/analog_payload.h>
 #include <asam_cmp/packet.h>
 #include <stdexcept>
 
@@ -207,11 +206,6 @@ std::unique_ptr<Payload> Packet::create(const Payload::Type type, const uint8_t*
         case Payload::Type::ethernet:
             if (EthernetPayload::isValidPayload(data, size))
                 return std::make_unique<EthernetPayload>(data, size);
-            else
-                return std::make_unique<Payload>(Payload::Type::invalid, data, size);
-        case Payload::Type::analog:
-            if (AnalogPayload::isValidPayload(data, size))
-                return std::make_unique<AnalogPayload>(data, size);
             else
                 return std::make_unique<Payload>(Payload::Type::invalid, data, size);
         default:
