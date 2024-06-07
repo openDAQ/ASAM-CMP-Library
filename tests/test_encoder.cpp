@@ -30,7 +30,7 @@ public:
 
         size_t canDataSize;
         int32_t arbId = 33;
-        uint8_t payloadTypeCan = 0x01;
+        uint8_t payloadTypeCan = PayloadType::can;
         uint16_t deviceId;
         Packet::MessageType cmpMessageTypeData = Packet::MessageType::data;
         uint8_t streamId;
