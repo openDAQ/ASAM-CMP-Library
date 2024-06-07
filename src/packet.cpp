@@ -221,22 +221,16 @@ std::unique_ptr<Payload> Packet::createDataPayload(const Payload::Type type, con
         case Payload::Type::can:
             if (CanPayload::isValidPayload(data, size))
                 return std::make_unique<CanPayload>(data, size);
-            else
-                return std::make_unique<Payload>(Payload::Type::invalid, data, size);
+            break;
         case Payload::Type::ethernet:
             if (EthernetPayload::isValidPayload(data, size))
                 return std::make_unique<EthernetPayload>(data, size);
-            else
-                return std::make_unique<Payload>(Payload::Type::invalid, data, size);
+            break;
         case Payload::Type::analog:
             if (AnalogPayload::isValidPayload(data, size))
                 return std::make_unique<AnalogPayload>(data, size);
-            else
-                return std::make_unique<Payload>(Payload::Type::invalid, data, size);
-        default:
-            return std::make_unique<Payload>(Payload::Type::invalid, data, size);
+            break;
     }
-
     return std::make_unique<Payload>(Payload::Type::invalid, data, size);
 }
 

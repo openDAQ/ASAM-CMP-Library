@@ -110,7 +110,7 @@ TEST_F(DecoderFixture, AnalogMessage)
     std::vector<uint8_t> data(dataSize);
     auto payloadDataAn = createAnalogDataMessage(data);
     auto dataMsgAn = createDataMessage(Payload::Type::analog, payloadDataAn);
-    auto cmpMsgAn = createCmpMessage(deviceId, cmpMessageTypeData, streamId, dataMsgAn);
+    auto cmpMsgAn = createCmpMessage(deviceId, Packet::MessageType::data, streamId, dataMsgAn);
 
     Decoder decoder;
     auto packets = decoder.decode(cmpMsgAn.data(), cmpMsgAn.size());

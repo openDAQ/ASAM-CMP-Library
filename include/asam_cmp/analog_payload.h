@@ -18,7 +18,7 @@ public:
     {
         // SI Base units
         meter = 0x02,
-        kilogramm = 0x03,
+        kilogram = 0x03,
         second = 0x01,
         ampere = 0x04,
         kelvin = 0x05,
@@ -78,7 +78,7 @@ public:
         kilogramPerSecond = 0x35,
         wattPerSteradianCubicMeter = 0x36,
         grayPerSecond = 0x37,
-        MeterPerCubicMeter = 0x38,
+        meterPerCubicMeter = 0x38,
         wattPerCubicMeter = 0x39,
         joulePerSquareMeterSecond = 0x3A,
         kilogramSquareMeter = 0x3B,
@@ -94,7 +94,7 @@ public:
 
         // Electromagnetic SI derived units
         coulombPerMeter = 0x43,
-        colulombPerSquareMeter = 0x44,
+        coulombPerSquareMeter = 0x44,
         coulombPerCubicMeter = 0x45,
         amperePerSquareMeter = 0x46,
         siemensPerMeter = 0x47,
