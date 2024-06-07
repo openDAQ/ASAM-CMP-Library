@@ -72,7 +72,8 @@ Packet::Packet(const MessageType msgType, const uint8_t* data, const size_t size
 }
 
 Packet::Packet(const Packet& other)
-    : version(other.version)
+    : messageType(other.messageType)
+    , version(other.version)
     , deviceId(other.deviceId)
     , streamId(other.streamId)
     , payload(new Payload(*(other.payload.get())))
@@ -123,6 +124,7 @@ bool operator==(const Packet& lhs, const Packet& rhs) noexcept
 void swap(Packet& lhs, Packet& rhs)
 {
     using std::swap;
+    swap(lhs.messageType, rhs.messageType);
     swap(lhs.version, rhs.version);
     swap(lhs.streamId, rhs.streamId);
     swap(lhs.deviceId, rhs.deviceId);
