@@ -102,3 +102,42 @@ TEST_F(PacketFixture, CanPayloadWrongDataLength)
     ASSERT_EQ(payload.getType(), Payload::Type::invalid);
 }
 
+TEST_F(PacketFixture, Copy)
+{
+    Packet packet(dataMsg.data(), dataMsg.size());
+    Packet packetCopy(packet);
+
+    ASSERT_TRUE(packet == packetCopy);
+}
+
+TEST_F(PacketFixture, CopyAssignment)
+{
+    Packet packet(dataMsg.data(), dataMsg.size());
+    Packet packetCopy(dataMsg.data(), dataMsg.size() / 2);
+    packetCopy = packet;
+
+    ASSERT_TRUE(packet == packetCopy);
+}
+
+TEST_F(PacketFixture, Move)
+{
+    Packet packet(dataMsg.data(), dataMsg.size());
+    Packet packetCopy(packet);
+
+    Packet checker(std::move(packet));
+    ASSERT_TRUE(checker == packetCopy);
+    ASSERT_FALSE(checker == packet);
+}
+
+TEST_F(PacketFixture, MoveAssignment)
+{
+    Packet packet(dataMsg.data(), dataMsg.size());
+    Packet packetCopy(packet);
+
+    std::vector<uint8_t> checkerData(16, 0);
+    Packet checker(checkerData.data(), checkerData.size());
+
+    checker = std::move(packet);
+    ASSERT_TRUE(checker == packetCopy);
+    ASSERT_FALSE(checker == packet);
+}

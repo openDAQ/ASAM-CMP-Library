@@ -69,6 +69,64 @@ Packet::Packet(const uint8_t* data, const size_t size)
     payload = create(static_cast<Payload::Type>(header->getPayloadType()), data + sizeof(MessageHeader), header->getPayloadLength());
 }
 
+Packet::Packet(const Packet& other)
+    : version(other.version)
+    , deviceId(other.deviceId)
+    , streamId(other.streamId)
+    , payload(new Payload(*(other.payload.get())))
+{
+}
+
+Packet::Packet(Packet&& other) noexcept
+{
+    swap(*this, other);
+}
+
+Packet& Packet::operator=(const Packet& other)
+{
+    if (!(*this == other))
+    {
+        Packet tmp(other);
+        swap(*this, tmp);
+    }
+    return *this;
+}
+
+Packet& Packet::operator=(Packet&& other) noexcept
+{
+    swap(*this, other);
+    return *this;
+}
+
+bool operator==(const Packet& lhs, const Packet& rhs) noexcept
+{
+    if (lhs.getDeviceId() != rhs.getDeviceId())
+        return false;
+
+    if (lhs.getMessageType() != rhs.getMessageType())
+        return false;
+
+    if (lhs.getStreamId() != rhs.getStreamId())
+        return false;
+
+    if (lhs.getVersion() != rhs.getVersion())
+        return false;
+
+    if (lhs.getPayloadSize() == rhs.getPayloadSize() && lhs.getPayloadSize() > 0)
+        return lhs.getPayload() == rhs.getPayload();
+    else
+        return lhs.getPayloadSize() == rhs.getPayloadSize();
+}
+
+void swap(Packet& lhs, Packet& rhs)
+{
+    using std::swap;
+    swap(lhs.version, rhs.version);
+    swap(lhs.streamId, rhs.streamId);
+    swap(lhs.deviceId, rhs.deviceId);
+    swap(lhs.payload, rhs.payload);
+}
+
 uint8_t Packet::getVersion() const
 {
     return version;

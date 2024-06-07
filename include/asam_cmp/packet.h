@@ -73,6 +73,12 @@ public:
 
 public:
     Packet(const uint8_t* data, const size_t size);
+    Packet(const Packet& other);
+    Packet(Packet&& other) noexcept;
+
+    Packet& operator=(const Packet& other);
+    Packet& operator=(Packet&& other) noexcept;
+    friend bool operator==(const Packet& lhs, const Packet& rhs) noexcept;
 
     uint8_t getVersion() const;
     void setVersion(const uint8_t value);
@@ -93,6 +99,8 @@ public:
 
 private:
     std::unique_ptr<Payload> create(const Payload::Type type, const uint8_t* data, const size_t size);
+
+    friend void swap(Packet& lhs, Packet& rhs);
 
 private:
     constexpr static uint8_t errorInPayload = 0x40;

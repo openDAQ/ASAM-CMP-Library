@@ -247,3 +247,39 @@ TEST_F(CanPayloadTest, Data)
     CanPayloadBase* payload = canPayload.get();
     ASSERT_TRUE(std::equal(data.begin(), data.end(), payload->getData()));
 }
+
+TEST_F(CanPayloadTest, Copy)
+{
+    auto payloadCopy(*canPayload);
+
+    ASSERT_TRUE(*canPayload == payloadCopy);
+}
+
+TEST_F(CanPayloadTest, CopyAssignment)
+{
+    Payload checker(*canPayload);
+    Payload payloadCopy(ASAM::CMP::Payload::Type::invalid, nullptr, 0);
+    
+    payloadCopy = checker;
+    ASSERT_TRUE(checker == payloadCopy);
+}
+
+TEST_F(CanPayloadTest, Move)
+{
+    CanPayload checker(*canPayload);
+    CanPayload payloadCopy(std::move(checker));
+
+    ASSERT_TRUE(*canPayload == payloadCopy);
+    ASSERT_FALSE(checker == payloadCopy);
+}
+
+TEST_F(CanPayloadTest, MoveAssignment)
+{
+    CanPayload checker(*canPayload);
+    CanPayload payloadCopy(nullptr, 0);
+
+    payloadCopy = std::move(checker);
+
+    ASSERT_TRUE(*canPayload == payloadCopy);
+    ASSERT_FALSE(checker == payloadCopy);
+}

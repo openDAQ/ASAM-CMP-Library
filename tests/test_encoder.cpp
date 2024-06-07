@@ -21,17 +21,19 @@ class EncoderFixture : public ::testing::Test
 public:
     struct MessageInit
     {
-        MessageInit(size_t canDataSize = 8)
+        MessageInit(size_t canDataSize = 8, uint16_t deviceId = 3, uint8_t streamId = 1)
             : canDataSize(canDataSize)
+            , deviceId(deviceId)
+            , streamId(streamId)
         {
         }
 
         size_t canDataSize;
-        const int32_t arbId = 33;
-        const PayloadType payloadTypeCan = PayloadType::can;
-        const uint16_t deviceId = 3;
+        int32_t arbId = 33;
+        uint8_t payloadTypeCan = 0x01;
+        uint16_t deviceId;
         uint8_t cmpMessageTypeData = 0x01;
-        const uint8_t streamId = 0x01;
+        uint8_t streamId;
     };
 
     std::vector<uint8_t> composeMessage(const MessageInit& init)
@@ -39,92 +41,172 @@ public:
         std::vector<uint8_t> canData(init.canDataSize);
         std::iota(canData.begin(), canData.end(), uint8_t{});
         auto canMsg = createCanDataMessage(init.arbId, canData);
-        auto dataMsg = createDataMessage(init.payloadTypeCan, canMsg);
+        auto dataMsg = createDataMessage(static_cast<ASAM::CMP::Payload::Type>(init.payloadTypeCan), canMsg);
 
         return createCmpMessage(init.deviceId, init.cmpMessageTypeData, init.streamId, dataMsg);
     }
 
-    std::vector<PacketPtr> composePackets(size_t cnt, const std::vector<size_t>& packet_size)
+    std::vector<PacketPtr> composePacketsPtrs(const std::vector<MessageInit>& initStructures)
     {
-        EXPECT_EQ(packet_size.size(), cnt);
-
         std::vector<PacketPtr> result;
-        result.reserve(cnt);
+        result.reserve(initStructures.size());
 
         Decoder decoder;
 
-        for (size_t i = 0; i < cnt; ++i)
+        for (size_t i = 0; i < initStructures.size(); ++i)
         {
-            auto cmpMsg = composeMessage(MessageInit(packet_size[i]));
+            auto cmpMsg = composeMessage(initStructures[i]);
             auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size());
             std::copy(begin(packets), end(packets), std::back_inserter(result));
         }
 
-        EXPECT_EQ(result.size(), cnt);
+        EXPECT_EQ(result.size(), initStructures.size());
         return result;
     }
 
-    bool isSamePayload(const Payload& lhs, const Payload& rhs)
+    std::vector<Packet> composePackets(const std::vector<MessageInit>& initStructures)
     {
-        if (lhs.getType() != rhs.getType())
-            return false;
+        std::vector<PacketPtr> resultPtrs;
+        resultPtrs.reserve(initStructures.size());
 
-        if (lhs.getSize() != rhs.getSize())
-            return false;
+        Decoder decoder;
 
-        const uint8_t* lhsRaw = lhs.getRawPayload();
-        const uint8_t* rhsRaw = rhs.getRawPayload();
+        for (size_t i = 0; i < initStructures.size(); ++i)
+        {
+            auto cmpMsg = composeMessage(initStructures[i]);
+            auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size());
+            std::copy(begin(packets), end(packets), std::back_inserter(resultPtrs));
+        }
 
-        for (size_t i = 0; i < lhs.getSize(); ++i)
-            if (lhsRaw[i] != rhsRaw[i])
-                return false;
+        EXPECT_EQ(resultPtrs.size(), initStructures.size());
 
-        return true;
-    }
+        std::vector<Packet> result;
+        result.reserve(initStructures.size());
+        for (const auto& e : resultPtrs)
+        {
+            result.push_back(*(e.get()));
+        }
 
-    bool isSamePacket(const Packet& lhs, const Packet& rhs)
-    {
-        if (lhs.getDeviceId() != rhs.getDeviceId())
-            return false;
-
-        if (lhs.getMessageType() != rhs.getMessageType())
-            return false;
-
-        if (lhs.getPayloadSize() != rhs.getPayloadSize())
-            return false;
-
-        if (lhs.getStreamId() != rhs.getStreamId())
-            return false;
-
-        if (lhs.getVersion() != rhs.getVersion())
-            return false;
-
-        return isSamePayload(lhs.getPayload(), rhs.getPayload());
+        return result;
     }
 };
 
+TEST_F(EncoderFixture, CorrectnessRef)
+{
+    std::vector<MessageInit> initStructures = { MessageInit(8, 3) };
+    auto packets = composePacketsPtrs(initStructures);
+
+    Encoder encoder;
+
+    encoder.setDeviceId(3);
+    encoder.setStreamId(1);
+    auto encodedData = encoder.encode(begin(packets), end(packets), {64, 1500});
+
+    Decoder decoder;
+    auto checker = decoder.decode(encodedData[0].data(), encodedData[0].size());
+
+    ASSERT_EQ(checker.size(), (size_t)2);
+    ASSERT_TRUE(*packets[0] == *checker[0]);
+}
+
 TEST_F(EncoderFixture, Correctness)
 {
-    auto packets = composePackets(1, {8});
+    std::vector<MessageInit> initStructures = {MessageInit(8, 3)};
+    auto packets = composePackets(initStructures);
+
     Encoder encoder;
+    encoder.setDeviceId(3);
+    encoder.setStreamId(1);
     auto encodedData = encoder.encode(begin(packets), end(packets), {64, 1500});
 
     Decoder decoder;
     auto checker = decoder.decode(encodedData[0].data(), encodedData[0].size());
 
     ASSERT_EQ(checker.size(), 2u);
-    ASSERT_TRUE(isSamePacket(*(packets[0].get()), *(checker[0].get())));
+    ASSERT_TRUE(packets[0] == *checker[0]);
 }
 
 TEST_F(EncoderFixture, Aggregation)
 {
-    auto packets = composePackets(5, {8,8,8,8,8});
+    std::vector<MessageInit> initStructures(5, MessageInit(8, 3));
+    auto packetsPtrs = composePacketsPtrs(initStructures);
+
     Encoder encoder;
-    auto encodedData = encoder.encode(begin(packets), end(packets), {64, 1500});
-    ASSERT_EQ(encodedData.size(), 1u);
+    encoder.setDeviceId(3);
+    encoder.setStreamId(1);
+    auto encodedData = encoder.encode(begin(packetsPtrs), end(packetsPtrs), {64, 1500});
+    ASSERT_EQ(encodedData.size(), (size_t)1);
+
+    Decoder decoder;
+    auto decodedData = decoder.decode(encodedData[0].data(), encodedData[0].size());
+
+    ASSERT_EQ(packetsPtrs.size(), decodedData.size());
+    for (size_t i = 0; i < packetsPtrs.size(); ++i)
+    {
+        ASSERT_TRUE(*packetsPtrs[i] == *decodedData[i]);
+    }
 }
 
-TEST_F(EncoderFixture, WrongMessageType)
+TEST_F(EncoderFixture, Segmmentation)
 {
+    std::vector<MessageInit> initStructures = {
+        MessageInit(8,  3, 1),
+        MessageInit(8,  3, 1),
+        MessageInit(100, 3, 1),
+        MessageInit(8,  3, 1),
+        MessageInit(8,  3, 1)
+    };
 
+    auto packetsPtrs = composePacketsPtrs(initStructures);
+    Encoder encoder;
+    encoder.setDeviceId(3);
+    encoder.setStreamId(1);
+    auto encodedData = encoder.encode(begin(packetsPtrs), end(packetsPtrs), {64, 100});
+
+    ASSERT_EQ(encodedData.size(), (size_t)4);
+    //Packet had spare space but segmentation should be done from new message
+    ASSERT_EQ(encodedData[0].size(), (size_t)88);
+    //Full packet length
+    ASSERT_EQ(encodedData[1].size(), (size_t)100);
+    // There was enough space for one small packet but it filled up to min size with nulls because segmentation should be isolated
+    ASSERT_EQ(encodedData[2].size(), (size_t)64);
+    // Two small packets
+    ASSERT_EQ(encodedData[3].size(), (size_t)88);
 }
+
+TEST_F(EncoderFixture, LargePacketInSeparateMessage)
+{
+    std::vector<MessageInit> initStructures = {
+        MessageInit(8, 3, 1), MessageInit(8, 3, 1), MessageInit(60, 3, 1), MessageInit(8, 3, 1), MessageInit(8, 3, 1)};
+    auto packetsPtrs = composePacketsPtrs(initStructures);
+
+    Encoder encoder;
+    encoder.setDeviceId(3);
+    encoder.setStreamId(1);
+    auto encodedData = encoder.encode(begin(packetsPtrs), end(packetsPtrs), {64, 100});
+
+    ASSERT_EQ(encodedData.size(), (size_t) 3);
+    // There was enough space for a piece of new packet, but segmentation should starts from new message
+    ASSERT_EQ(encodedData[0].size(), (size_t) 88);
+    // Big packet fits a single message
+    ASSERT_EQ(encodedData[1].size(), (size_t) 100);
+    ASSERT_EQ(encodedData[2].size(), (size_t) 88);
+}
+
+TEST_F(EncoderFixture, TestSequenceCounter)
+{
+    std::vector<MessageInit> initStructures = {
+        MessageInit(8, 3, 1), MessageInit(8, 3, 1), MessageInit(100, 3, 1), MessageInit(8, 3, 1), MessageInit(8, 3, 1)};
+
+    auto packetsPtrs = composePacketsPtrs(initStructures);
+    Encoder encoder;
+    encoder.setDeviceId(3);
+    encoder.setStreamId(1);
+    auto encodedData = encoder.encode(begin(packetsPtrs), end(packetsPtrs), {64, 100});
+
+    ASSERT_EQ(encoder.getSequenceCounter(), (uint16_t) 4);
+    encoder.restart();
+    ASSERT_EQ(encoder.getSequenceCounter(), (uint16_t) 0);
+}
+
+//TODO: test if packet has non-data dataType (not implemented yet)

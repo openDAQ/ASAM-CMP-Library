@@ -23,62 +23,96 @@ class Encoder final
 public:
     Encoder();
 
-    //template <typename ForwardIterator,
-    //          typename = std::enable_if_t<std::is_same_v<typename std::iterator_traits<ForwardIterator>::value_type, Packet>>>
-    //std::vector<std::vector<uint8_t>> encode(ForwardIterator begin, ForwardIterator end, const DataContext& dataContext)
-    //{
-    //    static_assert(std::is_base_of<std::forward_iterator_tag, typename std::iterator_traits<ForwardIterator>::iterator_category>::value,
-    //                  "ForwardIterator must be a forward iterator.");
+    template <typename ForwardIterator>
+    std::vector<std::vector<uint8_t>> encode(
+        ForwardIterator begin,
+        ForwardIterator end,
+        const DataContext& dataContext,
+        std::enable_if_t<std::is_same<typename std::iterator_traits<ForwardIterator>::value_type, Packet>::value, int> = 0);
 
-    //    //TODO: should be replaced by logger
-    //    if (begin == end)
-    //        throw std::invalid_argument("Packets range should not be empty");
+    template <typename ForwardPtrIterator>
+    std::vector<std::vector<uint8_t>> encode(
+        ForwardPtrIterator begin,
+        ForwardPtrIterator end,
+        const DataContext& dataContext,
+        std::enable_if_t<std::is_same<typename std::iterator_traits<ForwardPtrIterator>::value_type, std::shared_ptr<Packet>>::value, int> = 0);
 
-    //    init(begin->getDeviceId(), begin->getStreamId(), dataContext)
+    std::vector<std::vector<uint8_t>> encode(const Packet& packet, const DataContext& dataContext);
 
-    //    for (auto it = begin; it != end; ++it)
-    //        putPacket(*it);
+    void setDeviceId(uint16_t deviceId);
+    void setStreamId(uint8_t streamId);
+    void restart();
 
-    //    return getEncodedData();
-    //}
-
-    template <typename ForwardPtrIterator,
-              typename = std::enable_if_t<std::is_same_v<typename std::iterator_traits<ForwardPtrIterator>::value_type, std::shared_ptr<Packet>>>>
-    std::vector<std::vector<uint8_t>> encode(ForwardPtrIterator begin, ForwardPtrIterator end, const DataContext& dataContext)
-    {
-        static_assert(
-            std::is_base_of<std::forward_iterator_tag, typename std::iterator_traits<ForwardPtrIterator>::iterator_category>::value,
-                      "ForwardIterator must be a forward iterator.");
-
-        // TODO: should be replaced by logger
-        if (begin == end)
-            throw std::invalid_argument("Packets range should not be empty");
-
-        init((*begin)->getDeviceId(), (*begin)->getStreamId(), dataContext);
-
-        for (auto it = begin; it != end; ++it)
-            putPacket(*(*it));
-
-        return getEncodedData();
-    }
-
-    std::vector<std::vector<uint8_t>> encode(const Packet& packet, const DataContext& dataContext)
-    {
-        init(packet.getDeviceId(), packet.getStreamId(), dataContext);
-        putPacket(packet);
-        return getEncodedData();
-    }
+    uint16_t getDeviceId() const;
+    uint8_t getStreamId() const;
+    uint16_t getSequenceCounter() const;
 
 private:
-    void init(uint16_t deviceId, uint8_t streamId, const DataContext& bytesPerMessage);
+    void init(const DataContext& bytesPerMessage);
     void putPacket(const Packet& packet);
     std::vector<std::vector<uint8_t>> getEncodedData();
 
-private:
-    static constexpr uint32_t defaultBytesPerMessage{1500};
+    bool checkIfIsSegmented(const size_t payloadSize);
+    uint8_t buildSegmentationFlag(bool isSegmented, int segmentInd, uint16_t bytesToAdd, size_t payloadSize, size_t currentPayloadPos) const;
+    void clearEncodingMetadata(bool clearSequenceCounter = false);
 
-    class EncoderImpl;
-    std::shared_ptr<EncoderImpl> impl;
+    void setMessageType(ASAM::CMP::Packet::MessageType type);
+    void addPayload(uint32_t interfaceId, Payload::Type payloadType, const uint8_t* payloadData, const size_t payloadSize);
+    void addNewCMPFrame();
+    void addNewDataHeader(uint32_t interfaceId, Payload::Type payloadType, uint16_t bytesToAdd, uint8_t segmentationFlag);
+
+private:
+    constexpr static uint8_t segmentationFlagUnsegmented{0x00};
+    constexpr static uint8_t segmentationFlagFirstSegment{0x01};
+    constexpr static uint8_t segmentationFlagIntermediarySegment{0x10};
+    constexpr static uint8_t segmentationFlagLastSegment{0x11};
+
+    size_t minBytesPerMessage;
+    size_t maxBytesPerMessage;
+    uint16_t deviceId;
+    uint8_t streamId;
+
+    size_t bytesLeft;
+    uint16_t sequenceCounter;
+
+    ASAM::CMP::Packet::MessageType messageType;
+    std::vector<std::vector<uint8_t>> cmpFrames;
 };
+
+template <typename ForwardIterator>
+std::vector<std::vector<uint8_t>> Encoder::encode(
+    ForwardIterator begin,
+    ForwardIterator end,
+    const DataContext& dataContext,
+    std::enable_if_t<std::is_same<typename std::iterator_traits<ForwardIterator>::value_type, Packet>::value, int>)
+{
+    static_assert(std::is_base_of<std::forward_iterator_tag, typename std::iterator_traits<ForwardIterator>::iterator_category>::value,
+                  "ForwardIterator must be a forward iterator.");
+
+    init(dataContext);
+
+    for (auto it = begin; it != end; ++it)
+        putPacket(*it);
+
+    return getEncodedData();
+}
+
+template <typename ForwardPtrIterator>
+std::vector<std::vector<uint8_t>> Encoder::encode(
+    ForwardPtrIterator begin,
+    ForwardPtrIterator end,
+    const DataContext& dataContext,
+    std::enable_if_t<std::is_same<typename std::iterator_traits<ForwardPtrIterator>::value_type, std::shared_ptr<Packet>>::value, int>)
+{
+    static_assert(std::is_base_of<std::forward_iterator_tag, typename std::iterator_traits<ForwardPtrIterator>::iterator_category>::value,
+                  "ForwardIterator must be a forward iterator.");
+
+    init(dataContext);
+
+    for (auto it = begin; it != end; ++it)
+        putPacket(*(*it));
+
+    return getEncodedData();
+}
 
 END_NAMESPACE_ASAM_CMP
