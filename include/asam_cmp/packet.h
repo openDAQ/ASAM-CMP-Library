@@ -13,11 +13,11 @@ class Packet final
 public:
     enum class MessageType : uint8_t
     {
-        Undefined = 0x00,
-        Data = 0x01,
-        Control = 0x02,
-        Status = 0x03,
-        Vendor = 0xFF
+        undefined = 0x00,
+        data = 0x01,
+        control = 0x02,
+        status = 0x03,
+        vendor = 0xFF
     };
 
     enum class SegmentType : uint8_t
@@ -72,7 +72,7 @@ public:
     };
 
 public:
-    Packet(const uint8_t* data, const size_t size);
+    Packet(const MessageType msgType, const uint8_t* data, const size_t size);
     Packet(const Packet& other);
     Packet(Packet&& other) noexcept;
 
@@ -99,6 +99,8 @@ public:
 
 private:
     std::unique_ptr<Payload> create(const Payload::Type type, const uint8_t* data, const size_t size);
+    std::unique_ptr<Payload> createDataPayload(const Payload::Type type, const uint8_t* data, const size_t size);
+    std::unique_ptr<Payload> createStatusPayload(const Payload::Type type, const uint8_t* data, const size_t size);
 
     friend void swap(Packet& lhs, Packet& rhs);
 
@@ -108,6 +110,7 @@ private:
 private:
     std::unique_ptr<Payload> payload;
 
+    MessageType messageType{MessageType::undefined};
     uint8_t version{0};
     uint16_t deviceId{0};
     uint8_t streamId{0};

@@ -3,11 +3,13 @@
 #include <numeric>
 
 #include <asam_cmp/can_payload.h>
+#include <asam_cmp/capture_module_payload.h>
 #include <asam_cmp/decoder.h>
 
 #include "create_message.h"
 
 using ASAM::CMP::CanPayload;
+using ASAM::CMP::CaptureModulePayload;
 using ASAM::CMP::Decoder;
 using ASAM::CMP::EthernetPayload;
 using ASAM::CMP::Packet;
@@ -22,7 +24,7 @@ public:
         std::iota(canData.begin(), canData.end(), uint8_t{});
         auto canMsg = createCanDataMessage(arbId, canData);
         dataMsg = createDataMessage(payloadTypeCan, canMsg);
-        cmpMsg = createCmpMessage(deviceId, cmpMessageTypeData, streamId, dataMsg);
+        cmpMsg = createCmpMessage(deviceId, Packet::MessageType::data, streamId, dataMsg);
     }
 
     std::vector<uint8_t> createEthernetPacket(size_t size)
@@ -32,7 +34,7 @@ public:
         std::vector<uint8_t> ethData(ethDataSize);
         auto ethPayload = createEthernetDataMessage(ethData);
         auto dataMsgEth = createDataMessage(Payload::Type::ethernet, ethPayload);
-        return createCmpMessage(deviceId, cmpMessageTypeData, streamId, dataMsgEth);
+        return createCmpMessage(deviceId, Packet::MessageType::data, streamId, dataMsgEth);
     }
 
 protected:
@@ -40,7 +42,6 @@ protected:
     static constexpr uint32_t arbId = 33;
     static constexpr Payload::Type payloadTypeCan = Payload::Type::can;
     static constexpr uint16_t deviceId = 3;
-    static constexpr uint8_t cmpMessageTypeData = 0x01;
     static constexpr uint8_t streamId = 0x01;
 
     static constexpr size_t ethernetPacketSize = 1500;
@@ -101,11 +102,39 @@ TEST_F(DecoderFixture, CanMessage)
     ASSERT_TRUE(std::equal(canData.begin(), canData.end(), canPayload.getData()));
 }
 
+TEST_F(DecoderFixture, CaptureModuleMessage)
+{
+    static constexpr std::string_view deviceDescription = "Device Description";
+    static constexpr std::string_view serialNumber = "Serial Number";
+    static constexpr std::string_view hardwareVersion = "Hardware Version";
+    static constexpr std::string_view softwareVersion = "Software Version";
+    constexpr size_t dataSize = 32;
+
+    std::vector<uint8_t> data(dataSize);
+    std::iota(data.begin(), data.end(), uint8_t{0});
+    auto payloadMsg = createCaptureModuleDataMessage(deviceDescription, serialNumber, hardwareVersion, softwareVersion, data);
+    auto cmDataMsg = createDataMessage(Payload::Type::cmStatMsg, payloadMsg);
+    auto cmDmpMsg = createCmpMessage(deviceId, Packet::MessageType::status, streamId, cmDataMsg);
+
+    Decoder decoder;
+    auto packets = decoder.decode(cmDmpMsg.data(), cmDmpMsg.size());
+    ASSERT_EQ(packets.size(), 1u);
+
+    auto packet = packets[0];
+    ASSERT_EQ(packet->getMessageType(), Packet::MessageType::status);
+
+    auto& payload = packet->getPayload();
+    ASSERT_EQ(payload.getType(), Payload::Type::cmStatMsg);
+
+    auto captureModulePayload = static_cast<const CaptureModulePayload&>(payload);
+    ASSERT_EQ(captureModulePayload.getDeviceDescription(), deviceDescription);
+}
+
 TEST_F(DecoderFixture, Aggregation)
 {
     dataMsg.reserve(dataMsg.size() * 2);
     dataMsg.insert(dataMsg.end(), dataMsg.begin(), dataMsg.end());
-    cmpMsg = createCmpMessage(deviceId, cmpMessageTypeData, streamId, dataMsg);
+    cmpMsg = createCmpMessage(deviceId, Packet::MessageType::data, streamId, dataMsg);
 
     Decoder decoder;
     auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size());
@@ -118,7 +147,7 @@ TEST_F(DecoderFixture, AggregationInvalidData)
 {
     dataMsg.reserve(dataMsg.size() * 2);
     dataMsg.insert(dataMsg.end(), dataMsg.begin(), dataMsg.end());
-    cmpMsg = createCmpMessage(deviceId, cmpMessageTypeData, streamId, dataMsg);
+    cmpMsg = createCmpMessage(deviceId, Packet::MessageType::data, streamId, dataMsg);
 
     Decoder decoder;
     auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size() - 1);
@@ -401,7 +430,7 @@ TEST_F(DecoderFixture, SegmentationWrongMessageType)
     ASSERT_TRUE(packets.empty());
 
     cmpMessageHeader->setSequenceCounter(cmpMessageHeader->getSequenceCounter() + 1);
-    cmpMessageHeader->setMessageType(cmpMessageHeader->getMessageType() + 1);
+    cmpMessageHeader->setMessageType(Packet::MessageType::status);
     dataMessageHeader->setSegmentType(Packet::SegmentType::lastSegment);
     packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
     ASSERT_TRUE(packets.empty());

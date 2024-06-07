@@ -30,12 +30,11 @@ protected:
     std::vector<uint8_t> dataMsg;
 };
 
-
 TEST_F(PacketFixture, Version)
 {
     constexpr uint8_t newVersion = 99;
 
-    Packet packet(dataMsg.data(), dataMsg.size());
+    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
     packet.setVersion(newVersion);
     auto version = packet.getVersion();
     ASSERT_EQ(version, newVersion);
@@ -45,7 +44,7 @@ TEST_F(PacketFixture, DeviceId)
 {
     constexpr uint8_t newId = 99;
 
-    Packet packet(dataMsg.data(), dataMsg.size());
+    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
     packet.setDeviceId(newId);
     auto id = packet.getDeviceId();
     ASSERT_EQ(id, newId);
@@ -55,7 +54,7 @@ TEST_F(PacketFixture, StreamId)
 {
     constexpr uint8_t newId = 99;
 
-    Packet packet(dataMsg.data(), dataMsg.size());
+    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
     packet.setStreamId(newId);
     auto id = packet.getStreamId();
     ASSERT_EQ(id, newId);
@@ -63,23 +62,42 @@ TEST_F(PacketFixture, StreamId)
 
 TEST_F(PacketFixture, MessageTypeData)
 {
-    Packet packet(dataMsg.data(), dataMsg.size());
+    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
     auto type = packet.getMessageType();
-    ASSERT_EQ(type, Packet::MessageType::Data);
+    ASSERT_EQ(type, Packet::MessageType::data);
 }
 
 TEST_F(PacketFixture, GetPayload)
 {
-    Packet packet(dataMsg.data(), dataMsg.size());
+    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), Payload::Type::can);
+}
+
+TEST_F(PacketFixture, CaptureModulePayload)
+{
+    static constexpr std::string_view deviceDescription = "Device Description";
+    static constexpr std::string_view serialNumber = "Serial Number";
+    static constexpr std::string_view hardwareVersion = "Hardware Version";
+    static constexpr std::string_view softwareVersion = "Software Version";
+    constexpr size_t dataSize = 32;
+
+    std::vector<uint8_t> data(dataSize);
+    std::iota(data.begin(), data.end(), uint8_t{0});
+    auto payloadMsg = createCaptureModuleDataMessage(deviceDescription, serialNumber, hardwareVersion, softwareVersion, data);
+
+    auto cmDataMsg = createDataMessage(Payload::Type::cmStatMsg, payloadMsg);
+
+    Packet packet(Packet::MessageType::status, cmDataMsg.data(), cmDataMsg.size());
+    auto& payload = packet.getPayload();
+    ASSERT_EQ(payload.getType(), Payload::Type::cmStatMsg);
 }
 
 TEST_F(PacketFixture, CanPayloadErrorFlags)
 {
     auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(Packet::MessageHeader));
     canHeader->setFlags(1);
-    Packet packet(dataMsg.data(), dataMsg.size());
+    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), Payload::Type::invalid);
 }
@@ -88,7 +106,7 @@ TEST_F(PacketFixture, CanPayloadErrorPosition)
 {
     auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(Packet::MessageHeader));
     canHeader->setErrorPosition(1);
-    Packet packet(dataMsg.data(), dataMsg.size());
+    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), Payload::Type::invalid);
 }
@@ -97,14 +115,14 @@ TEST_F(PacketFixture, CanPayloadWrongDataLength)
 {
     auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(Packet::MessageHeader));
     canHeader->setDataLength(canHeader->getDataLength() + 1);
-    Packet packet(dataMsg.data(), dataMsg.size());
+    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), Payload::Type::invalid);
 }
 
 TEST_F(PacketFixture, Copy)
 {
-    Packet packet(dataMsg.data(), dataMsg.size());
+    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
     Packet packetCopy(packet);
 
     ASSERT_TRUE(packet == packetCopy);
@@ -112,8 +130,8 @@ TEST_F(PacketFixture, Copy)
 
 TEST_F(PacketFixture, CopyAssignment)
 {
-    Packet packet(dataMsg.data(), dataMsg.size());
-    Packet packetCopy(dataMsg.data(), dataMsg.size() / 2);
+    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
+    Packet packetCopy(Packet::MessageType::data, dataMsg.data(), dataMsg.size() / 2);
     packetCopy = packet;
 
     ASSERT_TRUE(packet == packetCopy);
@@ -121,7 +139,7 @@ TEST_F(PacketFixture, CopyAssignment)
 
 TEST_F(PacketFixture, Move)
 {
-    Packet packet(dataMsg.data(), dataMsg.size());
+    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
     Packet packetCopy(packet);
 
     Packet checker(std::move(packet));
@@ -131,11 +149,11 @@ TEST_F(PacketFixture, Move)
 
 TEST_F(PacketFixture, MoveAssignment)
 {
-    Packet packet(dataMsg.data(), dataMsg.size());
+    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
     Packet packetCopy(packet);
 
     std::vector<uint8_t> checkerData(16, 0);
-    Packet checker(checkerData.data(), checkerData.size());
+    Packet checker(Packet::MessageType::data, checkerData.data(), checkerData.size());
 
     checker = std::move(packet);
     ASSERT_TRUE(checker == packetCopy);

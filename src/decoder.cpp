@@ -24,14 +24,14 @@ void Decoder::CmpHeader::setDeviceId(const uint16_t id)
     deviceId = swapEndian(id);
 }
 
-uint8_t Decoder::CmpHeader::getMessageType() const
+Packet::MessageType Decoder::CmpHeader::getMessageType() const
 {
-    return messageType;
+    return static_cast<Packet::MessageType>(messageType);
 }
 
-void Decoder::CmpHeader::setMessageType(const uint8_t type)
+void Decoder::CmpHeader::setMessageType(const Packet::MessageType type)
 {
-    messageType = type;
+    messageType = to_underlying(type);
 }
 
 uint8_t Decoder::CmpHeader::getStreamId() const
@@ -80,7 +80,7 @@ std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std
         {
             segmentedPackets.erase({deviceId, streamId});
 
-            packet = std::make_shared<Packet>(packetPtr, curSize);
+            packet = std::make_shared<Packet>(header->getMessageType(), packetPtr, curSize);
 
             packet->setVersion(header->getVersion());
             packet->setDeviceId(deviceId);
@@ -126,7 +126,7 @@ std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std
 }
 
 Decoder::SegmentedPacket::SegmentedPacket(
-    const uint8_t* data, const size_t size, uint8_t version, int8_t messageType, uint16_t sequenceCounter)
+    const uint8_t* data, const size_t size, const uint8_t version, const Packet::MessageType messageType, const uint16_t sequenceCounter)
     : segmentType(SegmentType::firstSegment)
     , curVersion(version)
     , curMessageType(messageType)
@@ -137,7 +137,7 @@ Decoder::SegmentedPacket::SegmentedPacket(
 }
 
 bool Decoder::SegmentedPacket::addSegment(
-    const uint8_t* data, const size_t size, uint8_t version, int8_t messageType, uint16_t sequenceCounter)
+    const uint8_t* data, const size_t size, const uint8_t version, const Packet::MessageType messageType, const uint16_t sequenceCounter)
 {
     if (curVersion != version || curMessageType != messageType || sequenceCounter != curSegment + 1)
         return false;
@@ -169,7 +169,7 @@ bool Decoder::SegmentedPacket::isAssembled() const
 
 std::shared_ptr<Packet> Decoder::SegmentedPacket::getPacket()
 {
-    auto packet = std::make_shared<Packet>(payload.data(), payload.size());
+    auto packet = std::make_shared<Packet>(curMessageType, payload.data(), payload.size());
     packet->setVersion(curVersion);
     return packet;
 }

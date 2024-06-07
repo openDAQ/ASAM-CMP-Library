@@ -28,8 +28,8 @@ public:
         void setVersion(const uint8_t newVersion);
         uint16_t getDeviceId() const;
         void setDeviceId(const uint16_t id);
-        uint8_t getMessageType() const;
-        void setMessageType(const uint8_t type);
+        Packet::MessageType getMessageType() const;
+        void setMessageType(const Packet::MessageType type);
         uint8_t getStreamId() const;
         void setStreamId(const uint8_t id);
         uint16_t getSequenceCounter() const;
@@ -68,9 +68,9 @@ private:
 
     public:
         SegmentedPacket() = default;
-        SegmentedPacket(const uint8_t* data, const size_t size, uint8_t version, int8_t messageType, uint16_t sequenceCounter);
+        SegmentedPacket(const uint8_t* data, const size_t size, uint8_t version, const Packet::MessageType messageType, const uint16_t sequenceCounter);
 
-        bool addSegment(const uint8_t* data, const size_t size, uint8_t version, int8_t messageType, uint16_t sequenceCounter);
+        bool addSegment(const uint8_t* data, const size_t size, const uint8_t version, const Packet::MessageType messageType, const uint16_t sequenceCounter);
 
         bool isAssembled() const;
         std::shared_ptr<Packet> getPacket();
@@ -82,7 +82,7 @@ private:
         std::vector<uint8_t> payload;
         SegmentType segmentType{SegmentType::unsegmented};
         uint8_t curVersion{0};
-        uint8_t curMessageType{0};
+        Packet::MessageType curMessageType{0};
         uint16_t curSegment{0};
     };
 
