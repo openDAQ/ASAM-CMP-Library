@@ -16,6 +16,8 @@ public:
         can = 0x01,
         canFd = 0x02,
         lin = 0x03,
+        analog= 0x07,
+        ethernet = 0x08
         flexRay = 0x04,
         digital = 0x05,
         uartRs232 = 0x06,

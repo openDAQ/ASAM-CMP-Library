@@ -9,6 +9,7 @@ set(SRC_Cpp testapp.cpp
             test_encoder.cpp
             test_can_payload.cpp
             test_ethernet_payload.cpp
+            test_analog_payload.cpp
             test_capture_module_payload.cpp
             create_message.h
 )

@@ -6,6 +6,8 @@
 #include <asam_cmp/can_payload.h>
 #include <asam_cmp/capture_module_payload.h>
 #include <asam_cmp/common.h>
+#include <asam_cmp/ethernet_payload.h>
+#include <asam_cmp/analog_payload.h>
 #include <asam_cmp/decoder.h>
 #include <asam_cmp/ethernet_payload.h>
 
@@ -34,6 +36,13 @@ inline std::vector<uint8_t> createEthernetDataMessage(const std::vector<uint8_t>
 {
     ASAM::CMP::EthernetPayload::Header header;
     header.setDataLength(static_cast<uint16_t>(data.size()));
+
+    return createMessage(header, data);
+}
+
+inline std::vector<uint8_t> createAnalogDataMessage(const std::vector<uint8_t>& data)
+{
+    ASAM::CMP::AnalogPayload::Header header;
 
     return createMessage(header, data);
 }
