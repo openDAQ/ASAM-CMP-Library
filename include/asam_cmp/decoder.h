@@ -36,8 +36,7 @@ private:
 
     class SegmentedPacket final
     {
-        using SegmentType = Packet::SegmentType;
-        using MessageHeader = Packet::MessageHeader;
+        using SegmentType = DataMessageHeader::SegmentType;
 
     public:
         SegmentedPacket() = default;
@@ -57,7 +56,7 @@ private:
         std::shared_ptr<Packet> getPacket();
 
     private:
-        MessageHeader* getHeader();
+        DataMessageHeader* getHeader();
         bool isValidSegmentType(SegmentType type) const;
 
         std::vector<uint8_t> payload;

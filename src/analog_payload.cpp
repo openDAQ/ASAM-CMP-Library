@@ -64,7 +64,7 @@ void AnalogPayload::Header::setSampleScalar(const float scalar)
 }
 
 AnalogPayload::AnalogPayload(const uint8_t* data, const size_t size)
-    : Payload(Type::analog, data, size)
+    : Payload(PayloadType::analog, data, size)
 {
 }
 

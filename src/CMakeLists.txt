@@ -2,6 +2,7 @@ set(LIB_NAME asam_cmp)
 
 set(SRC_Headers ../include/${LIB_NAME}/common.h
                 ../include/${LIB_NAME}/cmp_header.h
+                ../include/${LIB_NAME}/data_message_header.h
                 ../include/${LIB_NAME}/decoder.h
                 ../include/${LIB_NAME}/encoder.h
                 ../include/${LIB_NAME}/packet.h
@@ -16,6 +17,7 @@ set(SRC_Headers ../include/${LIB_NAME}/common.h
 )
 
 set(SRC_Sources cmp_header.cpp
+                data_message_header.cpp
                 decoder.cpp
                 encoder.cpp
                 packet.cpp

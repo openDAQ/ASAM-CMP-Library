@@ -7,6 +7,7 @@
 
 using ASAM::CMP::CaptureModulePayload;
 using ASAM::CMP::Payload;
+using PayloadType = ASAM::CMP::DataMessageHeader::PayloadType;
 
 class CaptureModulePayloadTest : public ::testing::Test
 {
@@ -47,9 +48,9 @@ protected:
     std::unique_ptr<CaptureModulePayload> payload;
 };
 
-TEST_F(CaptureModulePayloadTest, Type)
+TEST_F(CaptureModulePayloadTest, PayloadType)
 {
-    ASSERT_EQ(payload->getType(), Payload::Type::cmStatMsg);
+    ASSERT_EQ(payload->getType(), PayloadType::cmStatMsg);
 }
 
 TEST_F(CaptureModulePayloadTest, Uptime)

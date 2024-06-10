@@ -7,6 +7,7 @@
 
 using ASAM::CMP::InterfacePayload;
 using ASAM::CMP::Payload;
+using PayloadType = ASAM::CMP::DataMessageHeader::PayloadType;
 
 class InterfacePayloadTest : public ::testing::Test
 {
@@ -46,9 +47,9 @@ protected:
     std::unique_ptr<InterfacePayload> payload;
 };
 
-TEST_F(InterfacePayloadTest, Type)
+TEST_F(InterfacePayloadTest, PayloadType)
 {
-    ASSERT_EQ(payload->getType(), Payload::Type::ifStatMsg);
+    ASSERT_EQ(payload->getType(), PayloadType::ifStatMsg);
 }
 
 TEST_F(InterfacePayloadTest, InterfaceId)

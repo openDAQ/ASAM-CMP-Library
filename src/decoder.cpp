@@ -65,7 +65,7 @@ std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std
             break;
         }
 
-        const auto packetSize = packet->getPayloadSize() + sizeof(Packet::MessageHeader);
+        const auto packetSize = packet->getPayloadSize() + sizeof(DataMessageHeader);
         packetPtr += packetSize;
         curSize -= static_cast<int>(packetSize);
     }
@@ -90,9 +90,9 @@ bool Decoder::SegmentedPacket::addSegment(
     if (curVersion != version || curMessageType != messageType || sequenceCounter != curSegment + 1)
         return false;
 
-    auto header = reinterpret_cast<const MessageHeader*>(data);
+    auto header = reinterpret_cast<const DataMessageHeader*>(data);
     auto newPayloadSize = header->getPayloadLength();
-    if (newPayloadSize > size - sizeof(MessageHeader))
+    if (newPayloadSize > size - sizeof(DataMessageHeader))
         return false;
 
     const SegmentType type = header->getSegmentType();
@@ -101,8 +101,8 @@ bool Decoder::SegmentedPacket::addSegment(
 
     const auto curPayloadSize = payload.size();
     payload.resize(curPayloadSize + newPayloadSize);
-    memcpy(payload.data() + curPayloadSize, data + sizeof(MessageHeader), newPayloadSize);
-    getHeader()->setPayloadLength(static_cast<uint16_t>(payload.size()) - sizeof(MessageHeader));
+    memcpy(payload.data() + curPayloadSize, data + sizeof(DataMessageHeader), newPayloadSize);
+    getHeader()->setPayloadLength(static_cast<uint16_t>(payload.size()) - sizeof(DataMessageHeader));
 
     ++curSegment;
     segmentType = type;
@@ -122,9 +122,9 @@ std::shared_ptr<Packet> Decoder::SegmentedPacket::getPacket()
     return packet;
 }
 
-Decoder::SegmentedPacket::MessageHeader* Decoder::SegmentedPacket::getHeader()
+DataMessageHeader* Decoder::SegmentedPacket::getHeader()
 {
-    return reinterpret_cast<MessageHeader*>(payload.data());
+    return reinterpret_cast<DataMessageHeader*>(payload.data());
 }
 
 bool Decoder::SegmentedPacket::isValidSegmentType(SegmentType type) const

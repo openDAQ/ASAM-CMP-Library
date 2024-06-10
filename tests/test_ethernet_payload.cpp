@@ -7,6 +7,7 @@
 
 using ASAM::CMP::EthernetPayload;
 using ASAM::CMP::Payload;
+using PayloadType = ASAM::CMP::DataMessageHeader::PayloadType;
 
 class EthernetPayloadTest : public ::testing::Test
 {
@@ -31,7 +32,7 @@ TEST_F(EthernetPayloadTest, Properties)
 {
     EthernetPayload payload(message.data(), message.size());
 
-    ASSERT_EQ(payload.getType(), Payload::Type::ethernet);
+    ASSERT_EQ(payload.getType(), PayloadType::ethernet);
     ASSERT_EQ(payload.getDataLength(), dataSize);
     ASSERT_TRUE(std::equal(data.begin(), data.end(), payload.getData()));
 }

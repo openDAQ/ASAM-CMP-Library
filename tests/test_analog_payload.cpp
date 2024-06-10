@@ -7,6 +7,7 @@
 
 using ASAM::CMP::AnalogPayload;
 using ASAM::CMP::Payload;
+using PayloadType = ASAM::CMP::DataMessageHeader::PayloadType;
 
 class AnalogPayloadTest : public ::testing::Test
 {
@@ -43,9 +44,9 @@ protected:
     std::unique_ptr<AnalogPayload> payload;
 };
 
-TEST_F(AnalogPayloadTest, Type)
+TEST_F(AnalogPayloadTest, PayloadType)
 {
-    ASSERT_EQ(payload->getType(), Payload::Type::analog);
+    ASSERT_EQ(payload->getType(), PayloadType::analog);
 }
 
 TEST_F(AnalogPayloadTest, Flags)

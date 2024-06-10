@@ -136,9 +136,9 @@ inline std::vector<uint8_t> createInterfaceDataMessage(const uint32_t interfaceI
     return message;
 }
 
-inline std::vector<uint8_t> createDataMessage(ASAM::CMP::Payload::Type payloadType, const std::vector<uint8_t>& payload)
+inline std::vector<uint8_t> createDataMessage(ASAM::CMP::DataMessageHeader::PayloadType payloadType, const std::vector<uint8_t>& payload)
 {
-    ASAM::CMP::Packet::MessageHeader header;
+    ASAM::CMP::DataMessageHeader header;
     header.setPayloadType(payloadType);
     header.setPayloadLength(static_cast<uint16_t>(payload.size()));
 

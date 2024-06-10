@@ -2,11 +2,11 @@
 
 BEGIN_NAMESPACE_ASAM_CMP
 
-Payload::Payload(const Type type, const uint8_t* data, const size_t size)
+Payload::Payload(const PayloadType type, const uint8_t* data, const size_t size)
     : type(type)
     , payloadData(size)
 {
-    if (size && type != Type::invalid)
+    if (size && type != PayloadType::invalid)
         memcpy(payloadData.data(), data, size);
 }
 
@@ -22,7 +22,7 @@ Payload::Payload(Payload&& other) noexcept
     swap(*this, other);
 }
 
-Payload::Type Payload::getType() const
+Payload::PayloadType Payload::getType() const
 {
     return type;
 }

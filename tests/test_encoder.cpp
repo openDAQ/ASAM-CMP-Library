@@ -14,7 +14,7 @@ using ASAM::CMP::Payload;
 using ASAM::CMP::swapEndian;
 using ASAM::CMP::Packet;
 using ASAM::CMP::CmpHeader;
-using PayloadType = ASAM::CMP::Payload::Type;
+using PayloadType = ASAM::CMP::DataMessageHeader::PayloadType;
 using PacketPtr = std::shared_ptr<ASAM::CMP::Packet>;
 
 class EncoderFixture : public ::testing::Test
@@ -42,7 +42,7 @@ public:
         std::vector<uint8_t> canData(init.canDataSize);
         std::iota(canData.begin(), canData.end(), uint8_t{});
         auto canMsg = createCanDataMessage(init.arbId, canData);
-        auto dataMsg = createDataMessage(static_cast<ASAM::CMP::Payload::Type>(init.payloadTypeCan), canMsg);
+        auto dataMsg = createDataMessage(static_cast<PayloadType>(init.payloadTypeCan), canMsg);
 
         return createCmpMessage(init.deviceId, init.cmpMessageTypeData, init.streamId, dataMsg);
     }

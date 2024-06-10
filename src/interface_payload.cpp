@@ -103,7 +103,7 @@ void InterfacePayload::Header::setFeatureSupportBitmask(const uint32_t bitmask)
 }
 
 InterfacePayload::InterfacePayload(const uint8_t* data, const size_t size)
-    : Payload(Payload::Type::ifStatMsg, data, size)
+    : Payload(PayloadType::ifStatMsg, data, size)
 {
     uint8_t* ptr = payloadData.data() + sizeof(Header);
     uint16_t length = swapEndian(*reinterpret_cast<const uint16_t*>(ptr));

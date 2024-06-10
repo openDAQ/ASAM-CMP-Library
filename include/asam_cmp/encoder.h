@@ -1,11 +1,11 @@
 #pragma once
 
-#include <memory>
-#include <vector>
-#include <unordered_map>
-#include <queue>
 #include <iterator>
+#include <memory>
+#include <queue>
 #include <type_traits>
+#include <unordered_map>
+#include <vector>
 
 #include <asam_cmp/common.h>
 #include <asam_cmp/packet.h>
@@ -20,6 +20,10 @@ struct DataContext
 
 class Encoder final
 {
+private:
+    using PayloadType = DataMessageHeader::PayloadType;
+    using SegmentType = DataMessageHeader::SegmentType;
+
 public:
     Encoder();
 
@@ -53,20 +57,16 @@ private:
     std::vector<std::vector<uint8_t>> getEncodedData();
 
     bool checkIfIsSegmented(const size_t payloadSize);
-    uint8_t buildSegmentationFlag(bool isSegmented, int segmentInd, uint16_t bytesToAdd, size_t payloadSize, size_t currentPayloadPos) const;
+    SegmentType buildSegmentationFlag(
+        bool isSegmented, int segmentInd, uint16_t bytesToAdd, size_t payloadSize, size_t currentPayloadPos) const;
     void clearEncodingMetadata(bool clearSequenceCounter = false);
 
     void setMessageType(CmpHeader::MessageType type);
-    void addPayload(uint32_t interfaceId, Payload::Type payloadType, const uint8_t* payloadData, const size_t payloadSize);
+    void addPayload(uint32_t interfaceId, PayloadType payloadType, const uint8_t* payloadData, const size_t payloadSize);
     void addNewCMPFrame();
-    void addNewDataHeader(uint32_t interfaceId, Payload::Type payloadType, uint16_t bytesToAdd, uint8_t segmentationFlag);
+    void addNewDataHeader(uint32_t interfaceId, PayloadType payloadType, uint16_t bytesToAdd, SegmentType segmentationFlag);
 
 private:
-    constexpr static uint8_t segmentationFlagUnsegmented{0x00};
-    constexpr static uint8_t segmentationFlagFirstSegment{0x01};
-    constexpr static uint8_t segmentationFlagIntermediarySegment{0x10};
-    constexpr static uint8_t segmentationFlagLastSegment{0x11};
-
     size_t minBytesPerMessage;
     size_t maxBytesPerMessage;
     uint16_t deviceId;

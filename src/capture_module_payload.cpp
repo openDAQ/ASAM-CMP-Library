@@ -73,7 +73,7 @@ void CaptureModulePayload::Header::setGptpFlags(const uint8_t flags)
 }
 
 CaptureModulePayload::CaptureModulePayload(const uint8_t* data, const size_t size)
-    : Payload(Type::cmStatMsg, data, size)
+    : Payload(PayloadType::cmStatMsg, data, size)
 {
     uint8_t* ptr = initStringView(payloadData.data() + sizeof(Header), deviceDescription);
     deviceDescription = removeTrailingNulls(deviceDescription);

@@ -11,6 +11,8 @@ using ASAM::CMP::EthernetPayload;
 using ASAM::CMP::Packet;
 using ASAM::CMP::Payload;
 using ASAM::CMP::CmpHeader;
+using ASAM::CMP::DataMessageHeader;
+using PayloadType = DataMessageHeader::PayloadType;
 
 class PacketFixture : public ::testing::Test
 {
@@ -24,7 +26,7 @@ public:
 
 protected:
     static constexpr size_t canDataSize = 8;
-    static constexpr Payload::Type payloadType = Payload::Type::can;
+    static constexpr PayloadType payloadType = PayloadType::can;
     static constexpr uint32_t arbId = 87;
 
 protected:
@@ -72,7 +74,7 @@ TEST_F(PacketFixture, GetPayload)
 {
     Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
-    ASSERT_EQ(payload.getType(), Payload::Type::can);
+    ASSERT_EQ(payload.getType(), PayloadType::can);
 }
 
 TEST_F(PacketFixture, CaptureModulePayload)
@@ -87,38 +89,38 @@ TEST_F(PacketFixture, CaptureModulePayload)
     std::iota(data.begin(), data.end(), uint8_t{0});
     auto payloadMsg = createCaptureModuleDataMessage(deviceDescription, serialNumber, hardwareVersion, softwareVersion, data);
 
-    auto cmDataMsg = createDataMessage(Payload::Type::cmStatMsg, payloadMsg);
+    auto cmDataMsg = createDataMessage(PayloadType::cmStatMsg, payloadMsg);
 
     Packet packet(CmpHeader::MessageType::status, cmDataMsg.data(), cmDataMsg.size());
     auto& payload = packet.getPayload();
-    ASSERT_EQ(payload.getType(), Payload::Type::cmStatMsg);
+    ASSERT_EQ(payload.getType(), PayloadType::cmStatMsg);
 }
 
 TEST_F(PacketFixture, CanPayloadErrorFlags)
 {
-    auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(Packet::MessageHeader));
+    auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(DataMessageHeader));
     canHeader->setFlags(1);
     Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
-    ASSERT_EQ(payload.getType(), Payload::Type::invalid);
+    ASSERT_EQ(payload.getType(), PayloadType::invalid);
 }
 
 TEST_F(PacketFixture, CanPayloadErrorPosition)
 {
-    auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(Packet::MessageHeader));
+    auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(DataMessageHeader));
     canHeader->setErrorPosition(1);
     Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
-    ASSERT_EQ(payload.getType(), Payload::Type::invalid);
+    ASSERT_EQ(payload.getType(), PayloadType::invalid);
 }
 
 TEST_F(PacketFixture, CanPayloadWrongDataLength)
 {
-    auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(Packet::MessageHeader));
+    auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(DataMessageHeader));
     canHeader->setDataLength(canHeader->getDataLength() + 1);
     Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
-    ASSERT_EQ(payload.getType(), Payload::Type::invalid);
+    ASSERT_EQ(payload.getType(), PayloadType::invalid);
 }
 
 TEST_F(PacketFixture, Copy)
