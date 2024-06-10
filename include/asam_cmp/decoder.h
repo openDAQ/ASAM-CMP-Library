@@ -15,6 +15,10 @@ public:
     std::vector<std::shared_ptr<Packet>> decode(const void* data, const std::size_t size);
 
 private:
+    static bool isSegmentedPacket(const uint8_t* data, const size_t);
+    static bool isFirstSegment(const uint8_t* data, const size_t);
+
+private:
     struct Endpoint
     {
         uint16_t deviceId{0};

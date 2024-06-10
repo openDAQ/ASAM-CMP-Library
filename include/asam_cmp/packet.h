@@ -37,8 +37,6 @@ public:
     const Payload& getPayload() const;
 
     static bool isValidPacket(const uint8_t* data, const size_t size);
-    static bool isSegmentedPacket(const uint8_t* data, const size_t);
-    static bool isFirstSegment(const uint8_t* data, const size_t);
 
 private:
     std::unique_ptr<Payload> create(const PayloadType type, const uint8_t* data, const size_t size);

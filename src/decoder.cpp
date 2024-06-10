@@ -24,7 +24,7 @@ std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std
             break;
         }
 
-        if (!Packet::isSegmentedPacket(packetPtr, curSize))
+        if (!isSegmentedPacket(packetPtr, curSize))
         {
             segmentedPackets.erase({deviceId, streamId});
 
@@ -38,7 +38,7 @@ std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std
         }
         else
         {
-            if (Packet::isFirstSegment(packetPtr, curSize))
+            if (isFirstSegment(packetPtr, curSize))
             {
                 SegmentedPacket segmentedPacket(
                     packetPtr, curSize, header->getVersion(), header->getMessageType(), header->getSequenceCounter());
@@ -71,6 +71,17 @@ std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std
     }
 
     return packets;
+}
+
+
+bool Decoder::isSegmentedPacket(const uint8_t* data, const size_t)
+{
+    return reinterpret_cast<const DataMessageHeader*>(data)->getSegmentType() != DataMessageHeader::SegmentType::unsegmented;
+}
+
+bool Decoder::isFirstSegment(const uint8_t* data, const size_t)
+{
+    return reinterpret_cast<const DataMessageHeader*>(data)->getSegmentType() == DataMessageHeader::SegmentType::firstSegment;
 }
 
 Decoder::SegmentedPacket::SegmentedPacket(

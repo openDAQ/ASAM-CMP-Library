@@ -139,16 +139,6 @@ bool Packet::isValidPacket(const uint8_t* data, const size_t size)
             !header->getCommonFlag(DataMessageHeader::CommonFlags::errorInPayload));
 }
 
-bool Packet::isSegmentedPacket(const uint8_t* data, const size_t)
-{
-    return reinterpret_cast<const DataMessageHeader*>(data)->getSegmentType() != DataMessageHeader::SegmentType::unsegmented;
-}
-
-bool Packet::isFirstSegment(const uint8_t* data, const size_t)
-{
-    return reinterpret_cast<const DataMessageHeader*>(data)->getSegmentType() == DataMessageHeader::SegmentType::firstSegment;
-}
-
 std::unique_ptr<Payload> Packet::create(const PayloadType type, const uint8_t* data, const size_t size)
 {
     switch (messageType)
