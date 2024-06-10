@@ -52,15 +52,6 @@ constexpr typename std::underlying_type<T>::type to_underlying(T value) noexcept
 
 #pragma pack(push, 1)
 
-struct CmpMessageHeader
-{
-    uint8_t version{1};
-    uint8_t reserved{0};
-    uint16_t deviceId{0};
-    uint8_t messageType{0};
-    uint8_t streamId{0};
-    uint16_t sequenceCounter{0};
-};
 
 struct DataMessageHeader
 {

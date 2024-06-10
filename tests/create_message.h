@@ -146,11 +146,11 @@ inline std::vector<uint8_t> createDataMessage(ASAM::CMP::Payload::Type payloadTy
 }
 
 inline std::vector<uint8_t> createCmpMessage(const uint16_t deviceId,
-                                             const ASAM::CMP::Packet::MessageType messageType,
+                                             const ASAM::CMP::CmpHeader::MessageType messageType,
                                              const uint8_t streamId,
                                              const std::vector<uint8_t>& payload)
 {
-    ASAM::CMP::Decoder::CmpHeader header;
+    ASAM::CMP::CmpHeader header;
     header.setDeviceId(deviceId);
     header.setMessageType(messageType);
     header.setStreamId(streamId);

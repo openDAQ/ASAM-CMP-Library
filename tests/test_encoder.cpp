@@ -13,6 +13,7 @@ using ASAM::CMP::DataContext;
 using ASAM::CMP::Payload;
 using ASAM::CMP::swapEndian;
 using ASAM::CMP::Packet;
+using ASAM::CMP::CmpHeader;
 using PayloadType = ASAM::CMP::Payload::Type;
 using PacketPtr = std::shared_ptr<ASAM::CMP::Packet>;
 
@@ -32,7 +33,7 @@ public:
         int32_t arbId = 33;
         PayloadType payloadTypeCan = PayloadType::can;
         uint16_t deviceId;
-        Packet::MessageType cmpMessageTypeData = Packet::MessageType::data;
+        CmpHeader::MessageType cmpMessageTypeData = CmpHeader::MessageType::data;
         uint8_t streamId;
     };
 

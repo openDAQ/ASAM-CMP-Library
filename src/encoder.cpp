@@ -12,7 +12,7 @@ Encoder::Encoder()
     , maxBytesPerMessage(0)
     , bytesLeft(0)
     , sequenceCounter(0)
-    , messageType(ASAM::CMP::Packet::MessageType::undefined)
+    , messageType(CmpHeader::MessageType::undefined)
 {
 }
 
@@ -28,7 +28,7 @@ void Encoder::setStreamId(uint8_t newStreamId)
     clearEncodingMetadata(true);
 }
 
-void Encoder::setMessageType(ASAM::CMP::Packet::MessageType type)
+void Encoder::setMessageType(CmpHeader::MessageType type)
 {
     messageType = type;
     addNewCMPFrame();
@@ -122,13 +122,13 @@ void Encoder::addNewCMPFrame()
         cmpFrames.back().resize(std::max(cmpFrames.back().size() - bytesLeft, minBytesPerMessage), 0);
 
     std::vector<uint8_t> rawOutput(maxBytesPerMessage);
-    CmpMessageHeader* header = reinterpret_cast<CmpMessageHeader*>(&rawOutput[0]);
-    header->deviceId = swapEndian(deviceId);
-    header->version = 1;
-    header->streamId = swapEndian(streamId);
-    header->sequenceCounter = swapEndian(++sequenceCounter);
-    header->messageType = static_cast<uint8_t>(messageType);
-    bytesLeft = maxBytesPerMessage - sizeof(CmpMessageHeader);
+    CmpHeader* header = reinterpret_cast<CmpHeader*>(&rawOutput[0]);
+    header->setDeviceId(deviceId);
+    header->setVersion(1);
+    header->setStreamId(streamId);
+    header->setSequenceCounter(++sequenceCounter);
+    header->setMessageType(messageType);
+    bytesLeft = maxBytesPerMessage - sizeof(CmpHeader);
 
     cmpFrames.push_back(std::move(rawOutput));
 }
@@ -174,7 +174,7 @@ uint8_t Encoder::buildSegmentationFlag(bool isSegmented, int segmentInd, uint16_
 void Encoder::clearEncodingMetadata(bool clearSequenceCounter)
 {
     bytesLeft = 0;
-    messageType = ASAM::CMP::Packet::MessageType::undefined;
+    messageType = CmpHeader::MessageType::undefined;
     cmpFrames.clear();
 
     if (clearSequenceCounter)

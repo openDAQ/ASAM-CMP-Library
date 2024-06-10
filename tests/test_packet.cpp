@@ -10,6 +10,7 @@ using ASAM::CMP::Decoder;
 using ASAM::CMP::EthernetPayload;
 using ASAM::CMP::Packet;
 using ASAM::CMP::Payload;
+using ASAM::CMP::CmpHeader;
 
 class PacketFixture : public ::testing::Test
 {
@@ -34,7 +35,7 @@ TEST_F(PacketFixture, Version)
 {
     constexpr uint8_t newVersion = 99;
 
-    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
+    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
     packet.setVersion(newVersion);
     auto version = packet.getVersion();
     ASSERT_EQ(version, newVersion);
@@ -44,7 +45,7 @@ TEST_F(PacketFixture, DeviceId)
 {
     constexpr uint8_t newId = 99;
 
-    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
+    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
     packet.setDeviceId(newId);
     auto id = packet.getDeviceId();
     ASSERT_EQ(id, newId);
@@ -54,7 +55,7 @@ TEST_F(PacketFixture, StreamId)
 {
     constexpr uint8_t newId = 99;
 
-    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
+    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
     packet.setStreamId(newId);
     auto id = packet.getStreamId();
     ASSERT_EQ(id, newId);
@@ -62,14 +63,14 @@ TEST_F(PacketFixture, StreamId)
 
 TEST_F(PacketFixture, MessageTypeData)
 {
-    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
+    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
     auto type = packet.getMessageType();
-    ASSERT_EQ(type, Packet::MessageType::data);
+    ASSERT_EQ(type, CmpHeader::MessageType::data);
 }
 
 TEST_F(PacketFixture, GetPayload)
 {
-    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
+    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), Payload::Type::can);
 }
@@ -88,7 +89,7 @@ TEST_F(PacketFixture, CaptureModulePayload)
 
     auto cmDataMsg = createDataMessage(Payload::Type::cmStatMsg, payloadMsg);
 
-    Packet packet(Packet::MessageType::status, cmDataMsg.data(), cmDataMsg.size());
+    Packet packet(CmpHeader::MessageType::status, cmDataMsg.data(), cmDataMsg.size());
     auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), Payload::Type::cmStatMsg);
 }
@@ -97,7 +98,7 @@ TEST_F(PacketFixture, CanPayloadErrorFlags)
 {
     auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(Packet::MessageHeader));
     canHeader->setFlags(1);
-    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
+    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), Payload::Type::invalid);
 }
@@ -106,7 +107,7 @@ TEST_F(PacketFixture, CanPayloadErrorPosition)
 {
     auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(Packet::MessageHeader));
     canHeader->setErrorPosition(1);
-    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
+    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), Payload::Type::invalid);
 }
@@ -115,14 +116,14 @@ TEST_F(PacketFixture, CanPayloadWrongDataLength)
 {
     auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(Packet::MessageHeader));
     canHeader->setDataLength(canHeader->getDataLength() + 1);
-    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
+    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), Payload::Type::invalid);
 }
 
 TEST_F(PacketFixture, Copy)
 {
-    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
+    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
     Packet packetCopy(packet);
 
     ASSERT_TRUE(packet == packetCopy);
@@ -130,8 +131,8 @@ TEST_F(PacketFixture, Copy)
 
 TEST_F(PacketFixture, CopyAssignment)
 {
-    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
-    Packet packetCopy(Packet::MessageType::data, dataMsg.data(), dataMsg.size() / 2);
+    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
+    Packet packetCopy(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size() / 2);
     packetCopy = packet;
 
     ASSERT_TRUE(packet == packetCopy);
@@ -139,7 +140,7 @@ TEST_F(PacketFixture, CopyAssignment)
 
 TEST_F(PacketFixture, Move)
 {
-    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
+    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
     Packet packetCopy(packet);
 
     Packet checker(std::move(packet));
@@ -149,11 +150,11 @@ TEST_F(PacketFixture, Move)
 
 TEST_F(PacketFixture, MoveAssignment)
 {
-    Packet packet(Packet::MessageType::data, dataMsg.data(), dataMsg.size());
+    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
     Packet packetCopy(packet);
 
     std::vector<uint8_t> checkerData(16, 0);
-    Packet checker(Packet::MessageType::data, checkerData.data(), checkerData.size());
+    Packet checker(CmpHeader::MessageType::data, checkerData.data(), checkerData.size());
 
     checker = std::move(packet);
     ASSERT_TRUE(checker == packetCopy);

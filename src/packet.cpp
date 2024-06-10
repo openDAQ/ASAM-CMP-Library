@@ -58,7 +58,7 @@ void Packet::MessageHeader::setPayloadLength(const uint16_t length)
     payloadLength = swapEndian(length);
 }
 
-Packet::Packet(const MessageType msgType, const uint8_t* data, const size_t size)
+Packet::Packet(const CmpHeader::MessageType msgType, const uint8_t* data, const size_t size)
     : messageType(msgType)
 {
 #ifdef _DEBUG
@@ -162,7 +162,7 @@ void Packet::setStreamId(const uint8_t value)
     streamId = value;
 }
 
-Packet::MessageType Packet::getMessageType() const
+CmpHeader::MessageType Packet::getMessageType() const
 {
     return messageType;
 }
@@ -203,10 +203,10 @@ std::unique_ptr<Payload> Packet::create(const Payload::Type type, const uint8_t*
 {
     switch (messageType)
     {
-        case MessageType::data:
+        case CmpHeader::MessageType::data:
             return createDataPayload(type, data, size);
             break;
-        case MessageType::status:
+        case CmpHeader::MessageType::status:
             return createStatusPayload(type, data, size);
             break;
     }

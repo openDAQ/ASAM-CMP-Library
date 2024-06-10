@@ -56,7 +56,7 @@ private:
     uint8_t buildSegmentationFlag(bool isSegmented, int segmentInd, uint16_t bytesToAdd, size_t payloadSize, size_t currentPayloadPos) const;
     void clearEncodingMetadata(bool clearSequenceCounter = false);
 
-    void setMessageType(ASAM::CMP::Packet::MessageType type);
+    void setMessageType(CmpHeader::MessageType type);
     void addPayload(uint32_t interfaceId, Payload::Type payloadType, const uint8_t* payloadData, const size_t payloadSize);
     void addNewCMPFrame();
     void addNewDataHeader(uint32_t interfaceId, Payload::Type payloadType, uint16_t bytesToAdd, uint8_t segmentationFlag);
@@ -75,7 +75,7 @@ private:
     size_t bytesLeft;
     uint16_t sequenceCounter;
 
-    ASAM::CMP::Packet::MessageType messageType;
+    CmpHeader::MessageType messageType;
     std::vector<std::vector<uint8_t>> cmpFrames;
 };
 

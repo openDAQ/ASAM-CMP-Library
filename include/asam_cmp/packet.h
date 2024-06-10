@@ -4,6 +4,7 @@
 #include <vector>
 
 #include <asam_cmp/common.h>
+#include <asam_cmp/cmp_header.h>
 #include <asam_cmp/payload.h>
 
 BEGIN_NAMESPACE_ASAM_CMP
@@ -11,15 +12,6 @@ BEGIN_NAMESPACE_ASAM_CMP
 class Packet final
 {
 public:
-    enum class MessageType : uint8_t
-    {
-        undefined = 0x00,
-        data = 0x01,
-        control = 0x02,
-        status = 0x03,
-        vendor = 0xFF
-    };
-
     enum class SegmentType : uint8_t
     {
         unsegmented = 0,
@@ -72,7 +64,7 @@ public:
     };
 
 public:
-    Packet(const MessageType msgType, const uint8_t* data, const size_t size);
+    Packet(const CmpHeader::MessageType msgType, const uint8_t* data, const size_t size);
     Packet(const Packet& other);
     Packet(Packet&& other) noexcept;
 
@@ -87,7 +79,7 @@ public:
     uint8_t getStreamId() const;
     void setStreamId(const uint8_t value);
 
-    MessageType getMessageType() const;
+    CmpHeader::MessageType getMessageType() const;
     size_t getPayloadSize() const;
 
     void setPayload(const Payload& newPayload);
@@ -110,7 +102,7 @@ private:
 private:
     std::unique_ptr<Payload> payload;
 
-    MessageType messageType{MessageType::undefined};
+    CmpHeader::MessageType messageType{CmpHeader::MessageType::undefined};
     uint8_t version{0};
     uint16_t deviceId{0};
     uint8_t streamId{0};
