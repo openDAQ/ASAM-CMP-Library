@@ -10,6 +10,7 @@
 #include <asam_cmp/analog_payload.h>
 #include <asam_cmp/decoder.h>
 #include <asam_cmp/ethernet_payload.h>
+#include <asam_cmp/interface_payload.h>
 
 template <typename Header>
 std::vector<uint8_t> createMessage(Header&& header, const std::vector<uint8_t>& data)
@@ -93,6 +94,42 @@ inline std::vector<uint8_t> createCaptureModuleDataMessage(const std::string_vie
 
     size_t newSize = ptr - message.data();
     message.resize(newSize);
+
+    assert((message.size() % 2) == 0);
+
+    return message;
+}
+
+inline std::vector<uint8_t> createInterfaceDataMessage(const uint32_t interfaceId,
+                                                       const std::vector<uint8_t>& streamIds,
+                                                       const std::vector<uint8_t>& vendorData)
+{
+    ASAM::CMP::InterfacePayload::Header header;
+    header.setInterfaceId(interfaceId);
+    size_t padding = 0;
+    if (streamIds.size() % 2)
+        padding = 1;
+
+    const size_t msgSize = sizeof(header) + sizeof(uint16_t) + streamIds.size() + padding + sizeof(uint16_t) + vendorData.size();
+    std::vector<uint8_t> message(msgSize);
+
+    memcpy(message.data(), &header, sizeof(header));
+    auto ptr = message.data() + sizeof(header);
+
+    uint16_t length = static_cast<uint16_t>(streamIds.size());
+    auto swappedLength = ASAM::CMP::swapEndian(length);
+    memcpy(ptr, &swappedLength, sizeof(length));
+    ptr += sizeof(length);
+    memcpy(ptr, streamIds.data(), streamIds.size());
+    ptr += streamIds.size();
+    ptr += padding;
+
+    length = static_cast<uint16_t>(vendorData.size());
+    swappedLength = ASAM::CMP::swapEndian(length);
+    memcpy(ptr, &swappedLength, sizeof(length));
+    ptr += sizeof(length);
+    memcpy(ptr, vendorData.data(), vendorData.size());
+    ptr += vendorData.size();
 
     assert((message.size() % 2) == 0);
 
