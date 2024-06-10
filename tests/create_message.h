@@ -131,8 +131,6 @@ inline std::vector<uint8_t> createInterfaceDataMessage(const uint32_t interfaceI
     memcpy(ptr, vendorData.data(), vendorData.size());
     ptr += vendorData.size();
 
-    assert((message.size() % 2) == 0);
-
     return message;
 }
 

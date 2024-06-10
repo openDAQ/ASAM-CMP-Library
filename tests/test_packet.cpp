@@ -2,10 +2,12 @@
 #include <numeric>
 
 #include <asam_cmp/packet.h>
+#include <asam_cmp/can_fd_payload.h>
 
 #include "create_message.h"
 
 using ASAM::CMP::CanPayload;
+using ASAM::CMP::CanFdPayload;
 using ASAM::CMP::Decoder;
 using ASAM::CMP::EthernetPayload;
 using ASAM::CMP::Packet;
@@ -70,11 +72,52 @@ TEST_F(PacketFixture, MessageTypeData)
     ASSERT_EQ(type, CmpHeader::MessageType::data);
 }
 
-TEST_F(PacketFixture, GetPayload)
+TEST_F(PacketFixture, CanPayload)
 {
     Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
-    auto& payload = packet.getPayload();
+    const auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), PayloadType::can);
+}
+
+TEST_F(PacketFixture, CanFdPayload)
+{
+    std::vector<uint8_t> canMsg(canDataSize);
+    const auto payloadMsg = createCanDataMessage(arbId, canMsg);
+    dataMsg = createDataMessage(PayloadType::canFd, payloadMsg);
+    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
+    const auto& payload = packet.getPayload();
+    ASSERT_EQ(payload.getType(), PayloadType::canFd);
+}
+
+TEST_F(PacketFixture, AnalogPayload)
+{
+    std::vector<uint8_t> canMsg(canDataSize);
+    const auto payloadMsg = createAnalogDataMessage(canMsg);
+    dataMsg = createDataMessage(PayloadType::analog, payloadMsg);
+    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
+    const auto& payload = packet.getPayload();
+    ASSERT_EQ(payload.getType(), PayloadType::analog);
+}
+
+TEST_F(PacketFixture, EthernetPayload)
+{
+    std::vector<uint8_t> canMsg(canDataSize);
+    const auto payloadMsg = createEthernetDataMessage(canMsg);
+    dataMsg = createDataMessage(PayloadType::ethernet, payloadMsg);
+    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
+    const auto& payload = packet.getPayload();
+    ASSERT_EQ(payload.getType(), PayloadType::ethernet);
+}
+
+TEST_F(PacketFixture, UnknownDataMessagePayload)
+{
+    constexpr PayloadType unknowPayload = static_cast<PayloadType>(0xFE);
+    std::vector<uint8_t> canMsg(canDataSize);
+    const auto payloadMsg = createEthernetDataMessage(canMsg);
+    dataMsg = createDataMessage(unknowPayload, payloadMsg);
+    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
+    const auto& payload = packet.getPayload();
+    ASSERT_EQ(payload.getType(), unknowPayload);
 }
 
 TEST_F(PacketFixture, CaptureModulePayload)
@@ -87,13 +130,36 @@ TEST_F(PacketFixture, CaptureModulePayload)
 
     std::vector<uint8_t> data(dataSize);
     std::iota(data.begin(), data.end(), uint8_t{0});
-    auto payloadMsg = createCaptureModuleDataMessage(deviceDescription, serialNumber, hardwareVersion, softwareVersion, data);
+    const auto payloadMsg = createCaptureModuleDataMessage(deviceDescription, serialNumber, hardwareVersion, softwareVersion, data);
+    const auto cmDataMsg = createDataMessage(PayloadType::cmStatMsg, payloadMsg);
 
-    auto cmDataMsg = createDataMessage(PayloadType::cmStatMsg, payloadMsg);
-
-    Packet packet(CmpHeader::MessageType::status, cmDataMsg.data(), cmDataMsg.size());
-    auto& payload = packet.getPayload();
+    const Packet packet(CmpHeader::MessageType::status, cmDataMsg.data(), cmDataMsg.size());
+    const auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), PayloadType::cmStatMsg);
+}
+
+TEST_F(PacketFixture, InterfacePayload)
+{
+    constexpr uint32_t interfaceId = 7777;
+    const std::vector<uint8_t> streamIds = {11, 22, 33};
+    const std::vector<uint8_t> vendorData = {3, 3, 3};
+
+    const auto payloadMsg = createInterfaceDataMessage(interfaceId, streamIds, vendorData);
+    dataMsg = createDataMessage(PayloadType::ifStatMsg, payloadMsg);
+    Packet packet(CmpHeader::MessageType::status, dataMsg.data(), dataMsg.size());
+    const auto& payload = packet.getPayload();
+    ASSERT_EQ(payload.getType(), PayloadType::ifStatMsg);
+}
+
+TEST_F(PacketFixture, UnknownStatusMessagePayload)
+{
+    constexpr PayloadType unknowPayload = static_cast<PayloadType>(0xFE);
+    std::vector<uint8_t> canMsg(canDataSize);
+    auto payloadMsg = createEthernetDataMessage(canMsg);
+    dataMsg = createDataMessage(unknowPayload, payloadMsg);
+    Packet packet(CmpHeader::MessageType::status, dataMsg.data(), dataMsg.size());
+    auto& payload = packet.getPayload();
+    ASSERT_EQ(payload.getType(), unknowPayload);
 }
 
 TEST_F(PacketFixture, CanPayloadErrorFlags)

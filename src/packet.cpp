@@ -1,4 +1,5 @@
 #include <asam_cmp/can_payload.h>
+#include <asam_cmp/can_fd_payload.h>
 #include <asam_cmp/capture_module_payload.h>
 #include <asam_cmp/ethernet_payload.h>
 #include <asam_cmp/analog_payload.h>
@@ -171,15 +172,22 @@ std::unique_ptr<Payload> Packet::createDataPayload(const PayloadType type, const
             if (CanPayload::isValidPayload(data, size))
                 return std::make_unique<CanPayload>(data, size);
             break;
-        case PayloadType::ethernet:
-            if (EthernetPayload::isValidPayload(data, size))
-                return std::make_unique<EthernetPayload>(data, size);
+        case PayloadType::canFd:
+            if (CanFdPayload::isValidPayload(data, size))
+                return std::make_unique<CanFdPayload>(data, size);
             break;
         case PayloadType::analog:
             if (AnalogPayload::isValidPayload(data, size))
                 return std::make_unique<AnalogPayload>(data, size);
             break;
+        case PayloadType::ethernet:
+            if (EthernetPayload::isValidPayload(data, size))
+                return std::make_unique<EthernetPayload>(data, size);
+            break;
+        default:
+            return std::make_unique<Payload>(static_cast<PayloadType>(type), data, size);
     }
+    // In case of payload is not valid
     return std::make_unique<Payload>(PayloadType::invalid, data, size);
 }
 
@@ -191,6 +199,8 @@ std::unique_ptr<Payload> Packet::createStatusPayload(const PayloadType type, con
             if (CaptureModulePayload::isValidPayload(data, size))
                 return std::make_unique<CaptureModulePayload>(data, size);
             break;
+        default:
+            return std::make_unique<Payload>(static_cast<PayloadType>(type), data, size);
     }
 
     return std::make_unique<Payload>(PayloadType::invalid, data, size);
