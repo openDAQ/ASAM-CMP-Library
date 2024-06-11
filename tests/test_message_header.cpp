@@ -94,8 +94,7 @@ TEST_F(MessageHeaderFixture, SegmentType)
 
 TEST_F(MessageHeaderFixture, PayloadType)
 {
-    ASSERT_TRUE(TestSetterGetter(
-        &MessageHeader::setPayloadType, &MessageHeader::getPayloadType, MessageHeader::PayloadType::uartRs232));
+    ASSERT_TRUE(TestSetterGetter(&MessageHeader::setPayloadType, &MessageHeader::getPayloadType, uint8_t{100}));
 }
 
 TEST_F(MessageHeaderFixture, PayloadLength)

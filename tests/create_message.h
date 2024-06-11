@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <vector>
 
+#include <asam_cmp/payload_type.h>
 #include <asam_cmp/can_payload.h>
 #include <asam_cmp/capture_module_payload.h>
 #include <asam_cmp/common.h>
@@ -134,10 +135,10 @@ inline std::vector<uint8_t> createInterfaceDataMessage(const uint32_t interfaceI
     return message;
 }
 
-inline std::vector<uint8_t> createDataMessage(ASAM::CMP::MessageHeader::PayloadType payloadType, const std::vector<uint8_t>& payload)
+inline std::vector<uint8_t> createDataMessage(const ASAM::CMP::PayloadType payloadType, const std::vector<uint8_t>& payload)
 {
     ASAM::CMP::MessageHeader header;
-    header.setPayloadType(payloadType);
+    header.setPayloadType(payloadType.getRawPayloadType());
     header.setPayloadLength(static_cast<uint16_t>(payload.size()));
 
     return createMessage(header, payload);

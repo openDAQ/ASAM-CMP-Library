@@ -1,13 +1,14 @@
 #include <gtest/gtest.h>
 #include <numeric>
 
+#include <asam_cmp/payload_type.h>
 #include <asam_cmp/analog_payload.h>
 
 #include "create_message.h"
 
 using ASAM::CMP::AnalogPayload;
 using ASAM::CMP::Payload;
-using PayloadType = ASAM::CMP::MessageHeader::PayloadType;
+using ASAM::CMP::PayloadType;
 
 class AnalogPayloadTest : public ::testing::Test
 {

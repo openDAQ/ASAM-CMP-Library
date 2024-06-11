@@ -46,33 +46,6 @@ public:
         lastSegment = 0x0C
     };
 
-    enum class PayloadType : uint8_t
-    {
-        // Data message payload type
-        invalid = 0x00,
-        can = 0x01,
-        canFd = 0x02,
-        lin = 0x03,
-        flexRay = 0x04,
-        digital = 0x05,
-        uartRs232 = 0x06,
-        analog = 0x07,
-        ethernet = 0x08,
-        spi = 0x09,
-        i2c = 0x0A,
-        gigeVision = 0x0B,
-        mipiCsi2dPhy = 0x0C,
-        userDefined = 0xFF,
-
-        // Status message payload type
-        cmStatMsg = 0x01,
-        ifStatMsg = 0x02,
-        confStatMsg = 0x03,
-        dleStatMsg = 0x04,
-        tsleStatMsg = 0x05,
-        vendorStatMsg = 0xFF
-    };
-
 public:
     uint64_t getTimestamp() const;
     void setTimestamp(const uint64_t newTimestamp);
@@ -88,8 +61,8 @@ public:
     SegmentType getSegmentType() const;
     void setSegmentType(const SegmentType type);
 
-    PayloadType getPayloadType() const;
-    void setPayloadType(const PayloadType type);
+    uint8_t getPayloadType() const;
+    void setPayloadType(const uint8_t type);
     uint16_t getPayloadLength() const;
     void setPayloadLength(const uint16_t length);
 };

@@ -81,7 +81,7 @@ void Encoder::restart()
     sequenceCounter = 0;
 }
 
-void Encoder::addPayload(uint32_t interfaceId, PayloadType payloadType, const uint8_t* payloadData, const size_t payloadSize)
+void Encoder::addPayload(const uint32_t interfaceId, const PayloadType payloadType, const uint8_t* payloadData, const size_t payloadSize)
 {
     size_t currentPayloadPos = 0;
     bool isSegmented = checkIfIsSegmented(payloadSize);
@@ -134,7 +134,7 @@ void Encoder::addNewDataHeader(uint32_t interfaceId, PayloadType payloadType, ui
     auto& cmpFrame = cmpFrames.back();
     MessageHeader* header = reinterpret_cast<MessageHeader*>(&cmpFrame[cmpFrame.size() - bytesLeft]);
     header->setInterfaceId(interfaceId);
-    header->setPayloadType(payloadType);
+    header->setPayloadType(payloadType.getRawPayloadType());
     header->setPayloadLength(bytesToAdd);
     header->setSegmentType(segmentationFlag);
 

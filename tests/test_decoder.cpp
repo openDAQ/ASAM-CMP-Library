@@ -18,7 +18,7 @@ using ASAM::CMP::Packet;
 using ASAM::CMP::Payload;
 using ASAM::CMP::CmpHeader;
 using ASAM::CMP::MessageHeader;
-using PayloadType = MessageHeader::PayloadType;
+using ASAM::CMP::PayloadType;
 using SegmentType = MessageHeader::SegmentType;
 
 class DecoderFixture : public ::testing::Test

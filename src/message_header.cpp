@@ -64,14 +64,14 @@ void MessageHeader::setSegmentType(const SegmentType type)
     commonFlags |= to_underlying(type);
 }
 
-MessageHeader::PayloadType MessageHeader::getPayloadType() const
+uint8_t MessageHeader::getPayloadType() const
 {
-    return static_cast<PayloadType>(payloadType);
+    return payloadType;
 }
 
-void MessageHeader::setPayloadType(const PayloadType type)
+void MessageHeader::setPayloadType(const uint8_t type)
 {
-    payloadType = to_underlying(type);
+    payloadType = type;
 }
 
 uint16_t MessageHeader::getPayloadLength() const

@@ -12,9 +12,6 @@ BEGIN_NAMESPACE_ASAM_CMP
 class Packet final
 {
 public:
-    using PayloadType = MessageHeader::PayloadType;
-
-public:
     Packet(const CmpHeader::MessageType msgType, const uint8_t* data, const size_t size);
     Packet(const Packet& other);
     Packet(Packet&& other) noexcept;
@@ -40,8 +37,6 @@ public:
 
 private:
     std::unique_ptr<Payload> create(const PayloadType type, const uint8_t* data, const size_t size);
-    std::unique_ptr<Payload> createDataPayload(const PayloadType type, const uint8_t* data, const size_t size);
-    std::unique_ptr<Payload> createStatusPayload(const PayloadType type, const uint8_t* data, const size_t size);
 
     friend void swap(Packet& lhs, Packet& rhs);
 
@@ -51,7 +46,6 @@ private:
 private:
     std::unique_ptr<Payload> payload;
 
-    CmpHeader::MessageType messageType{CmpHeader::MessageType::undefined};
     uint8_t version{0};
     uint16_t deviceId{0};
     uint8_t streamId{0};

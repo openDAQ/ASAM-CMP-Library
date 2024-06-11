@@ -3,6 +3,7 @@ set(LIB_NAME asam_cmp)
 set(SRC_Headers ../include/${LIB_NAME}/common.h
                 ../include/${LIB_NAME}/cmp_header.h
                 ../include/${LIB_NAME}/message_header.h
+                ../include/${LIB_NAME}/payload_type.h
                 ../include/${LIB_NAME}/decoder.h
                 ../include/${LIB_NAME}/encoder.h
                 ../include/${LIB_NAME}/packet.h

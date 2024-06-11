@@ -22,7 +22,7 @@ Payload::Payload(Payload&& other) noexcept
     swap(*this, other);
 }
 
-Payload::PayloadType Payload::getType() const
+PayloadType Payload::getType() const
 {
     return type;
 }

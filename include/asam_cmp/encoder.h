@@ -21,7 +21,6 @@ struct DataContext
 class Encoder final
 {
 private:
-    using PayloadType = MessageHeader::PayloadType;
     using SegmentType = MessageHeader::SegmentType;
 
 public:

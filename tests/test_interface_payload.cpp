@@ -7,7 +7,7 @@
 
 using ASAM::CMP::InterfacePayload;
 using ASAM::CMP::Payload;
-using PayloadType = ASAM::CMP::MessageHeader::PayloadType;
+using ASAM::CMP::PayloadType;
 
 class InterfacePayloadTest : public ::testing::Test
 {
@@ -38,7 +38,6 @@ protected:
 protected:
     static constexpr size_t vendorDataSize = 40;
     static constexpr size_t interfaceId = 333;
-
 
 protected:
     std::vector<uint8_t> streamsIds = {3, 4, 5, 6};
@@ -95,7 +94,8 @@ TEST_F(InterfacePayloadTest, InterfaceType)
 
 TEST_F(InterfacePayloadTest, InterfaceStatus)
 {
-    ASSERT_TRUE(TestSetterGetter(&InterfacePayload::setInterfaceStatus, &InterfacePayload::getInterfaceStatus, InterfacePayload::InterfaceStatus::linkStatusUp));
+    ASSERT_TRUE(TestSetterGetter(
+        &InterfacePayload::setInterfaceStatus, &InterfacePayload::getInterfaceStatus, InterfacePayload::InterfaceStatus::linkStatusUp));
 }
 
 TEST_F(InterfacePayloadTest, FeatureSupportBitmask)

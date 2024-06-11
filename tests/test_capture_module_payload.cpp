@@ -6,8 +6,8 @@
 #include "create_message.h"
 
 using ASAM::CMP::CaptureModulePayload;
+using ASAM::CMP::PayloadType;
 using ASAM::CMP::Payload;
-using PayloadType = ASAM::CMP::MessageHeader::PayloadType;
 
 class CaptureModulePayloadTest : public ::testing::Test
 {

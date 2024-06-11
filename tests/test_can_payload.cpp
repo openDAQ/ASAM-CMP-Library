@@ -11,7 +11,8 @@ using ASAM::CMP::CanFdPayload;
 using ASAM::CMP::CanPayload;
 using ASAM::CMP::CanPayloadBase;
 using ASAM::CMP::Payload;
-using PayloadType = ASAM::CMP::MessageHeader::PayloadType;
+using ASAM::CMP::PayloadType;
+using MessageType = ASAM::CMP::CmpHeader::MessageType;
 
 class CanPayloadTest : public ::testing::Test
 {

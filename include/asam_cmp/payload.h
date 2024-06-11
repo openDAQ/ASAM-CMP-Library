@@ -3,14 +3,16 @@
 #include <vector>
 
 #include <asam_cmp/common.h>
+#include <asam_cmp/cmp_header.h>
 #include <asam_cmp/message_header.h>
+#include <asam_cmp/payload_type.h>
 
 BEGIN_NAMESPACE_ASAM_CMP
 
 class Payload
 {
-protected:
-    using PayloadType = ASAM::CMP::MessageHeader::PayloadType;
+private:
+    using MessageType = CmpHeader::MessageType;
 
 public:
     Payload(const PayloadType type, const uint8_t* data, const size_t size);

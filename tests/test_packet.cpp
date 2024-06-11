@@ -12,9 +12,9 @@ using ASAM::CMP::Decoder;
 using ASAM::CMP::EthernetPayload;
 using ASAM::CMP::Packet;
 using ASAM::CMP::Payload;
+using ASAM::CMP::PayloadType;
 using ASAM::CMP::CmpHeader;
 using ASAM::CMP::MessageHeader;
-using PayloadType = MessageHeader::PayloadType;
 
 class PacketFixture : public ::testing::Test
 {
@@ -111,11 +111,12 @@ TEST_F(PacketFixture, EthernetPayload)
 
 TEST_F(PacketFixture, UnknownDataMessagePayload)
 {
-    constexpr PayloadType unknowPayload = static_cast<PayloadType>(0xFE);
+    constexpr PayloadType unknowPayload{CmpHeader::MessageType::data, 0xFE};
+
     std::vector<uint8_t> canMsg(canDataSize);
     const auto payloadMsg = createEthernetDataMessage(canMsg);
     dataMsg = createDataMessage(unknowPayload, payloadMsg);
-    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
+    Packet packet(unknowPayload.getMessageType(), dataMsg.data(), dataMsg.size());
     const auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), unknowPayload);
 }
@@ -153,11 +154,11 @@ TEST_F(PacketFixture, InterfacePayload)
 
 TEST_F(PacketFixture, UnknownStatusMessagePayload)
 {
-    constexpr PayloadType unknowPayload = static_cast<PayloadType>(0xFE);
+    constexpr PayloadType unknowPayload{CmpHeader::MessageType::status, 0xFE};
     std::vector<uint8_t> canMsg(canDataSize);
     auto payloadMsg = createEthernetDataMessage(canMsg);
     dataMsg = createDataMessage(unknowPayload, payloadMsg);
-    Packet packet(CmpHeader::MessageType::status, dataMsg.data(), dataMsg.size());
+    Packet packet(unknowPayload.getMessageType(), dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), unknowPayload);
 }
