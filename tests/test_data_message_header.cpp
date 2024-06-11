@@ -25,6 +25,11 @@ protected:
     DataMessageHeader header;
 };
 
+TEST_F(DataMessageHeaderFixture, HeaderSize)
+{
+    static_assert(sizeof(DataMessageHeader) == 16, "Size of the header according to the standard");
+}
+
 TEST_F(DataMessageHeaderFixture, Contructor)
 {
     DataMessageHeader ch;

@@ -94,6 +94,4 @@ public:
 
 #pragma pack(pop)
 
-static_assert(sizeof(DataMessageHeader) == 16);
-
 END_NAMESPACE_ASAM_CMP

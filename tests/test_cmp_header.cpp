@@ -25,6 +25,11 @@ protected:
     CmpHeader cmpHeader;
 };
 
+TEST_F(CmpHeaderFixture, HeaderSize)
+{
+    static_assert(sizeof(CmpHeader) == 8, "Size of the header according to the standard");
+}
+
 TEST_F(CmpHeaderFixture, Contructor)
 {
     CmpHeader ch;
