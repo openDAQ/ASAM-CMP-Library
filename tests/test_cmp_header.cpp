@@ -32,7 +32,7 @@ TEST_F(CmpHeaderFixture, HeaderSize)
 
 TEST_F(CmpHeaderFixture, Contructor)
 {
-    CmpHeader ch;
+    [[maybe_unused]] CmpHeader ch;
 }
 
 TEST_F(CmpHeaderFixture, Version)

@@ -13,8 +13,8 @@ using ASAM::CMP::EthernetPayload;
 using ASAM::CMP::Packet;
 using ASAM::CMP::Payload;
 using ASAM::CMP::CmpHeader;
-using ASAM::CMP::DataMessageHeader;
-using PayloadType = DataMessageHeader::PayloadType;
+using ASAM::CMP::MessageHeader;
+using PayloadType = MessageHeader::PayloadType;
 
 class PacketFixture : public ::testing::Test
 {
@@ -164,7 +164,7 @@ TEST_F(PacketFixture, UnknownStatusMessagePayload)
 
 TEST_F(PacketFixture, CanPayloadErrorFlags)
 {
-    auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(DataMessageHeader));
+    auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(MessageHeader));
     canHeader->setFlags(1);
     Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
@@ -173,7 +173,7 @@ TEST_F(PacketFixture, CanPayloadErrorFlags)
 
 TEST_F(PacketFixture, CanPayloadErrorPosition)
 {
-    auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(DataMessageHeader));
+    auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(MessageHeader));
     canHeader->setErrorPosition(1);
     Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();
@@ -182,7 +182,7 @@ TEST_F(PacketFixture, CanPayloadErrorPosition)
 
 TEST_F(PacketFixture, CanPayloadWrongDataLength)
 {
-    auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(DataMessageHeader));
+    auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(MessageHeader));
     canHeader->setDataLength(canHeader->getDataLength() + 1);
     Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
     auto& payload = packet.getPayload();

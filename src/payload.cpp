@@ -3,8 +3,8 @@
 BEGIN_NAMESPACE_ASAM_CMP
 
 Payload::Payload(const PayloadType type, const uint8_t* data, const size_t size)
-    : type(type)
-    , payloadData(size)
+    : payloadData(size)
+    , type(type)
 {
     if (size && type != PayloadType::invalid)
         memcpy(payloadData.data(), data, size);

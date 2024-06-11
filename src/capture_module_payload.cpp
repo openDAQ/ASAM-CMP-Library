@@ -87,7 +87,7 @@ CaptureModulePayload::CaptureModulePayload(const uint8_t* data, const size_t siz
     ptr = initStringView(ptr, softwareVersion);
     softwareVersion = removeTrailingNulls(softwareVersion);
 
-    ptr = initStringView(ptr, vendorData);
+    initStringView(ptr, vendorData);
 }
 
 uint64_t CaptureModulePayload::getUptime() const

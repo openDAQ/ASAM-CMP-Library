@@ -3,10 +3,10 @@
 BEGIN_NAMESPACE_ASAM_CMP
 
 Encoder::Encoder()
-    : deviceId(0)
-    , streamId(0)
-    , minBytesPerMessage(0)
+    : minBytesPerMessage(0)
     , maxBytesPerMessage(0)
+    , deviceId(0)
+    , streamId(0)
     , bytesLeft(0)
     , sequenceCounter(0)
     , messageType(CmpHeader::MessageType::undefined)
@@ -90,11 +90,11 @@ void Encoder::addPayload(uint32_t interfaceId, PayloadType payloadType, const ui
 
     while (currentPayloadPos < payloadSize)
     {
-        if (bytesLeft <= sizeof(DataMessageHeader))
+        if (bytesLeft <= sizeof(MessageHeader))
             addNewCMPFrame();
 
         uint16_t bytesToAdd =
-            static_cast<uint16_t>(std::min(static_cast<size_t>(bytesLeft - sizeof(DataMessageHeader)), payloadSize - currentPayloadPos));
+            static_cast<uint16_t>(std::min(static_cast<size_t>(bytesLeft - sizeof(MessageHeader)), payloadSize - currentPayloadPos));
 
         SegmentType isSegmentedFlag = buildSegmentationFlag(isSegmented, segmentInd, bytesToAdd, payloadSize, currentPayloadPos);
         addNewDataHeader(interfaceId, payloadType, bytesToAdd, isSegmentedFlag);
@@ -132,22 +132,22 @@ void Encoder::addNewCMPFrame()
 void Encoder::addNewDataHeader(uint32_t interfaceId, PayloadType payloadType, uint16_t bytesToAdd, SegmentType segmentationFlag)
 {
     auto& cmpFrame = cmpFrames.back();
-    DataMessageHeader* header = reinterpret_cast<DataMessageHeader*>(&cmpFrame[cmpFrame.size() - bytesLeft]);
+    MessageHeader* header = reinterpret_cast<MessageHeader*>(&cmpFrame[cmpFrame.size() - bytesLeft]);
     header->setInterfaceId(interfaceId);
     header->setPayloadType(payloadType);
     header->setPayloadLength(bytesToAdd);
     header->setSegmentType(segmentationFlag);
 
-    bytesLeft -= sizeof(DataMessageHeader);
+    bytesLeft -= sizeof(MessageHeader);
 }
 
 bool Encoder::checkIfIsSegmented(const size_t payloadSize)
 {
-    bool isSegmented = (!cmpFrames.empty() && bytesLeft < sizeof(DataMessageHeader) + payloadSize);
+    bool isSegmented = (!cmpFrames.empty() && bytesLeft < sizeof(MessageHeader) + payloadSize);
     if (isSegmented)
     {
         addNewCMPFrame();
-        isSegmented = (!cmpFrames.empty() && bytesLeft < sizeof(DataMessageHeader) + payloadSize);
+        isSegmented = (!cmpFrames.empty() && bytesLeft < sizeof(MessageHeader) + payloadSize);
     }
     return isSegmented;
 }

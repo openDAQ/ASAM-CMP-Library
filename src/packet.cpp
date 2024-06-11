@@ -12,22 +12,22 @@ Packet::Packet(const CmpHeader::MessageType msgType, const uint8_t* data, const 
     : messageType(msgType)
 {
 #ifdef _DEBUG
-    if (data == nullptr || size < sizeof(DataMessageHeader))
+    if (data == nullptr || size < sizeof(MessageHeader))
         throw std::invalid_argument("Not enough data");
 #else
     size;
 #endif  // _DEBUG
 
-    auto header = reinterpret_cast<const DataMessageHeader*>(data);
-    payload = create(static_cast<PayloadType>(header->getPayloadType()), data + sizeof(DataMessageHeader), header->getPayloadLength());
+    auto header = reinterpret_cast<const MessageHeader*>(data);
+    payload = create(static_cast<PayloadType>(header->getPayloadType()), data + sizeof(MessageHeader), header->getPayloadLength());
 }
 
 Packet::Packet(const Packet& other)
-    : messageType(other.messageType)
+    : payload(new Payload(*(other.payload.get())))
+    , messageType(other.messageType)
     , version(other.version)
     , deviceId(other.deviceId)
     , streamId(other.streamId)
-    , payload(new Payload(*(other.payload.get())))
 {
 }
 
@@ -134,9 +134,9 @@ const Payload& Packet::getPayload() const
 
 bool Packet::isValidPacket(const uint8_t* data, const size_t size)
 {
-    auto header = reinterpret_cast<const DataMessageHeader*>(data);
-    return (size >= sizeof(DataMessageHeader) && header->getPayloadLength() <= (size - sizeof(DataMessageHeader)) &&
-            !header->getCommonFlag(DataMessageHeader::CommonFlags::errorInPayload));
+    auto header = reinterpret_cast<const MessageHeader*>(data);
+    return (size >= sizeof(MessageHeader) && header->getPayloadLength() <= (size - sizeof(MessageHeader)) &&
+            !header->getCommonFlag(MessageHeader::CommonFlags::errorInPayload));
 }
 
 std::unique_ptr<Payload> Packet::create(const PayloadType type, const uint8_t* data, const size_t size)
@@ -148,6 +148,8 @@ std::unique_ptr<Payload> Packet::create(const PayloadType type, const uint8_t* d
             break;
         case CmpHeader::MessageType::status:
             return createStatusPayload(type, data, size);
+            break;
+        default:
             break;
     }
 

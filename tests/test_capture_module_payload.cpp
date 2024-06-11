@@ -7,7 +7,7 @@
 
 using ASAM::CMP::CaptureModulePayload;
 using ASAM::CMP::Payload;
-using PayloadType = ASAM::CMP::DataMessageHeader::PayloadType;
+using PayloadType = ASAM::CMP::MessageHeader::PayloadType;
 
 class CaptureModulePayloadTest : public ::testing::Test
 {

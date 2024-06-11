@@ -12,7 +12,7 @@ BEGIN_NAMESPACE_ASAM_CMP
 class Packet final
 {
 public:
-    using PayloadType = DataMessageHeader::PayloadType;
+    using PayloadType = MessageHeader::PayloadType;
 
 public:
     Packet(const CmpHeader::MessageType msgType, const uint8_t* data, const size_t size);

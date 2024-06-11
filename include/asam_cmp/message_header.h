@@ -6,18 +6,20 @@ BEGIN_NAMESPACE_ASAM_CMP
 
 #pragma pack(push, 1)
 
-class DataMessageHeader
+// This header represents Data Message header, Status Message header,
+// Control Message header and Vendor-defined Message header
+class MessageHeader
 {
     uint64_t timestamp{0};
-    union
+    union InterfaceVendorUnion
     {
         uint32_t interfaceId{0};
-        struct StatusVendor
+        struct Vendor
         {
             uint16_t reserved;
             uint16_t vendorId;
-        } statusVendor;
-    };
+        } vendor;
+    } interfaceVendorUnion;
 
     uint8_t commonFlags{0};
     uint8_t payloadType{0};

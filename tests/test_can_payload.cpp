@@ -3,7 +3,7 @@
 
 #include <asam_cmp/can_fd_payload.h>
 #include <asam_cmp/can_payload.h>
-#include <asam_cmp/data_message_header.h>
+#include <asam_cmp/message_header.h>
 
 #include "create_message.h"
 
@@ -11,7 +11,7 @@ using ASAM::CMP::CanFdPayload;
 using ASAM::CMP::CanPayload;
 using ASAM::CMP::CanPayloadBase;
 using ASAM::CMP::Payload;
-using PayloadType = ASAM::CMP::DataMessageHeader::PayloadType;
+using PayloadType = ASAM::CMP::MessageHeader::PayloadType;
 
 class CanPayloadTest : public ::testing::Test
 {

@@ -113,7 +113,7 @@ public:
 
 protected:
     CanPayloadBase() = default;
-    CanPayloadBase(const DataMessageHeader::PayloadType type, const uint8_t* data, const size_t size);
+    CanPayloadBase(const MessageHeader::PayloadType type, const uint8_t* data, const size_t size);
 
     const Header* getHeader() const;
     Header* getHeader();

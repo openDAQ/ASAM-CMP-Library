@@ -14,7 +14,7 @@ using ASAM::CMP::Payload;
 using ASAM::CMP::swapEndian;
 using ASAM::CMP::Packet;
 using ASAM::CMP::CmpHeader;
-using PayloadType = ASAM::CMP::DataMessageHeader::PayloadType;
+using PayloadType = ASAM::CMP::MessageHeader::PayloadType;
 using PacketPtr = std::shared_ptr<ASAM::CMP::Packet>;
 
 class EncoderFixture : public ::testing::Test

@@ -17,9 +17,9 @@ using ASAM::CMP::EthernetPayload;
 using ASAM::CMP::Packet;
 using ASAM::CMP::Payload;
 using ASAM::CMP::CmpHeader;
-using ASAM::CMP::DataMessageHeader;
-using PayloadType = DataMessageHeader::PayloadType;
-using SegmentType = DataMessageHeader::SegmentType;
+using ASAM::CMP::MessageHeader;
+using PayloadType = MessageHeader::PayloadType;
+using SegmentType = MessageHeader::SegmentType;
 
 class DecoderFixture : public ::testing::Test
 {
@@ -35,7 +35,7 @@ public:
 
     std::vector<uint8_t> createEthernetPacket(size_t size)
     {
-        size_t ethDataSize = size - sizeof(CmpHeader) - sizeof(DataMessageHeader) - sizeof(EthernetPayload::Header);
+        size_t ethDataSize = size - sizeof(CmpHeader) - sizeof(MessageHeader) - sizeof(EthernetPayload::Header);
 
         std::vector<uint8_t> ethData(ethDataSize);
         auto ethPayload = createEthernetDataMessage(ethData);
@@ -74,7 +74,7 @@ TEST_F(DecoderFixture, WrongHeaderSize)
 
 TEST_F(DecoderFixture, CorruptedDataMessage)
 {
-    auto dataMessageHeader = reinterpret_cast<DataMessageHeader*>(cmpMsg.data() + sizeof(CmpHeader));
+    auto dataMessageHeader = reinterpret_cast<MessageHeader*>(cmpMsg.data() + sizeof(CmpHeader));
     dataMessageHeader->setPayloadLength(dataMessageHeader->getPayloadLength() + 1);
 
     Decoder decoder;
@@ -84,8 +84,8 @@ TEST_F(DecoderFixture, CorruptedDataMessage)
 
 TEST_F(DecoderFixture, MessageWithErrorFlag)
 {
-    auto dataMessageHeader = reinterpret_cast<DataMessageHeader*>(cmpMsg.data() + sizeof(CmpHeader));
-    dataMessageHeader->setCommonFlag(DataMessageHeader::CommonFlags::errorInPayload, true);
+    auto dataMessageHeader = reinterpret_cast<MessageHeader*>(cmpMsg.data() + sizeof(CmpHeader));
+    dataMessageHeader->setCommonFlag(MessageHeader::CommonFlags::errorInPayload, true);
 
     Decoder decoder;
     auto packets = decoder.decode(cmpMsg.data(), cmpMsg.size());
@@ -193,13 +193,13 @@ TEST_F(DecoderFixture, SegmentationOneStream)
 {
     constexpr size_t segmentCount = 4;
     constexpr size_t ethDataSize =
-        ethernetPacketSize - sizeof(CmpHeader) - sizeof(DataMessageHeader) - sizeof(EthernetPayload::Header);
+        ethernetPacketSize - sizeof(CmpHeader) - sizeof(MessageHeader) - sizeof(EthernetPayload::Header);
     constexpr size_t payloadSizeAll = (segmentCount) * (ethDataSize + sizeof(EthernetPayload::Header));
 
     auto cmpMsgEth = createEthernetPacket(ethernetPacketSize);
     auto cmpMessageHeader = reinterpret_cast<CmpHeader*>(cmpMsgEth.data());
     cmpMessageHeader->setSequenceCounter(1);
-    auto dataMessageHeader = reinterpret_cast<DataMessageHeader*>(cmpMsgEth.data() + sizeof(CmpHeader));
+    auto dataMessageHeader = reinterpret_cast<MessageHeader*>(cmpMsgEth.data() + sizeof(CmpHeader));
     dataMessageHeader->setSegmentType(SegmentType::firstSegment);
 
     Decoder decoder;
@@ -227,11 +227,11 @@ TEST_F(DecoderFixture, SegmentationMultipleStreams)
     constexpr uint8_t streamId2 = streamId + 1;
     constexpr size_t segmentCount = 3;
     constexpr size_t ethDataSize =
-        ethernetPacketSize - sizeof(CmpHeader) - sizeof(DataMessageHeader) - sizeof(EthernetPayload::Header);
+        ethernetPacketSize - sizeof(CmpHeader) - sizeof(MessageHeader) - sizeof(EthernetPayload::Header);
     constexpr size_t payloadSizeAll = (segmentCount) * (ethDataSize + sizeof(EthernetPayload::Header));
 
     auto cmpMsgEth = createEthernetPacket(ethernetPacketSize);
-    auto dataMessageHeader = reinterpret_cast<DataMessageHeader*>(cmpMsgEth.data() + sizeof(CmpHeader));
+    auto dataMessageHeader = reinterpret_cast<MessageHeader*>(cmpMsgEth.data() + sizeof(CmpHeader));
     auto cmpMessageHeader = reinterpret_cast<CmpHeader*>(cmpMsgEth.data());
     Decoder decoder;
 
@@ -278,11 +278,11 @@ TEST_F(DecoderFixture, SegmentationMultipleDevices)
     static constexpr uint16_t deviceId2 = deviceId + 1;
     constexpr size_t segmentCount = 3;
     constexpr size_t ethDataSize =
-        ethernetPacketSize - sizeof(CmpHeader) - sizeof(DataMessageHeader) - sizeof(EthernetPayload::Header);
+        ethernetPacketSize - sizeof(CmpHeader) - sizeof(MessageHeader) - sizeof(EthernetPayload::Header);
     constexpr size_t payloadSizeAll = (segmentCount) * (ethDataSize + sizeof(EthernetPayload::Header));
 
     auto cmpMsgEth = createEthernetPacket(ethernetPacketSize);
-    auto dataMessageHeader = reinterpret_cast<DataMessageHeader*>(cmpMsgEth.data() + sizeof(CmpHeader));
+    auto dataMessageHeader = reinterpret_cast<MessageHeader*>(cmpMsgEth.data() + sizeof(CmpHeader));
     auto cmpMessageHeader = reinterpret_cast<CmpHeader*>(cmpMsgEth.data());
     Decoder decoder;
 
@@ -329,11 +329,11 @@ TEST_F(DecoderFixture, SegmentedUnsegmented)
     static constexpr uint8_t streamId2 = streamId + 1;
     constexpr size_t segmentCount = 3;
     constexpr size_t ethDataSize =
-        ethernetPacketSize - sizeof(CmpHeader) - sizeof(DataMessageHeader) - sizeof(EthernetPayload::Header);
+        ethernetPacketSize - sizeof(CmpHeader) - sizeof(MessageHeader) - sizeof(EthernetPayload::Header);
     constexpr size_t payloadSizeAll = (segmentCount) * (ethDataSize + sizeof(EthernetPayload::Header));
 
     auto cmpMsgEth = createEthernetPacket(ethernetPacketSize);
-    auto dataMessageHeader = reinterpret_cast<DataMessageHeader*>(cmpMsgEth.data() + sizeof(CmpHeader));
+    auto dataMessageHeader = reinterpret_cast<MessageHeader*>(cmpMsgEth.data() + sizeof(CmpHeader));
     auto cmpMessageHeader = reinterpret_cast<CmpHeader*>(cmpMsgEth.data());
     Decoder decoder;
 
@@ -380,7 +380,7 @@ TEST_F(DecoderFixture, SegmentedUnsegmented)
 TEST_F(DecoderFixture, SegmentedUnsegemntedSameStreams)
 {
     auto cmpMsgEth = createEthernetPacket(ethernetPacketSize);
-    auto dataMessageHeader = reinterpret_cast<DataMessageHeader*>(cmpMsgEth.data() + sizeof(CmpHeader));
+    auto dataMessageHeader = reinterpret_cast<MessageHeader*>(cmpMsgEth.data() + sizeof(CmpHeader));
     auto cmpMessageHeader = reinterpret_cast<CmpHeader*>(cmpMsgEth.data());
     Decoder decoder;
 
@@ -410,7 +410,7 @@ TEST_F(DecoderFixture, SegmentationWrongSequenceCounter)
     auto cmpMsgEth = createEthernetPacket(ethernetPacketSize);
     auto cmpMessageHeader = reinterpret_cast<CmpHeader*>(cmpMsgEth.data());
     cmpMessageHeader->setSequenceCounter(1);
-    auto dataMessageHeader = reinterpret_cast<DataMessageHeader*>(cmpMsgEth.data() + sizeof(CmpHeader));
+    auto dataMessageHeader = reinterpret_cast<MessageHeader*>(cmpMsgEth.data() + sizeof(CmpHeader));
     dataMessageHeader->setSegmentType(SegmentType::firstSegment);
 
     Decoder decoder;
@@ -431,7 +431,7 @@ TEST_F(DecoderFixture, SegmentationWrongVersion)
     auto cmpMsgEth = createEthernetPacket(ethernetPacketSize);
     auto cmpMessageHeader = reinterpret_cast<CmpHeader*>(cmpMsgEth.data());
     cmpMessageHeader->setSequenceCounter(1);
-    auto dataMessageHeader = reinterpret_cast<DataMessageHeader*>(cmpMsgEth.data() + sizeof(CmpHeader));
+    auto dataMessageHeader = reinterpret_cast<MessageHeader*>(cmpMsgEth.data() + sizeof(CmpHeader));
     dataMessageHeader->setSegmentType(SegmentType::firstSegment);
 
     Decoder decoder;
@@ -450,7 +450,7 @@ TEST_F(DecoderFixture, SegmentationWrongMessageType)
     auto cmpMsgEth = createEthernetPacket(ethernetPacketSize);
     auto cmpMessageHeader = reinterpret_cast<CmpHeader*>(cmpMsgEth.data());
     cmpMessageHeader->setSequenceCounter(1);
-    auto dataMessageHeader = reinterpret_cast<DataMessageHeader*>(cmpMsgEth.data() + sizeof(CmpHeader));
+    auto dataMessageHeader = reinterpret_cast<MessageHeader*>(cmpMsgEth.data() + sizeof(CmpHeader));
     dataMessageHeader->setSegmentType(SegmentType::firstSegment);
 
     Decoder decoder;

@@ -7,7 +7,7 @@
 
 using ASAM::CMP::EthernetPayload;
 using ASAM::CMP::Payload;
-using PayloadType = ASAM::CMP::DataMessageHeader::PayloadType;
+using PayloadType = ASAM::CMP::MessageHeader::PayloadType;
 
 class EthernetPayloadTest : public ::testing::Test
 {

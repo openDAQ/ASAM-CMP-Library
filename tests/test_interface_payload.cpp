@@ -7,7 +7,7 @@
 
 using ASAM::CMP::InterfacePayload;
 using ASAM::CMP::Payload;
-using PayloadType = ASAM::CMP::DataMessageHeader::PayloadType;
+using PayloadType = ASAM::CMP::MessageHeader::PayloadType;
 
 class InterfacePayloadTest : public ::testing::Test
 {
