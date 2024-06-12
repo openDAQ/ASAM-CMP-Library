@@ -68,13 +68,14 @@ bool operator==(const Packet& lhs, const Packet& rhs) noexcept
         return lhs.getPayloadSize() == rhs.getPayloadSize();
 }
 
-void swap(Packet& lhs, Packet& rhs)
+bool operator!=(const Packet& lhs, const Packet& rhs) noexcept
 {
-    using std::swap;
-    swap(lhs.version, rhs.version);
-    swap(lhs.streamId, rhs.streamId);
-    swap(lhs.deviceId, rhs.deviceId);
-    swap(lhs.payload, rhs.payload);
+    return !operator==(lhs, rhs);
+}
+
+bool Packet::isValid() const
+{
+    return messageType != CmpHeader::MessageType::undefined;
 }
 
 uint8_t Packet::getVersion() const
@@ -127,6 +128,11 @@ const Payload& Packet::getPayload() const
     return *payload;
 }
 
+Payload& Packet::getPayload()
+{
+    return *payload;
+}
+
 bool Packet::isValidPacket(const uint8_t* data, const size_t size)
 {
     auto header = reinterpret_cast<const MessageHeader*>(data);
@@ -163,6 +169,16 @@ std::unique_ptr<Payload> Packet::create(const PayloadType type, const uint8_t* d
     }
     // In case of payload is not valid
     return std::make_unique<Payload>(PayloadType::invalid, data, size);
+}
+
+void swap(Packet& lhs, Packet& rhs) noexcept
+{
+    using std::swap;
+    swap(lhs.messageType, rhs.messageType);
+    swap(lhs.version, rhs.version);
+    swap(lhs.streamId, rhs.streamId);
+    swap(lhs.deviceId, rhs.deviceId);
+    swap(lhs.payload, rhs.payload);
 }
 
 END_NAMESPACE_ASAM_CMP

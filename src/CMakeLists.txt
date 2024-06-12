@@ -15,6 +15,9 @@ set(SRC_Headers ../include/${LIB_NAME}/common.h
                 ../include/${LIB_NAME}/analog_payload.h
                 ../include/${LIB_NAME}/capture_module_payload.h
                 ../include/${LIB_NAME}/interface_payload.h
+                ../include/${LIB_NAME}/status.h
+                ../include/${LIB_NAME}/device_status.h
+                ../include/${LIB_NAME}/interface_status.h
 )
 
 set(SRC_Sources cmp_header.cpp
@@ -30,6 +33,9 @@ set(SRC_Sources cmp_header.cpp
                 analog_payload.cpp
                 capture_module_payload.cpp
                 interface_payload.cpp
+                status.cpp
+                device_status.cpp
+                interface_status.cpp
 )
 
 add_library(${LIB_NAME} STATIC ${SRC_Headers} ${SRC_Sources})

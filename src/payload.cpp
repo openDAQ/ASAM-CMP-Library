@@ -53,6 +53,12 @@ Payload& Payload::operator=(const Payload& other)
     return *this;
 }
 
+Payload& Payload::operator=(Payload&& other) noexcept
+{
+    swap(*this, other);
+    return *this;
+}
+
 bool operator==(const Payload& lhs, const Payload& rhs) noexcept
 {
     if (lhs.getType() != rhs.getType())
@@ -74,12 +80,25 @@ bool operator==(const Payload& lhs, const Payload& rhs) noexcept
     return true;
 }
 
-Payload& Payload::operator=(Payload&& other) noexcept
+Payload::PayloadType Payload::getType() const
 {
-
-    swap(*this, other);
-    return *this;
+    return type;
 }
 
+size_t Payload::getSize() const
+{
+    return payloadData.size();
+}
+
+const uint8_t* Payload::getRawPayload() const
+{
+    return payloadData.data();
+}
+
+void swap(Payload& lhs, Payload& rhs) noexcept
+{
+    std::swap(lhs.type, rhs.type);
+    std::swap(lhs.payloadData, rhs.payloadData);
+}
 
 END_NAMESPACE_ASAM_CMP
