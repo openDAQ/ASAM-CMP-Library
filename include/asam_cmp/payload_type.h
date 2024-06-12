@@ -12,7 +12,7 @@ public:
     enum
     {
         // Data message payload type
-        invalid = 0x0100,
+        invalid = 0x0000,
         can = 0x0101,
         canFd = 0x0102,
         lin = 0x0103,

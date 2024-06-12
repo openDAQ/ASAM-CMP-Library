@@ -3,6 +3,8 @@
 
 #include <asam_cmp/packet.h>
 #include <asam_cmp/can_fd_payload.h>
+#include <asam_cmp/interface_payload.h>
+#include <asam_cmp/capture_module_payload.h>
 
 #include "create_message.h"
 
@@ -10,6 +12,8 @@ using ASAM::CMP::CanPayload;
 using ASAM::CMP::CanFdPayload;
 using ASAM::CMP::Decoder;
 using ASAM::CMP::EthernetPayload;
+using ASAM::CMP::CaptureModulePayload;
+using ASAM::CMP::InterfacePayload;
 using ASAM::CMP::Packet;
 using ASAM::CMP::Payload;
 using ASAM::CMP::PayloadType;
@@ -22,8 +26,8 @@ public:
     PacketFixture()
     {
         std::vector<uint8_t> canMsg(canDataSize);
-        auto payloadMsg = createCanDataMessage(arbId, canMsg);
-        dataMsg = createDataMessage(payloadType, payloadMsg);
+        canPayloadMsg = createCanDataMessage(arbId, canMsg);
+        canDataMsg = createDataMessage(payloadType, canPayloadMsg);
     }
 
 protected:
@@ -32,14 +36,27 @@ protected:
     static constexpr uint32_t arbId = 87;
 
 protected:
-    std::vector<uint8_t> dataMsg;
+    std::vector<uint8_t> canDataMsg;
+    std::vector<uint8_t> canPayloadMsg;
 };
+
+TEST_F(PacketFixture, DefaultConstructor)
+{
+    Packet p;
+    ASSERT_FALSE(p.isValid());
+}
+
+TEST_F(PacketFixture, IsValid)
+{
+    Packet packet(CmpHeader::MessageType::data, canDataMsg.data(), canDataMsg.size());
+    ASSERT_TRUE(packet.isValid());
+}
 
 TEST_F(PacketFixture, Version)
 {
     constexpr uint8_t newVersion = 99;
 
-    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
+    Packet packet(CmpHeader::MessageType::data, canDataMsg.data(), canDataMsg.size());
     packet.setVersion(newVersion);
     auto version = packet.getVersion();
     ASSERT_EQ(version, newVersion);
@@ -49,7 +66,7 @@ TEST_F(PacketFixture, DeviceId)
 {
     constexpr uint8_t newId = 99;
 
-    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
+    Packet packet(CmpHeader::MessageType::data, canDataMsg.data(), canDataMsg.size());
     packet.setDeviceId(newId);
     auto id = packet.getDeviceId();
     ASSERT_EQ(id, newId);
@@ -59,7 +76,7 @@ TEST_F(PacketFixture, StreamId)
 {
     constexpr uint8_t newId = 99;
 
-    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
+    Packet packet(CmpHeader::MessageType::data, canDataMsg.data(), canDataMsg.size());
     packet.setStreamId(newId);
     auto id = packet.getStreamId();
     ASSERT_EQ(id, newId);
@@ -67,14 +84,30 @@ TEST_F(PacketFixture, StreamId)
 
 TEST_F(PacketFixture, MessageTypeData)
 {
-    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
-    auto type = packet.getMessageType();
-    ASSERT_EQ(type, CmpHeader::MessageType::data);
+    Packet packet(CmpHeader::MessageType::data, canDataMsg.data(), canDataMsg.size());
+    ASSERT_EQ(packet.getMessageType(), CmpHeader::MessageType::data);
+}
+
+TEST_F(PacketFixture, PayloadSize)
+{
+    Packet packet(CmpHeader::MessageType::data, canDataMsg.data(), canDataMsg.size());
+    ASSERT_EQ(packet.getPayloadSize(), canPayloadMsg.size());
+}
+
+TEST_F(PacketFixture, PayloadAccess)
+{
+    CanPayload canPayload(canPayloadMsg.data(), canPayloadMsg.size());
+    Packet packet;
+    packet.setPayload(canPayload);
+    ASSERT_TRUE(packet.isValid());
+
+    auto& newPayload = packet.getPayload();
+    ASSERT_EQ(newPayload, canPayload);
 }
 
 TEST_F(PacketFixture, CanPayload)
 {
-    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
+    Packet packet(CmpHeader::MessageType::data, canDataMsg.data(), canDataMsg.size());
     const auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), PayloadType::can);
 }
@@ -83,8 +116,8 @@ TEST_F(PacketFixture, CanFdPayload)
 {
     std::vector<uint8_t> canMsg(canDataSize);
     const auto payloadMsg = createCanDataMessage(arbId, canMsg);
-    dataMsg = createDataMessage(PayloadType::canFd, payloadMsg);
-    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
+    canDataMsg = createDataMessage(PayloadType::canFd, payloadMsg);
+    Packet packet(CmpHeader::MessageType::data, canDataMsg.data(), canDataMsg.size());
     const auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), PayloadType::canFd);
 }
@@ -93,8 +126,8 @@ TEST_F(PacketFixture, AnalogPayload)
 {
     std::vector<uint8_t> canMsg(canDataSize);
     const auto payloadMsg = createAnalogDataMessage(canMsg);
-    dataMsg = createDataMessage(PayloadType::analog, payloadMsg);
-    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
+    canDataMsg = createDataMessage(PayloadType::analog, payloadMsg);
+    Packet packet(CmpHeader::MessageType::data, canDataMsg.data(), canDataMsg.size());
     const auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), PayloadType::analog);
 }
@@ -103,8 +136,8 @@ TEST_F(PacketFixture, EthernetPayload)
 {
     std::vector<uint8_t> canMsg(canDataSize);
     const auto payloadMsg = createEthernetDataMessage(canMsg);
-    dataMsg = createDataMessage(PayloadType::ethernet, payloadMsg);
-    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
+    canDataMsg = createDataMessage(PayloadType::ethernet, payloadMsg);
+    Packet packet(CmpHeader::MessageType::data, canDataMsg.data(), canDataMsg.size());
     const auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), PayloadType::ethernet);
 }
@@ -115,8 +148,8 @@ TEST_F(PacketFixture, UnknownDataMessagePayload)
 
     std::vector<uint8_t> canMsg(canDataSize);
     const auto payloadMsg = createEthernetDataMessage(canMsg);
-    dataMsg = createDataMessage(unknowPayload, payloadMsg);
-    Packet packet(unknowPayload.getMessageType(), dataMsg.data(), dataMsg.size());
+    canDataMsg = createDataMessage(unknowPayload, payloadMsg);
+    Packet packet(unknowPayload.getMessageType(), canDataMsg.data(), canDataMsg.size());
     const auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), unknowPayload);
 }
@@ -135,8 +168,10 @@ TEST_F(PacketFixture, CaptureModulePayload)
     const auto cmDataMsg = createDataMessage(PayloadType::cmStatMsg, payloadMsg);
 
     const Packet packet(CmpHeader::MessageType::status, cmDataMsg.data(), cmDataMsg.size());
-    const auto& payload = packet.getPayload();
+    const auto& payload = static_cast<const CaptureModulePayload&>(packet.getPayload());
+    ASSERT_EQ(packet.getMessageType(), CmpHeader::MessageType::status);
     ASSERT_EQ(payload.getType(), PayloadType::cmStatMsg);
+    ASSERT_EQ(payload.getDeviceDescription(), deviceDescription);
 }
 
 TEST_F(PacketFixture, InterfacePayload)
@@ -146,10 +181,11 @@ TEST_F(PacketFixture, InterfacePayload)
     const std::vector<uint8_t> vendorData = {3, 3, 3};
 
     const auto payloadMsg = createInterfaceDataMessage(interfaceId, streamIds, vendorData);
-    dataMsg = createDataMessage(PayloadType::ifStatMsg, payloadMsg);
-    Packet packet(CmpHeader::MessageType::status, dataMsg.data(), dataMsg.size());
-    const auto& payload = packet.getPayload();
+    canDataMsg = createDataMessage(PayloadType::ifStatMsg, payloadMsg);
+    Packet packet(CmpHeader::MessageType::status, canDataMsg.data(), canDataMsg.size());
+    const auto& payload = static_cast<const InterfacePayload&>(packet.getPayload());
     ASSERT_EQ(payload.getType(), PayloadType::ifStatMsg);
+    ASSERT_EQ(payload.getStreamIdsSize(), streamIds.size());
 }
 
 TEST_F(PacketFixture, UnknownStatusMessagePayload)
@@ -157,42 +193,42 @@ TEST_F(PacketFixture, UnknownStatusMessagePayload)
     constexpr PayloadType unknowPayload{CmpHeader::MessageType::status, 0xFE};
     std::vector<uint8_t> canMsg(canDataSize);
     auto payloadMsg = createEthernetDataMessage(canMsg);
-    dataMsg = createDataMessage(unknowPayload, payloadMsg);
-    Packet packet(unknowPayload.getMessageType(), dataMsg.data(), dataMsg.size());
+    canDataMsg = createDataMessage(unknowPayload, payloadMsg);
+    Packet packet(unknowPayload.getMessageType(), canDataMsg.data(), canDataMsg.size());
     auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), unknowPayload);
 }
 
 TEST_F(PacketFixture, CanPayloadErrorFlags)
 {
-    auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(MessageHeader));
+    auto canHeader = reinterpret_cast<CanPayload::Header*>(canDataMsg.data() + sizeof(MessageHeader));
     canHeader->setFlags(1);
-    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
+    Packet packet(CmpHeader::MessageType::data, canDataMsg.data(), canDataMsg.size());
     auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), PayloadType::invalid);
 }
 
 TEST_F(PacketFixture, CanPayloadErrorPosition)
 {
-    auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(MessageHeader));
+    auto canHeader = reinterpret_cast<CanPayload::Header*>(canDataMsg.data() + sizeof(MessageHeader));
     canHeader->setErrorPosition(1);
-    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
+    Packet packet(CmpHeader::MessageType::data, canDataMsg.data(), canDataMsg.size());
     auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), PayloadType::invalid);
 }
 
 TEST_F(PacketFixture, CanPayloadWrongDataLength)
 {
-    auto canHeader = reinterpret_cast<CanPayload::Header*>(dataMsg.data() + sizeof(MessageHeader));
+    auto canHeader = reinterpret_cast<CanPayload::Header*>(canDataMsg.data() + sizeof(MessageHeader));
     canHeader->setDataLength(canHeader->getDataLength() + 1);
-    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
+    Packet packet(CmpHeader::MessageType::data, canDataMsg.data(), canDataMsg.size());
     auto& payload = packet.getPayload();
     ASSERT_EQ(payload.getType(), PayloadType::invalid);
 }
 
 TEST_F(PacketFixture, Copy)
 {
-    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
+    Packet packet(CmpHeader::MessageType::data, canDataMsg.data(), canDataMsg.size());
     Packet packetCopy(packet);
 
     ASSERT_TRUE(packet == packetCopy);
@@ -200,8 +236,8 @@ TEST_F(PacketFixture, Copy)
 
 TEST_F(PacketFixture, CopyAssignment)
 {
-    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
-    Packet packetCopy(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size() / 2);
+    Packet packet(CmpHeader::MessageType::data, canDataMsg.data(), canDataMsg.size());
+    Packet packetCopy(CmpHeader::MessageType::data, canDataMsg.data(), canDataMsg.size() / 2);
     packetCopy = packet;
 
     ASSERT_TRUE(packet == packetCopy);
@@ -209,7 +245,7 @@ TEST_F(PacketFixture, CopyAssignment)
 
 TEST_F(PacketFixture, Move)
 {
-    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
+    Packet packet(CmpHeader::MessageType::data, canDataMsg.data(), canDataMsg.size());
     Packet packetCopy(packet);
 
     Packet checker(std::move(packet));
@@ -219,7 +255,7 @@ TEST_F(PacketFixture, Move)
 
 TEST_F(PacketFixture, MoveAssignment)
 {
-    Packet packet(CmpHeader::MessageType::data, dataMsg.data(), dataMsg.size());
+    Packet packet(CmpHeader::MessageType::data, canDataMsg.data(), canDataMsg.size());
     Packet packetCopy(packet);
 
     std::vector<uint8_t> checkerData(16, 0);

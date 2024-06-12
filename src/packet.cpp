@@ -1,10 +1,11 @@
-#include <asam_cmp/payload_type.h>
-#include <asam_cmp/can_payload.h>
+#include <asam_cmp/analog_payload.h>
 #include <asam_cmp/can_fd_payload.h>
+#include <asam_cmp/can_payload.h>
 #include <asam_cmp/capture_module_payload.h>
 #include <asam_cmp/ethernet_payload.h>
-#include <asam_cmp/analog_payload.h>
+#include <asam_cmp/interface_payload.h>
 #include <asam_cmp/packet.h>
+#include <asam_cmp/payload_type.h>
 #include <stdexcept>
 
 BEGIN_NAMESPACE_ASAM_CMP
@@ -163,6 +164,10 @@ std::unique_ptr<Payload> Packet::create(const PayloadType type, const uint8_t* d
         case PayloadType::cmStatMsg:
             if (CaptureModulePayload::isValidPayload(data, size))
                 return std::make_unique<CaptureModulePayload>(data, size);
+            break;
+        case PayloadType::ifStatMsg:
+            if (CaptureModulePayload::isValidPayload(data, size))
+                return std::make_unique<InterfacePayload>(data, size);
             break;
         default:
             return std::make_unique<Payload>(type, data, size);
