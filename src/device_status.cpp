@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include <asam_cmp/device_status.h>
 #include <asam_cmp/interface_payload.h>
 

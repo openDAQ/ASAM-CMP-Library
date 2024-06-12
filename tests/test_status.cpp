@@ -41,21 +41,21 @@ protected:
 
 TEST_F(StatusTest, Empty)
 {
-    ASSERT_EQ(status.getDeviceStatusCount(), 0);
+    ASSERT_EQ(status.getDeviceStatusCount(), 0u);
 }
 
 TEST_F(StatusTest, UpdateClear)
 {
     status.update(cmPacket);
-    ASSERT_EQ(status.getDeviceStatusCount(), 1);
+    ASSERT_EQ(status.getDeviceStatusCount(), 1u);
     status.clear();
-    ASSERT_EQ(status.getDeviceStatusCount(), 0);
+    ASSERT_EQ(status.getDeviceStatusCount(), 0u);
 }
 
 TEST_F(StatusTest, Access)
 {
     status.update(cmPacket);
-    ASSERT_EQ(status.getDeviceStatusCount(), 1);
+    ASSERT_EQ(status.getDeviceStatusCount(), 1u);
     DeviceStatus& deviceStatus = status.getDeviceStatus(0);
     Packet& packet = deviceStatus.getPacket();
     ASSERT_EQ(packet, cmPacket);
@@ -65,7 +65,7 @@ TEST_F(StatusTest, ConstantAccess)
 {
     status.update(cmPacket);
     const Status& constStatus = status;
-    ASSERT_EQ(constStatus.getDeviceStatusCount(), 1);
+    ASSERT_EQ(constStatus.getDeviceStatusCount(), 1u);
     const DeviceStatus& deviceStatus = constStatus.getDeviceStatus(0);
     const Packet& packet = deviceStatus.getPacket();
     ASSERT_EQ(packet, cmPacket);
@@ -74,8 +74,8 @@ TEST_F(StatusTest, ConstantAccess)
 TEST_F(StatusTest, EmptyInterfaces)
 {
     status.update(cmPacket);
-    ASSERT_EQ(status.getDeviceStatusCount(), 1);
-    ASSERT_EQ(status.getDeviceStatus(0).getInterfaceStatusCount(), 0);
+    ASSERT_EQ(status.getDeviceStatusCount(), 1u);
+    ASSERT_EQ(status.getDeviceStatus(0).getInterfaceStatusCount(), 0u);
 }
 
 TEST_F(StatusTest, SameDeviceId)
@@ -83,12 +83,12 @@ TEST_F(StatusTest, SameDeviceId)
     constexpr uint8_t newStreamId = 66;
 
     status.update(cmPacket);
-    ASSERT_EQ(status.getDeviceStatusCount(), 1);
+    ASSERT_EQ(status.getDeviceStatusCount(), 1u);
     Packet packet = status.getDeviceStatus(0).getPacket();
     ASSERT_EQ(packet, cmPacket);
     packet.setStreamId(newStreamId);
     status.update(packet);
-    ASSERT_EQ(status.getDeviceStatusCount(), 1);
+    ASSERT_EQ(status.getDeviceStatusCount(), 1u);
 }
 
 TEST_F(StatusTest, NewDeviceId)
@@ -97,11 +97,11 @@ TEST_F(StatusTest, NewDeviceId)
     constexpr uint8_t newDeviceId = 77;
 
     status.update(cmPacket);
-    ASSERT_EQ(status.getDeviceStatusCount(), 1);
+    ASSERT_EQ(status.getDeviceStatusCount(), 1u);
     Packet packet = status.getDeviceStatus(0).getPacket();
     ASSERT_EQ(packet, cmPacket);
     packet.setStreamId(newStreamId);
     packet.setDeviceId(newDeviceId);
     status.update(packet);
-    ASSERT_EQ(status.getDeviceStatusCount(), 2);
+    ASSERT_EQ(status.getDeviceStatusCount(), 2u);
 }

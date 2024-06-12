@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include <asam_cmp/status.h>
 
 BEGIN_NAMESPACE_ASAM_CMP

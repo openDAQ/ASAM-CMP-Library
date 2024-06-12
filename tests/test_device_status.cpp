@@ -51,7 +51,7 @@ protected:
 
 TEST_F(DeviceStatusTest, Empty)
 {
-    ASSERT_EQ(deviceStatus.getInterfaceStatusCount(), 0);
+    ASSERT_EQ(deviceStatus.getInterfaceStatusCount(), 0u);
     ASSERT_FALSE(deviceStatus.getPacket().isValid());
 }
 
@@ -59,14 +59,14 @@ TEST_F(DeviceStatusTest, UpdateWithCaptureModuleMessage)
 {
     deviceStatus.update(cmPacket);
     ASSERT_TRUE(deviceStatus.getPacket().isValid());
-    ASSERT_EQ(deviceStatus.getInterfaceStatusCount(), 0);
+    ASSERT_EQ(deviceStatus.getInterfaceStatusCount(), 0u);
 }
 
 TEST_F(DeviceStatusTest, UpdateWithInterfaceMessage)
 {
     deviceStatus.update(ifPacket);
     ASSERT_FALSE(deviceStatus.getPacket().isValid());
-    ASSERT_EQ(deviceStatus.getInterfaceStatusCount(), 1);
+    ASSERT_EQ(deviceStatus.getInterfaceStatusCount(), 1u);
 }
 
 TEST_F(DeviceStatusTest, AccessToPacket)
@@ -91,7 +91,7 @@ TEST_F(DeviceStatusTest, AccessToConstantPacket)
 TEST_F(DeviceStatusTest, AccessToInterfaces)
 {
     deviceStatus.update(ifPacket);
-    ASSERT_EQ(deviceStatus.getInterfaceStatusCount(), 1);
+    ASSERT_EQ(deviceStatus.getInterfaceStatusCount(), 1u);
     InterfaceStatus& interfaceStatus = deviceStatus.getInterfaceStatus(0);
     auto packet = interfaceStatus.getPacket();
     ASSERT_EQ(packet, ifPacket);
@@ -101,7 +101,7 @@ TEST_F(DeviceStatusTest, AccessToConstantInterfaces)
 {
     deviceStatus.update(ifPacket);
     const DeviceStatus& constDeviceStatus = deviceStatus;
-    ASSERT_EQ(constDeviceStatus.getInterfaceStatusCount(), 1);
+    ASSERT_EQ(constDeviceStatus.getInterfaceStatusCount(), 1u);
     const InterfaceStatus& interfaceStatus = constDeviceStatus.getInterfaceStatus(0);
     const Packet& packet = interfaceStatus.getPacket();
     ASSERT_EQ(packet, ifPacket);
@@ -112,13 +112,13 @@ TEST_F(DeviceStatusTest, SameInterfaceId)
     constexpr uint8_t newStreamId = 66;
 
     deviceStatus.update(ifPacket);
-    ASSERT_EQ(deviceStatus.getInterfaceStatusCount(), 1);
+    ASSERT_EQ(deviceStatus.getInterfaceStatusCount(), 1u);
     Packet packet = deviceStatus.getInterfaceStatus(0).getPacket();
     ASSERT_EQ(packet, ifPacket);
 
     packet.setStreamId(newStreamId);
     deviceStatus.update(packet);
-    ASSERT_EQ(deviceStatus.getInterfaceStatusCount(), 1);
+    ASSERT_EQ(deviceStatus.getInterfaceStatusCount(), 1u);
 }
 
 TEST_F(DeviceStatusTest, NewInterfaceId)
@@ -126,12 +126,12 @@ TEST_F(DeviceStatusTest, NewInterfaceId)
     const uint32_t newInterfaceId = 9999;
 
     deviceStatus.update(ifPacket);
-    ASSERT_EQ(deviceStatus.getInterfaceStatusCount(), 1);
+    ASSERT_EQ(deviceStatus.getInterfaceStatusCount(), 1u);
     Packet packet = deviceStatus.getInterfaceStatus(0).getPacket();
     ASSERT_EQ(packet, ifPacket);
 
     InterfacePayload& interfacePayload = static_cast<InterfacePayload&>(packet.getPayload());
     interfacePayload.setInterfaceId(newInterfaceId);
     deviceStatus.update(packet);
-    ASSERT_EQ(deviceStatus.getInterfaceStatusCount(), 2);
+    ASSERT_EQ(deviceStatus.getInterfaceStatusCount(), 2u);
 }
