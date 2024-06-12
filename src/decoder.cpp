@@ -1,58 +1,6 @@
 #include <asam_cmp/decoder.h>
 
-#include <stdexcept>
-
 BEGIN_NAMESPACE_ASAM_CMP
-
-uint8_t Decoder::CmpHeader::getVersion() const
-{
-    return version;
-}
-
-void Decoder::CmpHeader::setVersion(const uint8_t newVersion)
-{
-    version = newVersion;
-}
-
-uint16_t Decoder::CmpHeader::getDeviceId() const
-{
-    return swapEndian(deviceId);
-}
-
-void Decoder::CmpHeader::setDeviceId(const uint16_t id)
-{
-    deviceId = swapEndian(id);
-}
-
-Packet::MessageType Decoder::CmpHeader::getMessageType() const
-{
-    return static_cast<Packet::MessageType>(messageType);
-}
-
-void Decoder::CmpHeader::setMessageType(const Packet::MessageType type)
-{
-    messageType = to_underlying(type);
-}
-
-uint8_t Decoder::CmpHeader::getStreamId() const
-{
-    return streamId;
-}
-
-void Decoder::CmpHeader::setStreamId(const uint8_t id)
-{
-    streamId = id;
-}
-
-uint16_t Decoder::CmpHeader::getSequenceCounter() const
-{
-    return swapEndian(sequenceCounter);
-}
-
-void Decoder::CmpHeader::setSequenceCounter(const uint16_t counter)
-{
-    sequenceCounter = swapEndian(counter);
-}
 
 std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std::size_t size)
 {
@@ -76,7 +24,7 @@ std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std
             break;
         }
 
-        if (!Packet::isSegmentedPacket(packetPtr, curSize))
+        if (!isSegmentedPacket(packetPtr, curSize))
         {
             segmentedPackets.erase({deviceId, streamId});
 
@@ -90,7 +38,7 @@ std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std
         }
         else
         {
-            if (Packet::isFirstSegment(packetPtr, curSize))
+            if (isFirstSegment(packetPtr, curSize))
             {
                 SegmentedPacket segmentedPacket(
                     packetPtr, curSize, header->getVersion(), header->getMessageType(), header->getSequenceCounter());
@@ -117,7 +65,7 @@ std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std
             break;
         }
 
-        const auto packetSize = packet->getPayloadSize() + sizeof(Packet::MessageHeader);
+        const auto packetSize = packet->getPayloadSize() + sizeof(MessageHeader);
         packetPtr += packetSize;
         curSize -= static_cast<int>(packetSize);
     }
@@ -125,8 +73,19 @@ std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std
     return packets;
 }
 
+
+bool Decoder::isSegmentedPacket(const uint8_t* data, const size_t)
+{
+    return reinterpret_cast<const MessageHeader*>(data)->getSegmentType() != MessageHeader::SegmentType::unsegmented;
+}
+
+bool Decoder::isFirstSegment(const uint8_t* data, const size_t)
+{
+    return reinterpret_cast<const MessageHeader*>(data)->getSegmentType() == MessageHeader::SegmentType::firstSegment;
+}
+
 Decoder::SegmentedPacket::SegmentedPacket(
-    const uint8_t* data, const size_t size, const uint8_t version, const Packet::MessageType messageType, const uint16_t sequenceCounter)
+    const uint8_t* data, const size_t size, const uint8_t version, const CmpHeader::MessageType messageType, const uint16_t sequenceCounter)
     : segmentType(SegmentType::firstSegment)
     , curVersion(version)
     , curMessageType(messageType)
@@ -137,7 +96,7 @@ Decoder::SegmentedPacket::SegmentedPacket(
 }
 
 bool Decoder::SegmentedPacket::addSegment(
-    const uint8_t* data, const size_t size, const uint8_t version, const Packet::MessageType messageType, const uint16_t sequenceCounter)
+    const uint8_t* data, const size_t size, const uint8_t version, const CmpHeader::MessageType messageType, const uint16_t sequenceCounter)
 {
     if (curVersion != version || curMessageType != messageType || sequenceCounter != curSegment + 1)
         return false;
@@ -174,7 +133,7 @@ std::shared_ptr<Packet> Decoder::SegmentedPacket::getPacket()
     return packet;
 }
 
-Decoder::SegmentedPacket::MessageHeader* Decoder::SegmentedPacket::getHeader()
+MessageHeader* Decoder::SegmentedPacket::getHeader()
 {
     return reinterpret_cast<MessageHeader*>(payload.data());
 }

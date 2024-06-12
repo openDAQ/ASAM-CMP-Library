@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <vector>
 
+#include <asam_cmp/payload_type.h>
 #include <asam_cmp/can_payload.h>
 #include <asam_cmp/capture_module_payload.h>
 #include <asam_cmp/common.h>
@@ -131,26 +132,24 @@ inline std::vector<uint8_t> createInterfaceDataMessage(const uint32_t interfaceI
     memcpy(ptr, vendorData.data(), vendorData.size());
     ptr += vendorData.size();
 
-    assert((message.size() % 2) == 0);
-
     return message;
 }
 
-inline std::vector<uint8_t> createDataMessage(ASAM::CMP::Payload::Type payloadType, const std::vector<uint8_t>& payload)
+inline std::vector<uint8_t> createDataMessage(const ASAM::CMP::PayloadType payloadType, const std::vector<uint8_t>& payload)
 {
-    ASAM::CMP::Packet::MessageHeader header;
-    header.setPayloadType(payloadType);
+    ASAM::CMP::MessageHeader header;
+    header.setPayloadType(payloadType.getRawPayloadType());
     header.setPayloadLength(static_cast<uint16_t>(payload.size()));
 
     return createMessage(header, payload);
 }
 
 inline std::vector<uint8_t> createCmpMessage(const uint16_t deviceId,
-                                             const ASAM::CMP::Packet::MessageType messageType,
+                                             const ASAM::CMP::CmpHeader::MessageType messageType,
                                              const uint8_t streamId,
                                              const std::vector<uint8_t>& payload)
 {
-    ASAM::CMP::Decoder::CmpHeader header;
+    ASAM::CMP::CmpHeader header;
     header.setDeviceId(deviceId);
     header.setMessageType(messageType);
     header.setStreamId(streamId);

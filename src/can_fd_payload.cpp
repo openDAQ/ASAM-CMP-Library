@@ -3,7 +3,7 @@
 BEGIN_NAMESPACE_ASAM_CMP
 
 CanFdPayload::CanFdPayload(const uint8_t* data, const size_t size)
-    : CanPayloadBase(Type::canFd, data, size)
+    : CanPayloadBase(PayloadType::canFd, data, size)
 {
 }
 

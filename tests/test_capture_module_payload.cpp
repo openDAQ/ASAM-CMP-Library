@@ -6,6 +6,7 @@
 #include "create_message.h"
 
 using ASAM::CMP::CaptureModulePayload;
+using ASAM::CMP::PayloadType;
 using ASAM::CMP::Payload;
 
 class CaptureModulePayloadTest : public ::testing::Test
@@ -47,9 +48,9 @@ protected:
     std::unique_ptr<CaptureModulePayload> payload;
 };
 
-TEST_F(CaptureModulePayloadTest, Type)
+TEST_F(CaptureModulePayloadTest, PayloadType)
 {
-    ASSERT_EQ(payload->getType(), Payload::Type::cmStatMsg);
+    ASSERT_EQ(payload->getType(), PayloadType::cmStatMsg);
 }
 
 TEST_F(CaptureModulePayloadTest, Uptime)

@@ -255,7 +255,7 @@ bool CanPayloadBase::isValidPayload(const uint8_t* data, const size_t size)
     return (size >= sizeof(Header) && !header->hasError() && header->getDataLength() <= size - sizeof(Header));
 }
 
-CanPayloadBase::CanPayloadBase(const Type type, const uint8_t* data, const size_t size)
+CanPayloadBase::CanPayloadBase(const PayloadType type, const uint8_t* data, const size_t size)
     : Payload(type, data, size)
 {
 }

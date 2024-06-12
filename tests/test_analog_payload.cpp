@@ -1,12 +1,14 @@
 #include <gtest/gtest.h>
 #include <numeric>
 
+#include <asam_cmp/payload_type.h>
 #include <asam_cmp/analog_payload.h>
 
 #include "create_message.h"
 
 using ASAM::CMP::AnalogPayload;
 using ASAM::CMP::Payload;
+using ASAM::CMP::PayloadType;
 
 class AnalogPayloadTest : public ::testing::Test
 {
@@ -43,9 +45,9 @@ protected:
     std::unique_ptr<AnalogPayload> payload;
 };
 
-TEST_F(AnalogPayloadTest, Type)
+TEST_F(AnalogPayloadTest, PayloadType)
 {
-    ASSERT_EQ(payload->getType(), Payload::Type::analog);
+    ASSERT_EQ(payload->getType(), PayloadType::analog);
 }
 
 TEST_F(AnalogPayloadTest, Flags)

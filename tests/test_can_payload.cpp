@@ -3,6 +3,7 @@
 
 #include <asam_cmp/can_fd_payload.h>
 #include <asam_cmp/can_payload.h>
+#include <asam_cmp/message_header.h>
 
 #include "create_message.h"
 
@@ -10,6 +11,8 @@ using ASAM::CMP::CanFdPayload;
 using ASAM::CMP::CanPayload;
 using ASAM::CMP::CanPayloadBase;
 using ASAM::CMP::Payload;
+using ASAM::CMP::PayloadType;
+using MessageType = ASAM::CMP::CmpHeader::MessageType;
 
 class CanPayloadTest : public ::testing::Test
 {
@@ -37,13 +40,13 @@ protected:
 TEST_F(CanPayloadTest, TypeCan)
 {
     CanPayloadBase* payload = canPayload.get();
-    ASSERT_EQ(payload->getType(), Payload::Type::can);
+    ASSERT_EQ(payload->getType(), PayloadType::can);
 }
 
 TEST_F(CanPayloadTest, TypeCanFd)
 {
     CanPayloadBase* payload = canFdPayload.get();
-    ASSERT_EQ(payload->getType(), Payload::Type::canFd);
+    ASSERT_EQ(payload->getType(), PayloadType::canFd);
 }
 
 TEST_F(CanPayloadTest, Flags)
@@ -277,7 +280,7 @@ TEST_F(CanPayloadTest, Copy)
 TEST_F(CanPayloadTest, CopyAssignment)
 {
     Payload checker(*canPayload);
-    Payload payloadCopy(ASAM::CMP::Payload::Type::invalid, nullptr, 0);
+    Payload payloadCopy(PayloadType::invalid, nullptr, 0);
     
     payloadCopy = checker;
     ASSERT_TRUE(checker == payloadCopy);

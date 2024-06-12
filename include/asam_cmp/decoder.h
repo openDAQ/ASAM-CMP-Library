@@ -12,34 +12,11 @@ BEGIN_NAMESPACE_ASAM_CMP
 class Decoder final
 {
 public:
-#pragma pack(push, 1)
-
-    class CmpHeader
-    {
-        uint8_t version{1};
-        uint8_t reserved{0};
-        uint16_t deviceId{0};
-        uint8_t messageType{0};
-        uint8_t streamId{0};
-        uint16_t sequenceCounter{0};
-
-    public:
-        uint8_t getVersion() const;
-        void setVersion(const uint8_t newVersion);
-        uint16_t getDeviceId() const;
-        void setDeviceId(const uint16_t id);
-        Packet::MessageType getMessageType() const;
-        void setMessageType(const Packet::MessageType type);
-        uint8_t getStreamId() const;
-        void setStreamId(const uint8_t id);
-        uint16_t getSequenceCounter() const;
-        void setSequenceCounter(const uint16_t counter);
-    };
-
-#pragma pack(pop)
-
-public:
     std::vector<std::shared_ptr<Packet>> decode(const void* data, const std::size_t size);
+
+private:
+    static bool isSegmentedPacket(const uint8_t* data, const size_t);
+    static bool isFirstSegment(const uint8_t* data, const size_t);
 
 private:
     struct Endpoint
@@ -47,7 +24,7 @@ private:
         uint16_t deviceId{0};
         uint8_t streamId{0};
 
-        bool const operator==(const Endpoint& rhs) const
+        bool operator==(const Endpoint& rhs) const
         {
             return (deviceId == rhs.deviceId) && (streamId == rhs.streamId);
         }
@@ -63,14 +40,21 @@ private:
 
     class SegmentedPacket final
     {
-        using SegmentType = Packet::SegmentType;
-        using MessageHeader = Packet::MessageHeader;
+        using SegmentType = MessageHeader::SegmentType;
 
     public:
         SegmentedPacket() = default;
-        SegmentedPacket(const uint8_t* data, const size_t size, uint8_t version, const Packet::MessageType messageType, const uint16_t sequenceCounter);
+        SegmentedPacket(const uint8_t* data,
+                        const size_t size,
+                        uint8_t version,
+                        const CmpHeader::MessageType messageType,
+                        const uint16_t sequenceCounter);
 
-        bool addSegment(const uint8_t* data, const size_t size, const uint8_t version, const Packet::MessageType messageType, const uint16_t sequenceCounter);
+        bool addSegment(const uint8_t* data,
+                        const size_t size,
+                        const uint8_t version,
+                        const CmpHeader::MessageType messageType,
+                        const uint16_t sequenceCounter);
 
         bool isAssembled() const;
         std::shared_ptr<Packet> getPacket();
@@ -82,7 +66,7 @@ private:
         std::vector<uint8_t> payload;
         SegmentType segmentType{SegmentType::unsegmented};
         uint8_t curVersion{0};
-        Packet::MessageType curMessageType{0};
+        CmpHeader::MessageType curMessageType{0};
         uint16_t curSegment{0};
     };
 

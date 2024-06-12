@@ -36,7 +36,7 @@ void EthernetPayload::Header::setDataLength(uint16_t newDataLength)
 }
 
 EthernetPayload::EthernetPayload(const uint8_t* data, const size_t size)
-    : Payload(Type::ethernet, data, size)
+    : Payload(PayloadType::ethernet, data, size)
 {
 }
 

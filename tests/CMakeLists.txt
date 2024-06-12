@@ -4,6 +4,8 @@ set(SRC_Include
 )
 
 set(SRC_Cpp testapp.cpp
+            test_cmp_header.cpp
+            test_message_header.cpp
             test_packet.cpp
             test_decoder.cpp
             test_encoder.cpp
