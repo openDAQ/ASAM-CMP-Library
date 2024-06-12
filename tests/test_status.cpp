@@ -9,8 +9,8 @@ using ASAM::CMP::Status;
 using ASAM::CMP::DeviceStatus;
 using ASAM::CMP::Packet;
 using ASAM::CMP::Payload;
+using ASAM::CMP::PayloadType;
 using MessageType = ASAM::CMP::CmpHeader::MessageType;
-using PayloadType = ASAM::CMP::DataMessageHeader::PayloadType;
 
 class StatusTest : public ::testing::Test
 {

@@ -22,27 +22,6 @@ Payload::Payload(Payload&& other) noexcept
     swap(*this, other);
 }
 
-PayloadType Payload::getType() const
-{
-    return type;
-}
-
-size_t Payload::getSize() const
-{
-    return payloadData.size();
-}
-
-const uint8_t* Payload::getRawPayload() const
-{
-    return payloadData.data();
-}
-
-void swap(Payload& lhs, Payload& rhs) noexcept
-{
-    std::swap(lhs.type, rhs.type);
-    std::swap(lhs.payloadData, rhs.payloadData);
-}
-
 Payload& Payload::operator=(const Payload& other)
 {
     if (!(*this == other))
@@ -80,7 +59,7 @@ bool operator==(const Payload& lhs, const Payload& rhs) noexcept
     return true;
 }
 
-Payload::PayloadType Payload::getType() const
+PayloadType Payload::getType() const
 {
     return type;
 }

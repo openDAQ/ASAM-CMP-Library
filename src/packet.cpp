@@ -75,7 +75,7 @@ bool operator!=(const Packet& lhs, const Packet& rhs) noexcept
 
 bool Packet::isValid() const
 {
-    return messageType != CmpHeader::MessageType::undefined;
+    return payload ? payload->getType().isValid() : false;
 }
 
 uint8_t Packet::getVersion() const
@@ -174,7 +174,6 @@ std::unique_ptr<Payload> Packet::create(const PayloadType type, const uint8_t* d
 void swap(Packet& lhs, Packet& rhs) noexcept
 {
     using std::swap;
-    swap(lhs.messageType, rhs.messageType);
     swap(lhs.version, rhs.version);
     swap(lhs.streamId, rhs.streamId);
     swap(lhs.deviceId, rhs.deviceId);

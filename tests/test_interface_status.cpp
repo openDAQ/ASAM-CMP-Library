@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <numeric>
 
-#include <asam_cmp/data_message_header.h>
+#include <asam_cmp/message_header.h>
 #include <asam_cmp/device_status.h>
 
 #include "create_message.h"
@@ -9,8 +9,8 @@
 using ASAM::CMP::InterfacePayload;
 using ASAM::CMP::InterfaceStatus;
 using ASAM::CMP::Packet;
+using ASAM::CMP::PayloadType;
 using MessageType = ASAM::CMP::CmpHeader::MessageType;
-using PayloadType = ASAM::CMP::DataMessageHeader::PayloadType;
 
 class InterfaceStatusTest : public ::testing::Test
 {

@@ -69,6 +69,11 @@ public:
         return static_cast<uint8_t>(type & rawPayloadTypeMask);
     }
 
+    constexpr bool isValid() const
+    {
+        return type != invalid;
+    }
+
 private:
     uint32_t type{0};
 };

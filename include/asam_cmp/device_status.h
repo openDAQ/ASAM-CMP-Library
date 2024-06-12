@@ -7,9 +7,6 @@ BEGIN_NAMESPACE_ASAM_CMP
 
 class DeviceStatus final
 {
-private:
-    using PayloadType = DataMessageHeader::PayloadType;
-
 public:
     void update(const Packet& packet);
     Packet& getPacket();
