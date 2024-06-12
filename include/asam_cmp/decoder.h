@@ -24,7 +24,7 @@ private:
         uint16_t deviceId{0};
         uint8_t streamId{0};
 
-        bool const operator==(const Endpoint& rhs) const
+        bool operator==(const Endpoint& rhs) const
         {
             return (deviceId == rhs.deviceId) && (streamId == rhs.streamId);
         }

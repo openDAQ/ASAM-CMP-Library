@@ -15,22 +15,22 @@ void MessageHeader::setTimestamp(const uint64_t newTimestamp)
 
 uint32_t MessageHeader::getInterfaceId() const
 {
-    return swapEndian(interfaceVendorUnion.interfaceId);
+    return swapEndian(interfaceId);
 }
 
 void MessageHeader::setInterfaceId(const uint32_t id)
 {
-    interfaceVendorUnion.interfaceId = swapEndian(id);
+    interfaceId = swapEndian(id);
 }
 
 uint16_t MessageHeader::getVendorId() const
 {
-    return swapEndian(interfaceVendorUnion.vendor.vendorId);
+    return swapEndian(vendor.vendorId);
 }
 
 void MessageHeader::setVendorId(const uint16_t id)
 {
-    interfaceVendorUnion.vendor.vendorId = swapEndian(id);
+    vendor.vendorId = swapEndian(id);
 }
 
 uint8_t MessageHeader::getCommonFlags() const

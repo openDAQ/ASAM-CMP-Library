@@ -10,16 +10,18 @@ BEGIN_NAMESPACE_ASAM_CMP
 // Control Message header and Vendor-defined Message header
 class MessageHeader
 {
+    struct Vendor
+    {
+        uint16_t reserved;
+        uint16_t vendorId;
+    };
+
     uint64_t timestamp{0};
-    union InterfaceVendorUnion
+    union
     {
         uint32_t interfaceId{0};
-        struct Vendor
-        {
-            uint16_t reserved;
-            uint16_t vendorId;
-        } vendor;
-    } interfaceVendorUnion;
+        Vendor vendor;
+    };
 
     uint8_t commonFlags{0};
     uint8_t payloadType{0};
