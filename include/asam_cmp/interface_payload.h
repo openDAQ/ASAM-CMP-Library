@@ -57,6 +57,7 @@ public:
 #pragma pack(pop)
 
 public:
+    InterfacePayload() = default;
     InterfacePayload(const uint8_t* data, const size_t size);
 
     uint32_t getInterfaceId() const;
@@ -80,9 +81,9 @@ public:
     uint32_t getFeatureSupportBitmask() const;
     void setFeatureSupportBitmask(const uint32_t bitmask);
 
-    uint16_t getStreamIdsSize() const;
+    uint16_t getStreamIdsCount() const;
     const uint8_t* getStreamIds() const;
-    uint16_t getVendorDataSize() const;
+    uint16_t getVendorDataLength() const;
     const uint8_t* getVendorData() const;
 
     static bool isValidPayload(const uint8_t* data, const size_t size);
@@ -92,8 +93,9 @@ protected:
     Header* getHeader();
 
 private:
-    std::string_view streamIds;
-    std::string_view vendorData;
+    const uint8_t* getStreamIdCountPtr() const;
+    const uint8_t* getVendorDataLengthPtr() const;
+    uint16_t toUint16(const uint8_t* ptr) const;
 };
 
 END_NAMESPACE_ASAM_CMP

@@ -194,7 +194,7 @@ TEST_F(PacketFixture, InterfacePayload)
     Packet packet(CmpHeader::MessageType::status, canDataMsg.data(), canDataMsg.size());
     const auto& payload = static_cast<const InterfacePayload&>(packet.getPayload());
     ASSERT_EQ(payload.getType(), PayloadType::ifStatMsg);
-    ASSERT_EQ(payload.getStreamIdsSize(), streamIds.size());
+    ASSERT_EQ(payload.getStreamIdsCount(), streamIds.size());
 }
 
 TEST_F(PacketFixture, UnknownStatusMessagePayload)

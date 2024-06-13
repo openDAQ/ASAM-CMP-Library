@@ -103,29 +103,51 @@ TEST_F(InterfacePayloadTest, FeatureSupportBitmask)
     ASSERT_TRUE(TestSetterGetter(&InterfacePayload::setFeatureSupportBitmask, &InterfacePayload::getFeatureSupportBitmask, uint32_t{55}));
 }
 
-TEST_F(InterfacePayloadTest, StreamIdsOdd)
+TEST_F(InterfacePayloadTest, StreamIds)
 {
-    ASSERT_EQ(payload->getStreamIdsSize(), streamsIds.size());
+    ASSERT_EQ(payload->getStreamIdsCount(), streamsIds.size());
     ASSERT_TRUE(std::equal(streamsIds.begin(), streamsIds.end(), payload->getStreamIds()));
 }
 
-TEST_F(InterfacePayloadTest, StreamIdsEven)
+TEST_F(InterfacePayloadTest, VendorDataOdd)
+{
+    ASSERT_EQ(payload->getVendorDataLength(), vendorData.size());
+    ASSERT_TRUE(std::equal(vendorData.begin(), vendorData.end(), payload->getVendorData()));
+}
+
+TEST_F(InterfacePayloadTest, VendorDataEven)
 {
     streamsIds.push_back(77);
     message = createInterfaceDataMessage(interfaceId, streamsIds, vendorData);
     payload = std::make_unique<InterfacePayload>(message.data(), message.size());
 
-    ASSERT_EQ(payload->getStreamIdsSize(), streamsIds.size());
-    ASSERT_TRUE(std::equal(streamsIds.begin(), streamsIds.end(), payload->getStreamIds()));
-}
-
-TEST_F(InterfacePayloadTest, VendorData)
-{
-    ASSERT_EQ(payload->getVendorDataSize(), vendorData.size());
+    ASSERT_EQ(payload->getVendorDataLength(), vendorData.size());
     ASSERT_TRUE(std::equal(vendorData.begin(), vendorData.end(), payload->getVendorData()));
 }
 
 TEST_F(InterfacePayloadTest, IsValidPayload)
 {
     ASSERT_TRUE(InterfacePayload::isValidPayload(message.data(), message.size()));
+}
+
+TEST_F(InterfacePayloadTest, Copy)
+{
+    auto payloadCopy{*payload};
+    ASSERT_TRUE(*payload == payloadCopy);
+
+    std::vector vec(payloadCopy.getStreamIds(), payloadCopy.getStreamIds() + payloadCopy.getStreamIdsCount());
+    payload.reset();
+    ASSERT_TRUE(std::equal(vec.begin(), vec.end(), payloadCopy.getStreamIds()));
+}
+
+TEST_F(InterfacePayloadTest, CopyAssignment)
+{
+    auto checker{*payload};
+    InterfacePayload payloadCopy;
+    payloadCopy = checker;
+    ASSERT_TRUE(checker == payloadCopy);
+
+    std::vector vec(payloadCopy.getStreamIds(), payloadCopy.getStreamIds() + payloadCopy.getStreamIdsCount());
+    payload.reset();
+    ASSERT_TRUE(std::equal(vec.begin(), vec.end(), payloadCopy.getStreamIds()));
 }
