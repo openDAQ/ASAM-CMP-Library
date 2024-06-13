@@ -77,7 +77,7 @@ bool operator!=(const Packet& lhs, const Packet& rhs) noexcept
 
 bool Packet::isValid() const
 {
-    return payload ? payload->getType().isValid() : false;
+    return payload ? payload->isValid() : false;
 }
 
 uint8_t Packet::getVersion() const

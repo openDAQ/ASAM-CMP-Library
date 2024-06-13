@@ -26,6 +26,7 @@ public:
 
     virtual ~Payload() = default;
 
+    bool isValid() const;
     PayloadType getType() const;
     size_t getSize() const;
     const uint8_t* getRawPayload() const;

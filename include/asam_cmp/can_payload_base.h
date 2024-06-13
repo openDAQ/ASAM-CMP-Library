@@ -90,6 +90,7 @@ public:
     };
 #pragma pack(pop)
 
+public:
     uint16_t getFlags() const;
     void setFlags(const uint16_t flags);
     bool getFlag(const Flags mask) const;

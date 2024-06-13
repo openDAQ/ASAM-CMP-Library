@@ -31,6 +31,11 @@ bool operator==(const Payload& lhs, const Payload& rhs) noexcept
     return true;
 }
 
+bool Payload::isValid() const
+{
+    return type.isValid();
+}
+
 PayloadType Payload::getType() const
 {
     return type;

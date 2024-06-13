@@ -31,7 +31,7 @@ protected:
     bool TestSetterGetter(SetterFunc<T> setter, GetterFunc<T> getter, const T newValue)
     {
         (payload.get()->*setter)(newValue);
-        T value = (payload.get() ->*getter)();
+        T value = (payload.get()->*getter)();
         return (value == newValue);
     }
 
@@ -50,7 +50,13 @@ TEST_F(LinPayloadTest, HeaderSize)
     static_assert(sizeof(LinPayload::Header) == 8, "Size of the header according to the standard");
 }
 
-TEST_F(LinPayloadTest, PayloadType)
+TEST_F(LinPayloadTest, DefaultConstructor)
+{
+    LinPayload pay;
+    ASSERT_FALSE(pay.isValid());
+}
+
+TEST_F(LinPayloadTest, Type)
 {
     ASSERT_EQ(payload->getType(), PayloadType::lin);
 }
@@ -107,39 +113,4 @@ TEST_F(LinPayloadTest, Data)
 TEST_F(LinPayloadTest, IsValidPayload)
 {
     ASSERT_TRUE(LinPayload::isValidPayload(message.data(), message.size()));
-}
-
-TEST_F(LinPayloadTest, Copy)
-{
-    auto payloadCopy{*payload};
-    ASSERT_TRUE(*payload == payloadCopy);
-}
-
-TEST_F(LinPayloadTest, CopyAssignment)
-{
-    auto checker{*payload};
-    LinPayload payloadCopy(nullptr, 0);
-
-    payloadCopy = checker;
-    ASSERT_TRUE(checker == payloadCopy);
-}
-
-TEST_F(LinPayloadTest, Move)
-{
-    auto checker{*payload};
-    LinPayload payloadCopy(std::move(checker));
-
-    ASSERT_TRUE(*payload == payloadCopy);
-    ASSERT_FALSE(checker == payloadCopy);
-}
-
-TEST_F(LinPayloadTest, MoveAssignment)
-{
-    auto checker{*payload};
-    LinPayload payloadCopy(nullptr, 0);
-
-    payloadCopy = std::move(checker);
-
-    ASSERT_TRUE(*payload == payloadCopy);
-    ASSERT_FALSE(checker == payloadCopy);
 }

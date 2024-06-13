@@ -59,7 +59,7 @@ public:
         hzPerSecond = 0x24,
         cubicMeterPerSecond = 0x25,
 
-        //Mechanical SI derived units
+        // Mechanical SI derived units
         squareMeter = 0x26,
         cubicMeter = 0x27,
         newtonSecond = 0x28,
@@ -149,6 +149,7 @@ public:
 #pragma pack(pop)
 
 public:
+    AnalogPayload() = default;
     AnalogPayload(const uint8_t* data, const size_t size);
 
     uint16_t getFlags() const;

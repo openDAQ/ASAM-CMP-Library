@@ -9,6 +9,7 @@ set(SRC_Cpp testapp.cpp
             test_packet.cpp
             test_decoder.cpp
             test_encoder.cpp
+            test_payload.cpp
             test_can_payload.cpp
             test_lin_payload.cpp
             test_ethernet_payload.cpp
