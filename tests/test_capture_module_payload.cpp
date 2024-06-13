@@ -110,7 +110,7 @@ TEST_F(CaptureModulePayloadTest, SoftwareVersion)
 
 TEST_F(CaptureModulePayloadTest, VendorData)
 {
-    ASSERT_EQ(payload->getVendorDataSize(), vendorData.size());
+    ASSERT_EQ(payload->getVendorDataLength(), vendorData.size());
     ASSERT_TRUE(std::equal(vendorData.begin(), vendorData.end(), payload->getVendorData()));
 }
 
@@ -123,4 +123,26 @@ TEST_F(CaptureModulePayloadTest, VendorDataStringView)
 TEST_F(CaptureModulePayloadTest, IsValidPayload)
 {
     ASSERT_TRUE(CaptureModulePayload::isValidPayload(message.data(), message.size()));
+}
+
+TEST_F(CaptureModulePayloadTest, Copy)
+{
+    auto payloadCopy{*payload};
+    ASSERT_TRUE(*payload == payloadCopy);
+
+    std::string description{payloadCopy.getDeviceDescription()};
+    payload.reset();
+    ASSERT_EQ(description, payloadCopy.getDeviceDescription());
+}
+
+TEST_F(CaptureModulePayloadTest, CopyAssignment)
+{
+    auto checker{*payload};
+    CaptureModulePayload payloadCopy;
+    payloadCopy = checker;
+    ASSERT_TRUE(checker == payloadCopy);
+
+    std::string version{payloadCopy.getSoftwareVersion()};
+    payload.reset();
+    ASSERT_EQ(version, payloadCopy.getSoftwareVersion());
 }

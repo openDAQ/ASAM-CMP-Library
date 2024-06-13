@@ -75,19 +75,6 @@ void CaptureModulePayload::Header::setGptpFlags(const uint8_t flags)
 CaptureModulePayload::CaptureModulePayload(const uint8_t* data, const size_t size)
     : Payload(PayloadType::cmStatMsg, data, size)
 {
-    uint8_t* ptr = initStringView(payloadData.data() + sizeof(Header), deviceDescription);
-    deviceDescription = removeTrailingNulls(deviceDescription);
-
-    ptr = initStringView(ptr, serialNumber);
-    serialNumber = removeTrailingNulls(serialNumber);
-
-    ptr = initStringView(ptr, hardwareVersion);
-    hardwareVersion = removeTrailingNulls(hardwareVersion);
-
-    ptr = initStringView(ptr, softwareVersion);
-    softwareVersion = removeTrailingNulls(softwareVersion);
-
-    initStringView(ptr, vendorData);
 }
 
 uint64_t CaptureModulePayload::getUptime() const
@@ -162,36 +149,71 @@ void CaptureModulePayload::setGptpFlags(const uint8_t flags)
 
 std::string_view CaptureModulePayload::getDeviceDescription() const
 {
-    return deviceDescription;
+    std::string_view deviceDescription;
+    initStringView(payloadData.data() + sizeof(Header), deviceDescription);
+    return removeTrailingNulls(deviceDescription);
 }
 
 std::string_view CaptureModulePayload::getSerialNumber() const
 {
-    return serialNumber;
+    std::string_view serialNumber;
+    const uint8_t* ptr = initStringView(payloadData.data() + sizeof(Header), serialNumber);
+    initStringView(ptr, serialNumber);
+    return removeTrailingNulls(serialNumber);
 }
 
 std::string_view CaptureModulePayload::getHardwareVersion() const
 {
-    return hardwareVersion;
+    std::string_view hardwareVersion;
+    const uint8_t* ptr = initStringView(payloadData.data() + sizeof(Header), hardwareVersion);
+    ptr = initStringView(ptr, hardwareVersion);
+    initStringView(ptr, hardwareVersion);
+    return removeTrailingNulls(hardwareVersion);
 }
 
 std::string_view CaptureModulePayload::getSoftwareVersion() const
 {
-    return softwareVersion;
+    std::string_view softwareVersion;
+    const uint8_t* ptr = initStringView(payloadData.data() + sizeof(Header), softwareVersion);
+    ptr = initStringView(ptr, softwareVersion);
+    ptr = initStringView(ptr, softwareVersion);
+    initStringView(ptr, softwareVersion);
+    return removeTrailingNulls(softwareVersion);
 }
 
-uint16_t CaptureModulePayload::getVendorDataSize() const
+uint16_t CaptureModulePayload::getVendorDataLength() const
 {
+    std::string_view vendorData;
+    const uint8_t* ptr = initStringView(payloadData.data() + sizeof(Header), vendorData);
+    ptr = initStringView(ptr, vendorData);
+    ptr = initStringView(ptr, vendorData);
+    ptr = initStringView(ptr, vendorData);
+    initStringView(ptr, vendorData);
+
     return static_cast<uint16_t>(vendorData.size());
 }
 
 const uint8_t* CaptureModulePayload::getVendorData() const
 {
+    std::string_view vendorData;
+    const uint8_t* ptr = initStringView(payloadData.data() + sizeof(Header), vendorData);
+    ptr = initStringView(ptr, vendorData);
+    ptr = initStringView(ptr, vendorData);
+    ptr = initStringView(ptr, vendorData);
+    initStringView(ptr, vendorData);
+
     return reinterpret_cast<const uint8_t*>(vendorData.data());
 }
 
 std::string_view CaptureModulePayload::getVendorDataStringView() const
 {
+    std::string_view vendorData;
+    const uint8_t* ptr = initStringView(payloadData.data() + sizeof(Header), vendorData);
+    ptr = initStringView(ptr, vendorData);
+    ptr = initStringView(ptr, vendorData);
+    ptr = initStringView(ptr, vendorData);
+    initStringView(ptr, vendorData);
+
     return vendorData;
 }
 
@@ -210,9 +232,9 @@ CaptureModulePayload::Header* CaptureModulePayload::getHeader()
     return reinterpret_cast<Header*>(payloadData.data());
 }
 
-uint8_t* CaptureModulePayload::initStringView(uint8_t* ptr, std::string_view& str)
+const uint8_t* CaptureModulePayload::initStringView(const uint8_t* ptr, std::string_view& str)
 {
-    uint16_t length = swapEndian(*reinterpret_cast<uint16_t*>(ptr));
+    uint16_t length = swapEndian(*reinterpret_cast<const uint16_t*>(ptr));
     ptr += sizeof(uint16_t);
     str = std::string_view{reinterpret_cast<const char*>(ptr), length};
     ptr += length;
