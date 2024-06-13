@@ -5,6 +5,7 @@
 
 #include <asam_cmp/payload_type.h>
 #include <asam_cmp/can_payload.h>
+#include <asam_cmp/lin_payload.h>
 #include <asam_cmp/capture_module_payload.h>
 #include <asam_cmp/common.h>
 #include <asam_cmp/ethernet_payload.h>
@@ -30,6 +31,15 @@ inline std::vector<uint8_t> createCanDataMessage(const uint32_t arbId, const std
     header.setId(arbId);
     header.setDataLength(static_cast<uint8_t>(data.size()));
     header.setDlc(0x0F);
+
+    return createMessage(header, data);
+}
+
+inline std::vector<uint8_t> createLinDataMessage(const uint8_t linId, const std::vector<uint8_t>& data)
+{
+    ASAM::CMP::LinPayload::Header header;
+    header.setLinId(linId);
+    header.setDataLength(static_cast<uint8_t>(data.size()));
 
     return createMessage(header, data);
 }

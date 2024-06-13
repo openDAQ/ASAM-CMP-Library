@@ -11,6 +11,7 @@ set(SRC_Headers ../include/${LIB_NAME}/common.h
                 ../include/${LIB_NAME}/can_payload_base.h
                 ../include/${LIB_NAME}/can_payload.h
                 ../include/${LIB_NAME}/can_fd_payload.h
+                ../include/${LIB_NAME}/lin_payload.h
                 ../include/${LIB_NAME}/ethernet_payload.h
                 ../include/${LIB_NAME}/analog_payload.h
                 ../include/${LIB_NAME}/capture_module_payload.h
@@ -29,6 +30,7 @@ set(SRC_Sources cmp_header.cpp
                 can_payload_base.cpp
                 can_payload.cpp
                 can_fd_payload.cpp
+                lin_payload.cpp
                 ethernet_payload.cpp
                 analog_payload.cpp
                 capture_module_payload.cpp

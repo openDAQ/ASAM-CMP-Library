@@ -1,6 +1,7 @@
 #include <asam_cmp/analog_payload.h>
 #include <asam_cmp/can_fd_payload.h>
 #include <asam_cmp/can_payload.h>
+#include <asam_cmp/lin_payload.h>
 #include <asam_cmp/capture_module_payload.h>
 #include <asam_cmp/ethernet_payload.h>
 #include <asam_cmp/interface_payload.h>
@@ -152,6 +153,10 @@ std::unique_ptr<Payload> Packet::create(const PayloadType type, const uint8_t* d
         case PayloadType::canFd:
             if (CanFdPayload::isValidPayload(data, size))
                 return std::make_unique<CanFdPayload>(data, size);
+            break;
+        case PayloadType::lin:
+            if (LinPayload::isValidPayload(data, size))
+                return std::make_unique<LinPayload>(data, size);
             break;
         case PayloadType::analog:
             if (AnalogPayload::isValidPayload(data, size))
