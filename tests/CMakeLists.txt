@@ -14,6 +14,9 @@ set(SRC_Cpp testapp.cpp
             test_analog_payload.cpp
             test_capture_module_payload.cpp
             test_interface_payload.cpp
+            test_status.cpp
+            test_device_status.cpp
+            test_interface_status.cpp
             create_message.h
 )
 

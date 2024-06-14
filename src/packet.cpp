@@ -1,10 +1,11 @@
-#include <asam_cmp/payload_type.h>
-#include <asam_cmp/can_payload.h>
+#include <asam_cmp/analog_payload.h>
 #include <asam_cmp/can_fd_payload.h>
+#include <asam_cmp/can_payload.h>
 #include <asam_cmp/capture_module_payload.h>
 #include <asam_cmp/ethernet_payload.h>
-#include <asam_cmp/analog_payload.h>
+#include <asam_cmp/interface_payload.h>
 #include <asam_cmp/packet.h>
+#include <asam_cmp/payload_type.h>
 #include <stdexcept>
 
 BEGIN_NAMESPACE_ASAM_CMP
@@ -68,13 +69,14 @@ bool operator==(const Packet& lhs, const Packet& rhs) noexcept
         return lhs.getPayloadSize() == rhs.getPayloadSize();
 }
 
-void swap(Packet& lhs, Packet& rhs)
+bool operator!=(const Packet& lhs, const Packet& rhs) noexcept
 {
-    using std::swap;
-    swap(lhs.version, rhs.version);
-    swap(lhs.streamId, rhs.streamId);
-    swap(lhs.deviceId, rhs.deviceId);
-    swap(lhs.payload, rhs.payload);
+    return !operator==(lhs, rhs);
+}
+
+bool Packet::isValid() const
+{
+    return payload ? payload->getType().isValid() : false;
 }
 
 uint8_t Packet::getVersion() const
@@ -127,6 +129,11 @@ const Payload& Packet::getPayload() const
     return *payload;
 }
 
+Payload& Packet::getPayload()
+{
+    return *payload;
+}
+
 bool Packet::isValidPacket(const uint8_t* data, const size_t size)
 {
     auto header = reinterpret_cast<const MessageHeader*>(data);
@@ -158,11 +165,24 @@ std::unique_ptr<Payload> Packet::create(const PayloadType type, const uint8_t* d
             if (CaptureModulePayload::isValidPayload(data, size))
                 return std::make_unique<CaptureModulePayload>(data, size);
             break;
+        case PayloadType::ifStatMsg:
+            if (CaptureModulePayload::isValidPayload(data, size))
+                return std::make_unique<InterfacePayload>(data, size);
+            break;
         default:
             return std::make_unique<Payload>(type, data, size);
     }
     // In case of payload is not valid
     return std::make_unique<Payload>(PayloadType::invalid, data, size);
+}
+
+void swap(Packet& lhs, Packet& rhs) noexcept
+{
+    using std::swap;
+    swap(lhs.version, rhs.version);
+    swap(lhs.streamId, rhs.streamId);
+    swap(lhs.deviceId, rhs.deviceId);
+    swap(lhs.payload, rhs.payload);
 }
 
 END_NAMESPACE_ASAM_CMP
