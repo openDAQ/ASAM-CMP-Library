@@ -41,6 +41,7 @@ public:
 #pragma pack(pop)
 
 public:
+    CaptureModulePayload() = default;
     CaptureModulePayload(const uint8_t* data, const size_t size);
 
     uint64_t getUptime() const;
@@ -62,7 +63,7 @@ public:
     std::string_view getSerialNumber() const;
     std::string_view getHardwareVersion() const;
     std::string_view getSoftwareVersion() const;
-    uint16_t getVendorDataSize() const;
+    uint16_t getVendorDataLength() const;
     const uint8_t* getVendorData() const;
     std::string_view getVendorDataStringView() const;
 
@@ -73,15 +74,8 @@ protected:
     Header* getHeader();
 
 private:
-    static uint8_t* initStringView(uint8_t* ptr, std::string_view& str);
+    static const uint8_t* initStringView(const uint8_t* ptr, std::string_view& str);
     static std::string_view removeTrailingNulls(std::string_view str);
-
-private:
-    std::string_view deviceDescription;
-    std::string_view serialNumber;
-    std::string_view hardwareVersion;
-    std::string_view softwareVersion;
-    std::string_view vendorData;
 };
 
 END_NAMESPACE_ASAM_CMP

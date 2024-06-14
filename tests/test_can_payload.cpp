@@ -37,6 +37,23 @@ protected:
     std::unique_ptr<CanFdPayload> canFdPayload;
 };
 
+TEST_F(CanPayloadTest, HeaderSize)
+{
+    static_assert(sizeof(CanPayloadBase::Header) == 16, "Size of the header according to the standard");
+}
+
+TEST_F(CanPayloadTest, DefaultConstructorCan)
+{
+    CanPayload pay;
+    ASSERT_FALSE(pay.isValid());
+}
+
+TEST_F(CanPayloadTest, DefaultConstructorCanFd)
+{
+    CanFdPayload pay;
+    ASSERT_FALSE(pay.isValid());
+}
+
 TEST_F(CanPayloadTest, TypeCan)
 {
     CanPayloadBase* payload = canPayload.get();
@@ -268,40 +285,4 @@ TEST_F(CanPayloadTest, IsValidPayload)
     data.resize(canDataSize);
     auto message = createCanDataMessage(arbId, data);
     ASSERT_TRUE(CanPayloadBase::isValidPayload(message.data(), message.size()));
-}
-
-TEST_F(CanPayloadTest, Copy)
-{
-    auto payloadCopy(*canPayload);
-
-    ASSERT_TRUE(*canPayload == payloadCopy);
-}
-
-TEST_F(CanPayloadTest, CopyAssignment)
-{
-    Payload checker(*canPayload);
-    Payload payloadCopy(PayloadType::invalid, nullptr, 0);
-    
-    payloadCopy = checker;
-    ASSERT_TRUE(checker == payloadCopy);
-}
-
-TEST_F(CanPayloadTest, Move)
-{
-    CanPayload checker(*canPayload);
-    CanPayload payloadCopy(std::move(checker));
-
-    ASSERT_TRUE(*canPayload == payloadCopy);
-    ASSERT_FALSE(checker == payloadCopy);
-}
-
-TEST_F(CanPayloadTest, MoveAssignment)
-{
-    CanPayload checker(*canPayload);
-    CanPayload payloadCopy(nullptr, 0);
-
-    payloadCopy = std::move(checker);
-
-    ASSERT_TRUE(*canPayload == payloadCopy);
-    ASSERT_FALSE(checker == payloadCopy);
 }

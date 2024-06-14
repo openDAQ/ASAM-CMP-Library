@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 #include <numeric>
 
-#include <asam_cmp/payload_type.h>
 #include <asam_cmp/analog_payload.h>
+#include <asam_cmp/payload_type.h>
 
 #include "create_message.h"
 
@@ -32,7 +32,7 @@ protected:
     bool TestSetterGetter(SetterFunc<T> setter, GetterFunc<T> getter, const T newValue)
     {
         (payload.get()->*setter)(newValue);
-        T value = (payload.get() ->*getter)();
+        T value = (payload.get()->*getter)();
         return (value == newValue);
     }
 
@@ -45,7 +45,18 @@ protected:
     std::unique_ptr<AnalogPayload> payload;
 };
 
-TEST_F(AnalogPayloadTest, PayloadType)
+TEST_F(AnalogPayloadTest, HeaderSize)
+{
+    static_assert(sizeof(AnalogPayload::Header) == 16, "Size of the header according to the standard");
+}
+
+TEST_F(AnalogPayloadTest, DefaultConstructor)
+{
+    AnalogPayload pay;
+    ASSERT_FALSE(pay.isValid());
+}
+
+TEST_F(AnalogPayloadTest, Type)
 {
     ASSERT_EQ(payload->getType(), PayloadType::analog);
 }
@@ -53,7 +64,7 @@ TEST_F(AnalogPayloadTest, PayloadType)
 TEST_F(AnalogPayloadTest, Flags)
 {
     ASSERT_TRUE(TestSetterGetter(&AnalogPayload::setFlags, &AnalogPayload::getFlags, uint16_t{55}));
- }
+}
 
 TEST_F(AnalogPayloadTest, SampleDt)
 {

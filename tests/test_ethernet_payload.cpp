@@ -17,7 +17,6 @@ public:
         data.resize(dataSize);
         std::iota(data.begin(), data.end(), uint8_t{});
         message = createEthernetDataMessage(data);
-
     }
 
 protected:
@@ -27,6 +26,17 @@ protected:
     std::vector<uint8_t> data;
     std::vector<uint8_t> message;
 };
+
+TEST_F(EthernetPayloadTest, HeaderSize)
+{
+    static_assert(sizeof(EthernetPayload::Header) == 6, "Size of the header according to the standard");
+}
+
+TEST_F(EthernetPayloadTest, DefaultConstructor)
+{
+    EthernetPayload pay;
+    ASSERT_FALSE(pay.isValid());
+}
 
 TEST_F(EthernetPayloadTest, Properties)
 {
@@ -65,44 +75,4 @@ TEST_F(EthernetPayloadTest, Flags)
     ASSERT_FALSE(payload.getFlag(fcsErr));
     ASSERT_TRUE(payload.getFlag(txPortDown));
     ASSERT_TRUE(payload.getFlag(frameTooLongErr));
-}
-
-TEST_F(EthernetPayloadTest, Copy)
-{
-    EthernetPayload payload(message.data(), message.size());
-    auto payloadCopy(payload);
-
-    ASSERT_TRUE(payload == payloadCopy);
-}
-
-TEST_F(EthernetPayloadTest, CopyAssignment)
-{
-    EthernetPayload payload(message.data(), message.size());
-    EthernetPayload payloadCopy(nullptr, 0);
-
-    payloadCopy = payload;
-    ASSERT_TRUE(payload == payloadCopy);
-}
-
-TEST_F(EthernetPayloadTest, Move)
-{
-    EthernetPayload payload(message.data(), message.size());
-    EthernetPayload payloadChecker(payload);
-
-    EthernetPayload payloadCopy(std::move(payload));
-
-    ASSERT_TRUE(payloadCopy == payloadChecker);
-    ASSERT_FALSE(payloadCopy == payload);
-}
-
-TEST_F(EthernetPayloadTest, MoveAssignment)
-{
-    EthernetPayload payload(message.data(), message.size());
-    EthernetPayload payloadChecker(payload);
-
-    EthernetPayload payloadCopy(nullptr, 0);
-    payloadCopy = std::move(payload);
-
-    ASSERT_TRUE(payloadCopy == payloadChecker);
-    ASSERT_FALSE(payloadCopy == payload);
 }

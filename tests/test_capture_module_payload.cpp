@@ -48,7 +48,40 @@ protected:
     std::unique_ptr<CaptureModulePayload> payload;
 };
 
-TEST_F(CaptureModulePayloadTest, PayloadType)
+TEST_F(CaptureModulePayloadTest, HeaderSize)
+{
+    static_assert(sizeof(CaptureModulePayload::Header) == 26, "Size of the header according to the standard");
+}
+
+TEST_F(CaptureModulePayloadTest, DefaultConstructor)
+{
+    CaptureModulePayload pay;
+    ASSERT_FALSE(pay.isValid());
+}
+
+TEST_F(CaptureModulePayloadTest, Copy)
+{
+    auto payloadCopy{*payload};
+    ASSERT_TRUE(*payload == payloadCopy);
+
+    std::string description{payloadCopy.getDeviceDescription()};
+    payload.reset();
+    ASSERT_EQ(description, payloadCopy.getDeviceDescription());
+}
+
+TEST_F(CaptureModulePayloadTest, CopyAssignment)
+{
+    auto checker{*payload};
+    CaptureModulePayload payloadCopy;
+    payloadCopy = checker;
+    ASSERT_TRUE(checker == payloadCopy);
+
+    std::string version{payloadCopy.getSoftwareVersion()};
+    payload.reset();
+    ASSERT_EQ(version, payloadCopy.getSoftwareVersion());
+}
+
+TEST_F(CaptureModulePayloadTest, Type)
 {
     ASSERT_EQ(payload->getType(), PayloadType::cmStatMsg);
 }
@@ -110,7 +143,7 @@ TEST_F(CaptureModulePayloadTest, SoftwareVersion)
 
 TEST_F(CaptureModulePayloadTest, VendorData)
 {
-    ASSERT_EQ(payload->getVendorDataSize(), vendorData.size());
+    ASSERT_EQ(payload->getVendorDataLength(), vendorData.size());
     ASSERT_TRUE(std::equal(vendorData.begin(), vendorData.end(), payload->getVendorData()));
 }
 

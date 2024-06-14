@@ -105,16 +105,6 @@ void InterfacePayload::Header::setFeatureSupportBitmask(const uint32_t bitmask)
 InterfacePayload::InterfacePayload(const uint8_t* data, const size_t size)
     : Payload(PayloadType::ifStatMsg, data, size)
 {
-    uint8_t* ptr = payloadData.data() + sizeof(Header);
-    uint16_t length = swapEndian(*reinterpret_cast<const uint16_t*>(ptr));
-    ptr += sizeof(length);
-    streamIds = std::string_view{reinterpret_cast<const char*>(ptr), length};
-    ptr += length;
-    if (length % 2)
-        ++ptr;
-    length = swapEndian(*reinterpret_cast<const uint16_t*>(ptr));
-    ptr += sizeof(length);
-    vendorData = std::string_view{reinterpret_cast<const char*>(ptr), length};
 }
 
 uint32_t InterfacePayload::getInterfaceId() const
@@ -217,27 +207,27 @@ void InterfacePayload::setFeatureSupportBitmask(const uint32_t bitmask)
     getHeader()->setFeatureSupportBitmask(bitmask);
 }
 
-uint16_t InterfacePayload::getStreamIdsSize() const
+uint16_t InterfacePayload::getStreamIdsCount() const
 {
-    return static_cast<uint16_t>(streamIds.size());
+    return toUint16(getStreamIdCountPtr());
 }
 
 const uint8_t* InterfacePayload::getStreamIds() const
 {
-    return reinterpret_cast<const uint8_t*>(streamIds.data());
+    return getStreamIdCountPtr() + sizeof(uint16_t);
 }
 
-uint16_t InterfacePayload::getVendorDataSize() const
+uint16_t InterfacePayload::getVendorDataLength() const
 {
-    return static_cast<uint16_t>(vendorData.size());
+    return toUint16(getVendorDataLengthPtr());
 }
 
 const uint8_t* InterfacePayload::getVendorData() const
 {
-    return reinterpret_cast<const uint8_t*>(vendorData.data());
+    return getVendorDataLengthPtr() + sizeof(uint16_t);
 }
 
-bool InterfacePayload::isValidPayload([[maybe_unused]] const uint8_t* data, const size_t size)
+bool InterfacePayload::isValidPayload(const uint8_t* data, const size_t size)
 {
     auto header = reinterpret_cast<const Header*>(data);
     return (size >= sizeof(Header) && header->getInterfaceStatus() <= InterfaceStatus::disabled);
@@ -251,6 +241,26 @@ const InterfacePayload::Header* InterfacePayload::getHeader() const
 InterfacePayload::Header* InterfacePayload::getHeader()
 {
     return reinterpret_cast<Header*>(payloadData.data());
+}
+
+const uint8_t* InterfacePayload::getStreamIdCountPtr() const
+{
+    return payloadData.data() + sizeof(Header);
+}
+
+const uint8_t* InterfacePayload::getVendorDataLengthPtr() const
+{
+    auto countPtr = getStreamIdCountPtr();
+    auto count = toUint16(countPtr);
+    if (count % 2)
+        ++count;
+
+    return countPtr + sizeof(uint16_t) + count;
+}
+
+uint16_t InterfacePayload::toUint16(const uint8_t* ptr) const
+{
+    return swapEndian(*reinterpret_cast<const uint16_t*>(ptr));
 }
 
 END_NAMESPACE_ASAM_CMP
