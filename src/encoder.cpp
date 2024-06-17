@@ -1,3 +1,5 @@
+#include <cstring>
+
 #include <asam_cmp/encoder.h>
 
 BEGIN_NAMESPACE_ASAM_CMP

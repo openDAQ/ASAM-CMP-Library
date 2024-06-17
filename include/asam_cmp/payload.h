@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <cstddef>
 
 #include <asam_cmp/common.h>
 #include <asam_cmp/cmp_header.h>

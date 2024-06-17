@@ -18,8 +18,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set(ASAMCMP_SOURCE_DIR ${PROJECT_SOURCE_DIR})
 
-add_compile_options(/bigobj)
-
 get_filename_component(ROOT_DIR ${CMAKE_SOURCE_DIR} REALPATH)
 get_filename_component(PROJ_DIR ${PROJECT_SOURCE_DIR} REALPATH)
 if (NOT ${PROJECT_SOURCE_DIR} STREQUAL ${ROOT_DIR})
@@ -41,14 +39,14 @@ if (MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /std:c++17 /MP /Zc:__cplusplus")
 
     # Treat warnings as errors
-    add_compile_options(/W4 /WX)
+    add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:/W4> $<$<COMPILE_LANGUAGE:C,CXX>:/WX>)
 endif()
 
 if (CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pedantic -Wall -Wextra")
 
-    # Treat warnings as errors if not Debug or DSLIB_DEBUG_WARNINGS_AS_ERRORS is ON
-    add_compile_options(-Werror)
+    # Treat warnings as errors
+    add_compile_options($<$<COMPILE_LANGUAGE:C,CXX>:-Werror>)
 endif()
 
 add_subdirectory(external)
