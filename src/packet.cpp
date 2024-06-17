@@ -11,13 +11,11 @@
 
 BEGIN_NAMESPACE_ASAM_CMP
 
-Packet::Packet(const CmpHeader::MessageType msgType, const uint8_t* data, const size_t size)
+Packet::Packet(const CmpHeader::MessageType msgType, const uint8_t* data, [[maybe_unused]] const size_t size)
 {
 #ifdef _DEBUG
     if (data == nullptr || size < sizeof(MessageHeader))
         throw std::invalid_argument("Not enough data");
-#else
-    size;
 #endif  // _DEBUG
 
     auto header = reinterpret_cast<const MessageHeader*>(data);
