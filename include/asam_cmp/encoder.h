@@ -26,19 +26,14 @@ private:
 public:
     Encoder();
 
-    template <typename ForwardIterator>
-    std::vector<std::vector<uint8_t>> encode(
-        ForwardIterator begin,
-        ForwardIterator end,
-        const DataContext& dataContext,
-        std::enable_if_t<std::is_same<typename std::iterator_traits<ForwardIterator>::value_type, Packet>::value, int> = 0);
+    template <typename ForwardIterator,
+              std::enable_if_t<std::is_same_v<typename std::iterator_traits<ForwardIterator>::value_type, Packet>, bool> = true>
+    std::vector<std::vector<uint8_t>> encode(ForwardIterator begin, ForwardIterator end, const DataContext& dataContext);
 
-    template <typename ForwardPtrIterator>
-    std::vector<std::vector<uint8_t>> encode(
-        ForwardPtrIterator begin,
-        ForwardPtrIterator end,
-        const DataContext& dataContext,
-        std::enable_if_t<std::is_same<typename std::iterator_traits<ForwardPtrIterator>::value_type, std::shared_ptr<Packet>>::value, int> = 0);
+    template <typename ForwardPtrIterator,
+              std::enable_if_t<std::is_same_v<typename std::iterator_traits<ForwardPtrIterator>::value_type, std::shared_ptr<Packet>>,
+                               bool> = true>
+    std::vector<std::vector<uint8_t>> encode(ForwardPtrIterator begin, ForwardPtrIterator end, const DataContext& dataContext);
 
     std::vector<std::vector<uint8_t>> encode(const Packet& packet, const DataContext& dataContext);
 
@@ -78,12 +73,9 @@ private:
     std::vector<std::vector<uint8_t>> cmpFrames;
 };
 
-template <typename ForwardIterator>
-std::vector<std::vector<uint8_t>> Encoder::encode(
-    ForwardIterator begin,
-    ForwardIterator end,
-    const DataContext& dataContext,
-    std::enable_if_t<std::is_same<typename std::iterator_traits<ForwardIterator>::value_type, Packet>::value, int>)
+template <typename ForwardIterator,
+          std::enable_if_t<std::is_same_v<typename std::iterator_traits<ForwardIterator>::value_type, Packet>, bool>>
+std::vector<std::vector<uint8_t>> Encoder::encode(ForwardIterator begin, ForwardIterator end, const DataContext& dataContext)
 {
     static_assert(std::is_base_of<std::forward_iterator_tag, typename std::iterator_traits<ForwardIterator>::iterator_category>::value,
                   "ForwardIterator must be a forward iterator.");
@@ -96,12 +88,9 @@ std::vector<std::vector<uint8_t>> Encoder::encode(
     return getEncodedData();
 }
 
-template <typename ForwardPtrIterator>
-std::vector<std::vector<uint8_t>> Encoder::encode(
-    ForwardPtrIterator begin,
-    ForwardPtrIterator end,
-    const DataContext& dataContext,
-    std::enable_if_t<std::is_same<typename std::iterator_traits<ForwardPtrIterator>::value_type, std::shared_ptr<Packet>>::value, int>)
+template <typename ForwardPtrIterator,
+          std::enable_if_t<std::is_same_v<typename std::iterator_traits<ForwardPtrIterator>::value_type, std::shared_ptr<Packet>>, bool>>
+std::vector<std::vector<uint8_t>> Encoder::encode(ForwardPtrIterator begin, ForwardPtrIterator end, const DataContext& dataContext)
 {
     static_assert(std::is_base_of<std::forward_iterator_tag, typename std::iterator_traits<ForwardPtrIterator>::iterator_category>::value,
                   "ForwardIterator must be a forward iterator.");
