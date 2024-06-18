@@ -4,16 +4,6 @@
 
 BEGIN_NAMESPACE_ASAM_CMP
 
-Encoder::Encoder()
-    : minBytesPerMessage(0)
-    , maxBytesPerMessage(0)
-    , deviceId(0)
-    , streamId(0)
-    , bytesLeft(0)
-    , sequenceCounter(0)
-    , messageType(CmpHeader::MessageType::undefined)
-{
-}
 
 void Encoder::setDeviceId(uint16_t newDeviceId)
 {

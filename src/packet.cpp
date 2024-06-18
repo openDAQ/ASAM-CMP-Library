@@ -137,7 +137,7 @@ bool Packet::isValidPacket(const uint8_t* data, const size_t size)
 {
     auto header = reinterpret_cast<const MessageHeader*>(data);
     return (size >= sizeof(MessageHeader) && header->getPayloadLength() <= (size - sizeof(MessageHeader)) &&
-            !header->getCommonFlag(MessageHeader::CommonFlags::errorInPayload));
+            !header->getCommonFlag(MessageHeader::CommonFlags::errorInPayload) && (header->getPayloadType() != 0));
 }
 
 std::unique_ptr<Payload> Packet::create(const PayloadType type, const uint8_t* data, const size_t size)
