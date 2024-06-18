@@ -14,8 +14,8 @@ BEGIN_NAMESPACE_ASAM_CMP
 
 struct DataContext
 {
-    size_t minBytesPerMessage;
-    size_t maxBytesPerMessage;
+    size_t minBytesPerMessage{0};
+    size_t maxBytesPerMessage{0};
 };
 
 class Encoder final
@@ -24,7 +24,7 @@ private:
     using SegmentType = MessageHeader::SegmentType;
 
 public:
-    Encoder();
+    Encoder() = default;
 
     template <typename ForwardIterator,
               std::enable_if_t<std::is_same_v<typename std::iterator_traits<ForwardIterator>::value_type, Packet>, bool> = true>
@@ -61,15 +61,15 @@ private:
     void addNewDataHeader(uint32_t interfaceId, PayloadType payloadType, uint16_t bytesToAdd, SegmentType segmentationFlag);
 
 private:
-    size_t minBytesPerMessage;
-    size_t maxBytesPerMessage;
-    uint16_t deviceId;
-    uint8_t streamId;
+    size_t minBytesPerMessage{0};
+    size_t maxBytesPerMessage{0};
+    uint16_t deviceId{0};
+    uint8_t streamId{0};
 
-    size_t bytesLeft;
-    uint16_t sequenceCounter;
+    size_t bytesLeft{0};
+    uint16_t sequenceCounter{0};
 
-    CmpHeader::MessageType messageType;
+    CmpHeader::MessageType messageType{CmpHeader::MessageType::undefined};
     std::vector<std::vector<uint8_t>> cmpFrames;
 };
 
