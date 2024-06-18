@@ -71,7 +71,7 @@ public:
 
     constexpr bool isValid() const
     {
-        return type != invalid;
+        return ((type & 0x00FF) != 0) && ((type & 0xFF00) != 0);
     }
 
 private:

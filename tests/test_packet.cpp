@@ -274,3 +274,19 @@ TEST_F(PacketFixture, MoveAssignment)
     ASSERT_TRUE(checker == packetCopy);
     ASSERT_FALSE(checker == packet);
 }
+
+TEST_F(PacketFixture, IsValidPacket)
+{
+    ASSERT_TRUE(Packet::isValidPacket(canDataMsg.data(), canDataMsg.size()));
+
+    ASSERT_FALSE(Packet::isValidPacket(canDataMsg.data(), sizeof(MessageHeader) - 1));
+    ASSERT_FALSE(Packet::isValidPacket(canDataMsg.data(), canDataMsg.size() - 1));
+
+    auto msgHeader = reinterpret_cast<MessageHeader*>(canDataMsg.data());
+    msgHeader->setCommonFlag(MessageHeader::CommonFlags::errorInPayload, true);
+    ASSERT_FALSE(Packet::isValidPacket(canDataMsg.data(), canDataMsg.size()));
+
+    msgHeader->setCommonFlag(MessageHeader::CommonFlags::errorInPayload, false);
+    msgHeader->setPayloadType(0);
+    ASSERT_FALSE(Packet::isValidPacket(canDataMsg.data(), canDataMsg.size()));
+}

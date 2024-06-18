@@ -106,7 +106,7 @@ TEST_F(EncoderFixture, CorrectnessRef)
     Decoder decoder;
     auto checker = decoder.decode(encodedData[0].data(), encodedData[0].size());
 
-    ASSERT_EQ(checker.size(), 2u);
+    ASSERT_EQ(checker.size(), 1u);
     ASSERT_TRUE(*packets[0] == *checker[0]);
 }
 
@@ -123,7 +123,7 @@ TEST_F(EncoderFixture, Correctness)
     Decoder decoder;
     auto checker = decoder.decode(encodedData[0].data(), encodedData[0].size());
 
-    ASSERT_EQ(checker.size(), 2u);
+    ASSERT_EQ(checker.size(), 1u);
     ASSERT_TRUE(packets[0] == *checker[0]);
 }
 
@@ -205,9 +205,33 @@ TEST_F(EncoderFixture, TestSequenceCounter)
     encoder.setStreamId(1);
     auto encodedData = encoder.encode(begin(packetsPtrs), end(packetsPtrs), {64, 100});
 
-    ASSERT_EQ(encoder.getSequenceCounter(), (uint16_t) 4);
+    ASSERT_EQ(encoder.getSequenceCounter(), 4u);
     encoder.restart();
-    ASSERT_EQ(encoder.getSequenceCounter(), (uint16_t) 0);
+    ASSERT_EQ(encoder.getSequenceCounter(), 0u);
 }
 
-//TODO: test if packet has non-data dataType (not implemented yet)
+TEST_F(EncoderFixture, EncodePacket)
+{
+    constexpr uint32_t arbId = 22;
+    constexpr DataContext dataContext = {64, 1500};
+    std::vector<uint8_t> canData(8);
+
+    auto canPayloadData = createCanDataMessage(arbId, canData);
+    CanPayload payload(canPayloadData.data(), canPayloadData.size());
+    Packet packet;
+    packet.setPayload(payload);
+
+    Encoder encoder;
+    encoder.setDeviceId(3);
+    encoder.setStreamId(1);
+    auto encodedData = encoder.encode(packet, dataContext);
+    ASSERT_EQ(encodedData.size(), 1u);
+
+    Decoder decoder;
+    auto decodedPackets = decoder.decode(encodedData[0].data(), encodedData[0].size());
+
+    ASSERT_EQ(decodedPackets.size(), 1u);
+    ASSERT_EQ(decodedPackets[0]->getPayload(), payload);
+}
+
+// TODO: test if packet has non-data dataType (not implemented yet)
