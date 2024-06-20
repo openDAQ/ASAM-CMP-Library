@@ -50,21 +50,23 @@ private:
     void putPacket(const Packet& packet);
     std::vector<std::vector<uint8_t>> getEncodedData();
 
-    bool checkIfIsSegmented(const size_t payloadSize);
+    bool checkIfSegmented(const Packet& packet);
     SegmentType buildSegmentationFlag(
         bool isSegmented, int segmentInd, uint16_t bytesToAdd, size_t payloadSize, size_t currentPayloadPos) const;
     void clearEncodingMetadata(bool clearSequenceCounter = false);
 
-    void setMessageType(CmpHeader::MessageType type);
-    void addPayload(uint32_t interfaceId, PayloadType payloadType, const uint8_t* payloadData, const size_t payloadSize);
-    void addNewCMPFrame();
-    void addNewDataHeader(uint32_t interfaceId, PayloadType payloadType, uint16_t bytesToAdd, SegmentType segmentationFlag);
+    void setMessageType(const Packet& packet);
+    void addNewCMPFrame(const Packet& packet);
+    void addNewDataHeader(const Packet& packet, uint16_t bytesToAdd, SegmentType segmentationFlag);
+
+    void createCmpFrameTemplate(const Packet& packet);
 
 private:
     size_t minBytesPerMessage{0};
     size_t maxBytesPerMessage{0};
     uint16_t deviceId{0};
     uint8_t streamId{0};
+    std::vector<uint8_t> cmpFrameTemplate;
 
     size_t bytesLeft{0};
     uint16_t sequenceCounter{0};

@@ -1,6 +1,7 @@
 #include <cstring>
 
 #include <asam_cmp/encoder.h>
+#include <algorithm>
 
 BEGIN_NAMESPACE_ASAM_CMP
 
@@ -17,20 +18,6 @@ void Encoder::setStreamId(uint8_t newStreamId)
     clearEncodingMetadata(true);
 }
 
-void Encoder::setMessageType(CmpHeader::MessageType type)
-{
-    messageType = type;
-    addNewCMPFrame();
-}
-
-std::vector<std::vector<uint8_t>> Encoder::getEncodedData()
-{
-    cmpFrames.back().resize(std::max(cmpFrames.back().size() - bytesLeft, minBytesPerMessage), 0);
-    auto frames = std::move(cmpFrames);
-    clearEncodingMetadata(false);
-    return frames;
-}
-
 uint16_t Encoder::getDeviceId() const
 {
     return deviceId;
@@ -39,6 +26,19 @@ uint16_t Encoder::getDeviceId() const
 uint8_t Encoder::getStreamId() const
 {
     return streamId;
+}
+
+void Encoder::setMessageType(const Packet& packet){
+    messageType = packet.getMessageType();
+    addNewCMPFrame(packet);
+}
+
+std::vector<std::vector<uint8_t>> Encoder::getEncodedData()
+{
+    cmpFrames.back().resize(std::max(cmpFrames.back().size() - bytesLeft, minBytesPerMessage), 0);
+    auto frames = std::move(cmpFrames);
+    clearEncodingMetadata(false);
+    return frames;
 }
 
 uint16_t Encoder::getSequenceCounter() const
@@ -63,9 +63,35 @@ std::vector<std::vector<uint8_t>> Encoder::encode(const Packet& packet, const Da
 void Encoder::putPacket(const Packet& packet)
 {
     if (messageType != packet.getMessageType())
-        setMessageType(packet.getMessageType());
+        setMessageType(packet);
 
-    addPayload(0, packet.getPayload().getType(), packet.getPayload().getRawPayload(), packet.getPayload().getLength());
+    size_t currentPayloadPos = 0;
+
+    bool isSegmented = checkIfSegmented(packet);
+    int segmentInd = 0;
+
+    while (currentPayloadPos < packet.getPayloadLength())
+    {
+        if (bytesLeft < sizeof(MessageHeader))
+            addNewCMPFrame(packet);
+
+        uint16_t bytesToAdd = static_cast<uint16_t>(
+            std::min(static_cast<size_t>(bytesLeft - sizeof(MessageHeader)), packet.getPayloadLength() - currentPayloadPos));
+
+        SegmentType isSegmentedFlag =
+            buildSegmentationFlag(isSegmented, segmentInd, bytesToAdd, packet.getPayloadLength(), currentPayloadPos);
+        addNewDataHeader(packet, bytesToAdd, isSegmentedFlag);
+
+        auto& cmpFrame = cmpFrames.back();
+        memcpy(&cmpFrame[cmpFrame.size() - bytesLeft], packet.getPayload().getRawPayload(), bytesToAdd);
+        ++segmentInd;
+        currentPayloadPos += bytesToAdd;
+        bytesLeft -= bytesToAdd;
+
+        if (isSegmentedFlag == SegmentType::lastSegment)
+            addNewCMPFrame(packet);
+    }
+
 }
 
 void Encoder::restart()
@@ -73,73 +99,48 @@ void Encoder::restart()
     sequenceCounter = 0;
 }
 
-void Encoder::addPayload(const uint32_t interfaceId, const PayloadType payloadType, const uint8_t* payloadData, const size_t payloadSize)
+void Encoder::createCmpFrameTemplate(const Packet& packet)
 {
-    size_t currentPayloadPos = 0;
-    bool isSegmented = checkIfIsSegmented(payloadSize);
+    cmpFrameTemplate.resize(maxBytesPerMessage, 0);
+    packet.getRawCmpHeader(cmpFrameTemplate.data());
 
-    int segmentInd = 0;
-
-    while (currentPayloadPos < payloadSize)
-    {
-        if (bytesLeft <= sizeof(MessageHeader))
-            addNewCMPFrame();
-
-        uint16_t bytesToAdd =
-            static_cast<uint16_t>(std::min(static_cast<size_t>(bytesLeft - sizeof(MessageHeader)), payloadSize - currentPayloadPos));
-
-        SegmentType isSegmentedFlag = buildSegmentationFlag(isSegmented, segmentInd, bytesToAdd, payloadSize, currentPayloadPos);
-        addNewDataHeader(interfaceId, payloadType, bytesToAdd, isSegmentedFlag);
-
-        auto& cmpFrame = cmpFrames.back();
-        memcpy(&cmpFrame[cmpFrame.size() - bytesLeft], payloadData, bytesToAdd);
-        ++segmentInd;
-        currentPayloadPos += bytesToAdd;
-        bytesLeft -= bytesToAdd;
-
-        if (isSegmentedFlag == SegmentType::lastSegment)
-        {
-            addNewCMPFrame();
-        }
-    }
+    auto cmpHeader = reinterpret_cast<CMP::CmpHeader*>(cmpFrameTemplate.data());
+    cmpHeader->setDeviceId(deviceId);
+    cmpHeader->setStreamId(streamId);
 }
 
-void Encoder::addNewCMPFrame()
+void Encoder::addNewCMPFrame(const Packet& packet)
 {
     if (!cmpFrames.empty())
         cmpFrames.back().resize(std::max(cmpFrames.back().size() - bytesLeft, minBytesPerMessage), 0);
 
-    std::vector<uint8_t> rawOutput(maxBytesPerMessage);
-    CmpHeader* header = reinterpret_cast<CmpHeader*>(&rawOutput[0]);
-    header->setDeviceId(deviceId);
-    header->setVersion(1);
-    header->setStreamId(streamId);
-    header->setSequenceCounter(++sequenceCounter);
-    header->setMessageType(messageType);
-    bytesLeft = maxBytesPerMessage - sizeof(CmpHeader);
+    if (cmpFrameTemplate.empty())
+        createCmpFrameTemplate(packet);
 
-    cmpFrames.push_back(std::move(rawOutput));
+    cmpFrames.push_back(cmpFrameTemplate);
+    auto header = reinterpret_cast<CmpHeader*>(cmpFrames.back().data());
+    header->setSequenceCounter(++sequenceCounter);
+    bytesLeft = maxBytesPerMessage - sizeof(CmpHeader);
 }
 
-void Encoder::addNewDataHeader(uint32_t interfaceId, PayloadType payloadType, uint16_t bytesToAdd, SegmentType segmentationFlag)
+void Encoder::addNewDataHeader(const Packet& packet, uint16_t bytesToAdd, SegmentType segmentationFlag)
 {
     auto& cmpFrame = cmpFrames.back();
     MessageHeader* header = reinterpret_cast<MessageHeader*>(&cmpFrame[cmpFrame.size() - bytesLeft]);
-    header->setInterfaceId(interfaceId);
-    header->setPayloadType(payloadType.getRawPayloadType());
+    packet.getRawMessageHeader(header);
     header->setPayloadLength(bytesToAdd);
     header->setSegmentType(segmentationFlag);
 
     bytesLeft -= sizeof(MessageHeader);
 }
 
-bool Encoder::checkIfIsSegmented(const size_t payloadSize)
+bool Encoder::checkIfSegmented(const Packet& packet)
 {
-    bool isSegmented = (!cmpFrames.empty() && bytesLeft < sizeof(MessageHeader) + payloadSize);
+    bool isSegmented = (!cmpFrames.empty() && bytesLeft < sizeof(MessageHeader) + packet.getPayloadLength());
     if (isSegmented)
     {
-        addNewCMPFrame();
-        isSegmented = (!cmpFrames.empty() && bytesLeft < sizeof(MessageHeader) + payloadSize);
+        addNewCMPFrame(packet);
+        isSegmented = (!cmpFrames.empty() && bytesLeft < sizeof(MessageHeader) + packet.getPayloadLength());
     }
     return isSegmented;
 }
@@ -163,8 +164,8 @@ Encoder::SegmentType Encoder::buildSegmentationFlag(
 void Encoder::clearEncodingMetadata(bool clearSequenceCounter)
 {
     bytesLeft = 0;
-    messageType = CmpHeader::MessageType::undefined;
     cmpFrames.clear();
+    cmpFrameTemplate.clear();
 
     if (clearSequenceCounter)
         sequenceCounter = 0;
