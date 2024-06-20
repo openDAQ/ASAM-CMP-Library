@@ -174,6 +174,16 @@ void Packet::setCommonFlags(const uint8_t flags)
     commonFlags = flags;
 }
 
+bool Packet::getCommonFlag(const CommonFlags mask) const
+{
+    return (commonFlags & static_cast<uint8_t>(mask)) != 0;
+}
+
+void Packet::setCommonFlag(const CommonFlags mask, const bool value)
+{
+    commonFlags = value ? (commonFlags | static_cast<uint8_t>(mask)) : (commonFlags & ~static_cast<uint8_t>(mask));
+}
+
 Packet::SegmentType Packet::getSegmentType() const
 {
     return segmentType;

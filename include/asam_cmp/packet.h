@@ -14,6 +14,7 @@ class Packet final
 private:
     using MessageType = ASAM::CMP::CmpHeader::MessageType;
     using SegmentType = ASAM::CMP::MessageHeader::SegmentType;
+    using CommonFlags = ASAM::CMP::MessageHeader::CommonFlags;
 
 public:
     Packet() = default;
@@ -50,6 +51,8 @@ public:
     void setVendorId(const uint16_t id);
     uint8_t getCommonFlags() const;
     void setCommonFlags(const uint8_t flags);
+    bool getCommonFlag(const CommonFlags mask) const;
+    void setCommonFlag(const CommonFlags mask, const bool value);
     SegmentType getSegmentType() const;
     void setSegmentType(const SegmentType type);
     uint8_t getPayloadType() const;
