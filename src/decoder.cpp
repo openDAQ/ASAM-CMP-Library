@@ -67,7 +67,7 @@ std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std
             break;
         }
 
-        const auto packetSize = packet->getPayloadSize() + sizeof(MessageHeader);
+        const auto packetSize = packet->getPayloadLength() + sizeof(MessageHeader);
         packetPtr += packetSize;
         curSize -= static_cast<int>(packetSize);
     }

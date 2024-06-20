@@ -91,7 +91,7 @@ TEST_F(PacketFixture, MessageTypeData)
 TEST_F(PacketFixture, PayloadSize)
 {
     Packet packet(CmpHeader::MessageType::data, canDataMsg.data(), canDataMsg.size());
-    ASSERT_EQ(packet.getPayloadSize(), canPayloadMsg.size());
+    ASSERT_EQ(packet.getPayloadLength(), canPayloadMsg.size());
 }
 
 TEST_F(PacketFixture, PayloadAccess)

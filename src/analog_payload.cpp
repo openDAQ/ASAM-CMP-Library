@@ -130,7 +130,7 @@ void AnalogPayload::setSampleScalar(const float sampleScalar)
 
 size_t AnalogPayload::getSamplesCount() const
 {
-    auto samplesSize = (getSize() - sizeof(Header));
+    auto samplesSize = (getLength() - sizeof(Header));
     return getHeader()->getSampleDt() == SampleDt::aInt16 ? samplesSize / 2 : samplesSize / 4;
 }
 

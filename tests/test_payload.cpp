@@ -84,9 +84,9 @@ TEST_F(PayloadTest, Type)
     ASSERT_EQ(payload->getType(), payloadType);
 }
 
-TEST_F(PayloadTest, Size)
+TEST_F(PayloadTest, Length)
 {
-    ASSERT_EQ(payload->getSize(), message.size());
+    ASSERT_EQ(payload->getLength(), message.size());
 }
 
 TEST_F(PayloadTest, RawPayload)

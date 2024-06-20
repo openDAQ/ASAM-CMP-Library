@@ -1,10 +1,10 @@
 #pragma once
 
-#include <vector>
 #include <cstddef>
+#include <vector>
 
-#include <asam_cmp/common.h>
 #include <asam_cmp/cmp_header.h>
+#include <asam_cmp/common.h>
 #include <asam_cmp/message_header.h>
 #include <asam_cmp/payload_type.h>
 
@@ -27,9 +27,16 @@ public:
 
     virtual ~Payload() = default;
 
+public:
     bool isValid() const;
+
+    MessageType getMessageType() const;
+    void setMessageType(const MessageType newType);
+    uint8_t getRawPayloadType() const;
+    void setRawPayloadType(const uint8_t newType);
     PayloadType getType() const;
-    size_t getSize() const;
+    void setType(const PayloadType newType);
+    size_t getLength() const;
     const uint8_t* getRawPayload() const;
 
 protected:
