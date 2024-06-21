@@ -45,12 +45,12 @@ void MessageHeader::setCommonFlags(const uint8_t newFlags)
 
 bool MessageHeader::getCommonFlag(const CommonFlags mask) const
 {
-    return (commonFlags & static_cast<uint16_t>(mask)) != 0;
+    return (commonFlags & static_cast<uint8_t>(mask)) != 0;
 }
 
 void MessageHeader::setCommonFlag(const CommonFlags mask, const bool value)
 {
-    commonFlags = value ? (commonFlags | static_cast<uint16_t>(mask)) : (commonFlags & ~static_cast<uint16_t>(mask));
+    commonFlags = value ? (commonFlags | static_cast<uint8_t>(mask)) : (commonFlags & ~static_cast<uint8_t>(mask));
 }
 
 MessageHeader::SegmentType MessageHeader::getSegmentType() const

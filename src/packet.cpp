@@ -1,10 +1,10 @@
 #include <asam_cmp/analog_payload.h>
 #include <asam_cmp/can_fd_payload.h>
 #include <asam_cmp/can_payload.h>
-#include <asam_cmp/lin_payload.h>
 #include <asam_cmp/capture_module_payload.h>
 #include <asam_cmp/ethernet_payload.h>
 #include <asam_cmp/interface_payload.h>
+#include <asam_cmp/lin_payload.h>
 #include <asam_cmp/packet.h>
 #include <asam_cmp/payload_type.h>
 #include <stdexcept>
@@ -62,10 +62,10 @@ bool operator==(const Packet& lhs, const Packet& rhs) noexcept
     if (lhs.getVersion() != rhs.getVersion())
         return false;
 
-    if (lhs.getPayloadSize() == rhs.getPayloadSize() && lhs.getPayloadSize() > 0)
+    if (lhs.getPayloadLength() == rhs.getPayloadLength() && lhs.getPayloadLength() > 0)
         return lhs.getPayload() == rhs.getPayload();
     else
-        return lhs.getPayloadSize() == rhs.getPayloadSize();
+        return lhs.getPayloadLength() == rhs.getPayloadLength();
 }
 
 bool operator!=(const Packet& lhs, const Packet& rhs) noexcept
@@ -98,6 +98,11 @@ void Packet::setDeviceId(const uint16_t value)
     deviceId = value;
 }
 
+CmpHeader::MessageType Packet::getMessageType() const
+{
+    return payload->getMessageType();
+}
+
 uint8_t Packet::getStreamId() const
 {
     return streamId;
@@ -108,14 +113,121 @@ void Packet::setStreamId(const uint8_t value)
     streamId = value;
 }
 
-CmpHeader::MessageType Packet::getMessageType() const
+uint16_t Packet::getSequenceCounter() const
 {
-    return payload->getType().getMessageType();
+    return sequenceCounter;
 }
 
-size_t Packet::getPayloadSize() const
+void Packet::setSequenceCounter(uint16_t counter)
 {
-    return payload ? payload->getSize() : 0;
+    sequenceCounter = counter;
+}
+
+void Packet::getRawCmpHeader(void* dest) const
+{
+    CmpHeader header;
+    header.setVersion(getVersion());
+    header.setDeviceId(getDeviceId());
+    header.setMessageType(getMessageType());
+    header.setStreamId(getStreamId());
+    header.setSequenceCounter(getSequenceCounter());
+    memcpy(dest, &header, sizeof(header));
+}
+
+uint64_t Packet::getTimestamp() const
+{
+    return timestamp;
+}
+
+void Packet::setTimestamp(const uint64_t newTimestamp)
+{
+    timestamp = newTimestamp;
+}
+
+uint32_t Packet::getInterfaceId() const
+{
+    return interfaceId;
+}
+
+void Packet::setInterfaceId(const uint32_t id)
+{
+    interfaceId = id;
+}
+
+uint16_t Packet::getVendorId() const
+{
+    return vendorId;
+}
+
+void Packet::setVendorId(const uint16_t id)
+{
+    vendorId = id;
+}
+
+uint8_t Packet::getCommonFlags() const
+{
+    return commonFlags;
+}
+
+void Packet::setCommonFlags(const uint8_t flags)
+{
+    commonFlags = flags;
+}
+
+bool Packet::getCommonFlag(const CommonFlags mask) const
+{
+    return (commonFlags & static_cast<uint8_t>(mask)) != 0;
+}
+
+void Packet::setCommonFlag(const CommonFlags mask, const bool value)
+{
+    commonFlags = value ? (commonFlags | static_cast<uint8_t>(mask)) : (commonFlags & ~static_cast<uint8_t>(mask));
+}
+
+Packet::SegmentType Packet::getSegmentType() const
+{
+    return segmentType;
+}
+
+void Packet::setSegmentType(const SegmentType type)
+{
+    segmentType = type;
+}
+
+uint8_t Packet::getPayloadType() const
+{
+    return payload->getRawPayloadType();
+}
+
+uint16_t Packet::getPayloadLength() const
+{
+    return payload ? static_cast<uint16_t>(payload->getLength()) : 0;
+}
+
+void Packet::getRawMessageHeader(void* dest) const
+{
+    MessageHeader header;
+    header.setTimestamp(getTimestamp());
+
+    auto messageType = getMessageType();
+    switch (messageType)
+    {
+        case MessageType::data:
+            header.setInterfaceId(getInterfaceId());
+            break;
+        case MessageType::status:
+        case MessageType::vendor:
+            header.setVendorId(getVendorId());
+            break;
+        case MessageType::control:
+        default:
+            break;
+    }
+    header.setCommonFlags(getCommonFlags());
+    header.setPayloadType(getPayloadType());
+    header.setPayloadLength(getPayloadLength());
+
+    memcpy(dest, &header, sizeof(header));
 }
 
 void Packet::setPayload(const Payload& newPayload)

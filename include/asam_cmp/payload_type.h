@@ -59,14 +59,31 @@ public:
         return type;
     }
 
+    constexpr void setType(const uint32_t newType)
+    {
+        type = newType;
+    }
+
     constexpr PayloadType::MessageType getMessageType() const
     {
         return static_cast<PayloadType::MessageType>((type & messageTypeMask) >> 8);
     }
 
+    constexpr void setMessageType(const PayloadType::MessageType newType)
+    {
+        type &= ~messageTypeMask;
+        type |= to_underlying(newType) << messageTypeShift;
+    }
+
     constexpr uint8_t getRawPayloadType() const
     {
         return static_cast<uint8_t>(type & rawPayloadTypeMask);
+    }
+
+    constexpr void setRawPayloadType(const uint8_t newType)
+    {
+        type &= ~rawPayloadTypeMask;
+        type |= newType;
     }
 
     constexpr bool isValid() const

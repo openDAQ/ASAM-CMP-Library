@@ -65,7 +65,7 @@ void Encoder::putPacket(const Packet& packet)
     if (messageType != packet.getMessageType())
         setMessageType(packet.getMessageType());
 
-    addPayload(0, packet.getPayload().getType(), packet.getPayload().getRawPayload(), packet.getPayload().getSize());
+    addPayload(0, packet.getPayload().getType(), packet.getPayload().getRawPayload(), packet.getPayload().getLength());
 }
 
 void Encoder::restart()

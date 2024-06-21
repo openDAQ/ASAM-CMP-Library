@@ -17,7 +17,7 @@ bool operator==(const Payload& lhs, const Payload& rhs) noexcept
     if (lhs.getType() != rhs.getType())
         return false;
 
-    if (lhs.getSize() != rhs.getSize())
+    if (lhs.getLength() != rhs.getLength())
         return false;
 
     const uint8_t* lhsRaw = lhs.getRawPayload();
@@ -26,7 +26,7 @@ bool operator==(const Payload& lhs, const Payload& rhs) noexcept
     if (lhsRaw == rhsRaw)
         return false;
 
-    for (size_t i = 0; i < lhs.getSize(); ++i)
+    for (size_t i = 0; i < lhs.getLength(); ++i)
         if (lhsRaw[i] != rhsRaw[i])
             return false;
 
@@ -38,12 +38,37 @@ bool Payload::isValid() const
     return type.isValid();
 }
 
+Payload::MessageType Payload::getMessageType() const
+{
+    return type.getMessageType();
+}
+
+void Payload::setMessageType(const MessageType newType)
+{
+    type.setMessageType(newType);
+}
+
+uint8_t Payload::getRawPayloadType() const
+{
+    return type.getRawPayloadType();
+}
+
+void Payload::setRawPayloadType(const uint8_t newType)
+{
+    type.setRawPayloadType(newType);
+}
+
 PayloadType Payload::getType() const
 {
     return type;
 }
 
-size_t Payload::getSize() const
+void Payload::setType(const PayloadType newType)
+{
+    type = newType;
+}
+
+size_t Payload::getLength() const
 {
     return payloadData.size();
 }
