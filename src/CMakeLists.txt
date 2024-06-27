@@ -40,6 +40,13 @@ set(SRC_Sources cmp_header.cpp
                 interface_status.cpp
 )
 
+if(BUILDING_AS_SUBMODULE)
+    add_library(${PROJECT_NAME} STATIC ${SRC_Sources} ${SRC_Headers})
+    add_library(Blueberry::${PROJECT_NAME} ALIAS ${PROJECT_NAME})
+    target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include> $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../include>)
+    return()
+endif()
+
 add_library(${LIB_NAME} STATIC ${SRC_Headers} ${SRC_Sources})
 
 target_include_directories(${LIB_NAME} PUBLIC
