@@ -5,6 +5,7 @@
 #include <asam_cmp/capture_module_payload.h>
 #include <asam_cmp/interface_payload.h>
 #include <asam_cmp/packet.h>
+#include <asam_cmp/common.h>
 
 #include "create_message.h"
 
@@ -19,6 +20,7 @@ using ASAM::CMP::MessageHeader;
 using ASAM::CMP::Packet;
 using ASAM::CMP::Payload;
 using ASAM::CMP::PayloadType;
+using ASAM::CMP::swapEndian;
 
 class PacketFixture : public ::testing::Test
 {
@@ -361,3 +363,29 @@ TEST_F(PacketFixture, IsValidPacket)
     msgHeader->setPayloadType(0);
     ASSERT_FALSE(Packet::isValidPacket(canDataMsg.data(), canDataMsg.size()));
 }
+
+TEST_F(PacketFixture, IsHeaderCorrect)
+{
+    //Data copied from wireshark
+    std::vector<uint8_t> sampleData = {
+        0x17, 0xe0, 0x3e, 0x88, 0x6b, 0x86, 0x63, 0xcd,
+        0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x15, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x82,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x05, 0x00, 0x9f, 0xc6, 0x00, 0x1e
+    };
+
+    Packet packet(ASAM::CMP::CmpHeader::MessageType::data, sampleData.data(), sampleData.size());
+
+    uint64_t expectedTimestamp = swapEndian(*reinterpret_cast<uint64_t*>(sampleData.data()));
+    uint32_t expectedInterfaceId = swapEndian(*reinterpret_cast<uint32_t*>(sampleData.data()+8));
+    uint8_t expectedFlags = swapEndian(*(sampleData.data() + 12));
+    uint8_t expectedPayloadType = swapEndian(*(sampleData.data() + 13));
+    uint16_t expectedPayloadLength = swapEndian(*reinterpret_cast<uint16_t*>(sampleData.data() + 14));
+
+
+    ASSERT_EQ(packet.getTimestamp(), expectedTimestamp);
+    ASSERT_EQ(packet.getInterfaceId(), expectedInterfaceId);
+    ASSERT_EQ(packet.getCommonFlags(), expectedFlags);
+    ASSERT_EQ(packet.getPayloadType(), expectedPayloadType);
+    ASSERT_EQ(packet.getPayloadLength(), expectedPayloadLength);
+}
+

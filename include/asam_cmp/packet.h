@@ -69,6 +69,7 @@ private:
     std::unique_ptr<Payload> create(const PayloadType type, const uint8_t* data, const size_t size);
 
     friend void swap(Packet& lhs, Packet& rhs) noexcept;
+    void setMessageHeader(MessageHeader messageHeader);
 
 private:
     constexpr static uint8_t errorInPayload = 0x40;
