@@ -40,6 +40,9 @@ public:
     const uint8_t* getRawPayload() const;
 
 protected:
+    Payload(const PayloadType type, const size_t size);
+
+protected:
     std::vector<uint8_t> payloadData;
     PayloadType type{PayloadType::invalid};
 };

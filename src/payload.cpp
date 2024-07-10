@@ -78,4 +78,10 @@ const uint8_t* Payload::getRawPayload() const
     return payloadData.data();
 }
 
+Payload::Payload(const PayloadType type, const size_t size)
+    : payloadData(size)
+    , type(type)
+{
+}
+
 END_NAMESPACE_ASAM_CMP

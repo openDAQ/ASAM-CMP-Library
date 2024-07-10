@@ -72,6 +72,11 @@ void CaptureModulePayload::Header::setGptpFlags(const uint8_t flags)
     gPtpFlags = flags;
 }
 
+CaptureModulePayload::CaptureModulePayload()
+    : Payload(PayloadType::cmStatMsg, minPayloadSize)
+{
+}
+
 CaptureModulePayload::CaptureModulePayload(const uint8_t* data, const size_t size)
     : Payload(PayloadType::cmStatMsg, data, size)
 {

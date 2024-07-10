@@ -113,7 +113,7 @@ public:
     static bool isValidPayload(const uint8_t* data, const size_t size);
 
 protected:
-    CanPayloadBase() = default;
+    CanPayloadBase(const PayloadType type, const size_t size);
     CanPayloadBase(const PayloadType type, const uint8_t* data, const size_t size);
 
     const Header* getHeader() const;

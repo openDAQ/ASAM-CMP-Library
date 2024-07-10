@@ -67,6 +67,11 @@ void LinPayload::Header::setDataLength(const uint8_t length)
     dataLength = length;
 }
 
+LinPayload::LinPayload()
+    : Payload(PayloadType::lin, sizeof(Header))
+{
+}
+
 LinPayload::LinPayload(const uint8_t* data, const size_t size)
     : Payload(PayloadType::lin, data, size)
 {
@@ -129,7 +134,7 @@ uint8_t LinPayload::getDataLength() const
 
 const uint8_t* LinPayload::getData() const
 {
-    return payloadData.data() + sizeof(Header);
+    return getDataLength() ? payloadData.data() + sizeof(Header) : nullptr;
 }
 
 bool LinPayload::isValidPayload([[maybe_unused]] const uint8_t* data, const size_t size)

@@ -25,6 +25,7 @@ protected:
 protected:
     std::vector<uint8_t> data;
     std::vector<uint8_t> message;
+    EthernetPayload dcPayload;
 };
 
 TEST_F(EthernetPayloadTest, HeaderSize)
@@ -34,8 +35,7 @@ TEST_F(EthernetPayloadTest, HeaderSize)
 
 TEST_F(EthernetPayloadTest, DefaultConstructor)
 {
-    EthernetPayload pay;
-    ASSERT_FALSE(pay.isValid());
+    ASSERT_TRUE(dcPayload.isValid());
 }
 
 TEST_F(EthernetPayloadTest, Properties)
@@ -45,6 +45,10 @@ TEST_F(EthernetPayloadTest, Properties)
     ASSERT_EQ(payload.getType(), PayloadType::ethernet);
     ASSERT_EQ(payload.getDataLength(), dataSize);
     ASSERT_TRUE(std::equal(data.begin(), data.end(), payload.getData()));
+
+    ASSERT_EQ(dcPayload.getType(), PayloadType::ethernet);
+    ASSERT_EQ(dcPayload.getDataLength(), 0u);
+    ASSERT_EQ(dcPayload.getData(), nullptr);
 }
 
 TEST_F(EthernetPayloadTest, IsValidPayload)
@@ -75,4 +79,6 @@ TEST_F(EthernetPayloadTest, Flags)
     ASSERT_FALSE(payload.getFlag(fcsErr));
     ASSERT_TRUE(payload.getFlag(txPortDown));
     ASSERT_TRUE(payload.getFlag(frameTooLongErr));
+
+    ASSERT_EQ(dcPayload.getFlags(), 0u);
 }

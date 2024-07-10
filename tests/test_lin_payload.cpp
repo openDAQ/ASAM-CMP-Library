@@ -43,6 +43,7 @@ protected:
     std::vector<uint8_t> data;
     std::vector<uint8_t> message;
     std::unique_ptr<LinPayload> payload;
+    LinPayload dcPayload;
 };
 
 TEST_F(LinPayloadTest, HeaderSize)
@@ -52,13 +53,13 @@ TEST_F(LinPayloadTest, HeaderSize)
 
 TEST_F(LinPayloadTest, DefaultConstructor)
 {
-    LinPayload pay;
-    ASSERT_FALSE(pay.isValid());
+    ASSERT_TRUE(dcPayload.isValid());
 }
 
 TEST_F(LinPayloadTest, Type)
 {
     ASSERT_EQ(payload->getType(), PayloadType::lin);
+    ASSERT_EQ(dcPayload.getType(), PayloadType::lin);
 }
 
 TEST_F(LinPayloadTest, Flags)
@@ -83,31 +84,38 @@ TEST_F(LinPayloadTest, Flags)
     ASSERT_FALSE(payload->getFlag(collisionErr));
     ASSERT_TRUE(payload->getFlag(syncErr));
     ASSERT_TRUE(payload->getFlag(wup));
+
+    ASSERT_EQ(dcPayload.getFlags(), 0u);
 }
 
 TEST_F(LinPayloadTest, LinId)
 {
     ASSERT_TRUE(TestSetterGetter(&LinPayload::setLinId, &LinPayload::getLinId, uint8_t{55}));
+    ASSERT_EQ(dcPayload.getLinId(), 0u);
 }
 
 TEST_F(LinPayloadTest, ParityBits)
 {
     ASSERT_TRUE(TestSetterGetter(&LinPayload::setParityBits, &LinPayload::getParityBits, uint8_t{2}));
+    ASSERT_EQ(dcPayload.getParityBits(), 0u);
 }
 
 TEST_F(LinPayloadTest, Checksum)
 {
     ASSERT_TRUE(TestSetterGetter(&LinPayload::setChecksum, &LinPayload::getChecksum, uint8_t{55}));
+    ASSERT_EQ(dcPayload.getChecksum(), 0u);
 }
 
 TEST_F(LinPayloadTest, DataLength)
 {
     ASSERT_EQ(payload->getDataLength(), dataSize);
+    ASSERT_EQ(dcPayload.getDataLength(), 0u);
 }
 
 TEST_F(LinPayloadTest, Data)
 {
     ASSERT_TRUE(std::equal(data.begin(), data.end(), payload->getData()));
+    ASSERT_EQ(dcPayload.getData(), nullptr);
 }
 
 TEST_F(LinPayloadTest, IsValidPayload)

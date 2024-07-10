@@ -16,6 +16,8 @@ public:
 
     enum class Unit : uint8_t
     {
+        undefined = 0x00,
+
         // SI Base units
         meter = 0x02,
         kilogram = 0x03,
@@ -149,7 +151,7 @@ public:
 #pragma pack(pop)
 
 public:
-    AnalogPayload() = default;
+    AnalogPayload();
     AnalogPayload(const uint8_t* data, const size_t size);
 
     uint16_t getFlags() const;

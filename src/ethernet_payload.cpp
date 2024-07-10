@@ -35,6 +35,11 @@ void EthernetPayload::Header::setDataLength(uint16_t newDataLength)
     dataLength = swapEndian(newDataLength);
 }
 
+EthernetPayload::EthernetPayload()
+    : Payload(PayloadType::ethernet, sizeof(Header))
+{
+}
+
 EthernetPayload::EthernetPayload(const uint8_t* data, const size_t size)
     : Payload(PayloadType::ethernet, data, size)
 {
@@ -67,7 +72,7 @@ uint16_t EthernetPayload::getDataLength() const
 
 const uint8_t* EthernetPayload::getData() const
 {
-    return payloadData.data() + sizeof(Header);
+    return getDataLength() ? payloadData.data() + sizeof(Header) : nullptr;
 }
 
 bool EthernetPayload::isValidPayload(const uint8_t* data, const size_t size)

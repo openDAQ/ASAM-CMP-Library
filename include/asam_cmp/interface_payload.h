@@ -57,7 +57,7 @@ public:
 #pragma pack(pop)
 
 public:
-    InterfacePayload() = default;
+    InterfacePayload();
     InterfacePayload(const uint8_t* data, const size_t size);
 
     uint32_t getInterfaceId() const;
@@ -91,6 +91,8 @@ public:
 protected:
     const Header* getHeader() const;
     Header* getHeader();
+
+    static constexpr size_t minPayloadSize = sizeof(Header) + 2 * sizeof(int16_t);
 
 private:
     const uint8_t* getStreamIdCountPtr() const;

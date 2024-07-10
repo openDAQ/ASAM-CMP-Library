@@ -41,7 +41,7 @@ public:
 #pragma pack(pop)
 
 public:
-    CaptureModulePayload() = default;
+    CaptureModulePayload();
     CaptureModulePayload(const uint8_t* data, const size_t size);
 
     uint64_t getUptime() const;
@@ -72,6 +72,8 @@ public:
 protected:
     const Header* getHeader() const;
     Header* getHeader();
+
+    static constexpr size_t minPayloadSize = sizeof(Header) + 5 * sizeof(int16_t);
 
 private:
     static const uint8_t* initStringView(const uint8_t* ptr, std::string_view& str);

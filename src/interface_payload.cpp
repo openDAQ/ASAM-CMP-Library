@@ -102,6 +102,11 @@ void InterfacePayload::Header::setFeatureSupportBitmask(const uint32_t bitmask)
     featureSupportBitmask = swapEndian(bitmask);
 }
 
+InterfacePayload::InterfacePayload()
+    : Payload(PayloadType::ifStatMsg, minPayloadSize)
+{
+}
+
 InterfacePayload::InterfacePayload(const uint8_t* data, const size_t size)
     : Payload(PayloadType::ifStatMsg, data, size)
 {
@@ -214,7 +219,7 @@ uint16_t InterfacePayload::getStreamIdsCount() const
 
 const uint8_t* InterfacePayload::getStreamIds() const
 {
-    return getStreamIdCountPtr() + sizeof(uint16_t);
+    return getStreamIdsCount() ? getStreamIdCountPtr() + sizeof(uint16_t) : nullptr;
 }
 
 uint16_t InterfacePayload::getVendorDataLength() const
@@ -224,7 +229,7 @@ uint16_t InterfacePayload::getVendorDataLength() const
 
 const uint8_t* InterfacePayload::getVendorData() const
 {
-    return getVendorDataLengthPtr() + sizeof(uint16_t);
+    return getVendorDataLength() ? getVendorDataLengthPtr() + sizeof(uint16_t) : nullptr;
 }
 
 bool InterfacePayload::isValidPayload(const uint8_t* data, const size_t size)

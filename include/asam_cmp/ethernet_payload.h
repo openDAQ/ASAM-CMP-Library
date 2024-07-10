@@ -38,7 +38,7 @@ public:
 #pragma pack(pop)
 
 public:
-    EthernetPayload() = default;
+    EthernetPayload();
     EthernetPayload(const uint8_t* data, const size_t size);
 
     uint16_t getFlags() const;

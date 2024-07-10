@@ -44,6 +44,8 @@ protected:
     std::vector<uint8_t> vendorData;
     std::vector<uint8_t> message;
     std::unique_ptr<InterfacePayload> payload;
+
+    InterfacePayload dcPayload;
 };
 
 TEST_F(InterfacePayloadTest, HeaderSize)
@@ -53,8 +55,7 @@ TEST_F(InterfacePayloadTest, HeaderSize)
 
 TEST_F(InterfacePayloadTest, DefaultConstructor)
 {
-    InterfacePayload pay;
-    ASSERT_FALSE(pay.isValid());
+    ASSERT_TRUE(dcPayload.isValid());
 }
 
 TEST_F(InterfacePayloadTest, Copy)
@@ -82,70 +83,85 @@ TEST_F(InterfacePayloadTest, CopyAssignment)
 TEST_F(InterfacePayloadTest, Type)
 {
     ASSERT_EQ(payload->getType(), PayloadType::ifStatMsg);
+    ASSERT_EQ(dcPayload.getType(), PayloadType::ifStatMsg);
 }
 
 TEST_F(InterfacePayloadTest, InterfaceId)
 {
     ASSERT_EQ(payload->getInterfaceId(), interfaceId);
     ASSERT_TRUE(TestSetterGetter(&InterfacePayload::setInterfaceId, &InterfacePayload::getInterfaceId, uint32_t{55}));
+    ASSERT_EQ(dcPayload.getInterfaceId(), 0u);
 }
 
 TEST_F(InterfacePayloadTest, MsgTotalRx)
 {
     ASSERT_TRUE(TestSetterGetter(&InterfacePayload::setMsgTotalRx, &InterfacePayload::getMsgTotalRx, uint32_t{55}));
+    ASSERT_EQ(dcPayload.getMsgTotalRx(), 0u);
 }
 
 TEST_F(InterfacePayloadTest, MsgTotalTx)
 {
     ASSERT_TRUE(TestSetterGetter(&InterfacePayload::setMsgTotalTx, &InterfacePayload::getMsgTotalTx, uint32_t{55}));
+    ASSERT_EQ(dcPayload.getMsgTotalTx(), 0u);
 }
 
 TEST_F(InterfacePayloadTest, MsgDroppedRx)
 {
     ASSERT_TRUE(TestSetterGetter(&InterfacePayload::setMsgDroppedRx, &InterfacePayload::getMsgDroppedRx, uint32_t{55}));
+    ASSERT_EQ(dcPayload.getMsgDroppedRx(), 0u);
 }
 
 TEST_F(InterfacePayloadTest, MsgDroppedTx)
 {
     ASSERT_TRUE(TestSetterGetter(&InterfacePayload::setMsgDroppedTx, &InterfacePayload::getMsgDroppedTx, uint32_t{55}));
+    ASSERT_EQ(dcPayload.getMsgDroppedTx(), 0u);
 }
 
 TEST_F(InterfacePayloadTest, ErrorsTotalRx)
 {
     ASSERT_TRUE(TestSetterGetter(&InterfacePayload::setErrorsTotalRx, &InterfacePayload::getErrorsTotalRx, uint32_t{55}));
+    ASSERT_EQ(dcPayload.getErrorsTotalRx(), 0u);
 }
 
 TEST_F(InterfacePayloadTest, ErrorsTotalTx)
 {
     ASSERT_TRUE(TestSetterGetter(&InterfacePayload::setErrorsTotalTx, &InterfacePayload::getErrorsTotalTx, uint32_t{55}));
+    ASSERT_EQ(dcPayload.getErrorsTotalTx(), 0u);
 }
 
 TEST_F(InterfacePayloadTest, InterfaceType)
 {
     ASSERT_TRUE(TestSetterGetter(&InterfacePayload::setInterfaceType, &InterfacePayload::getInterfaceType, uint8_t{55}));
+    ASSERT_EQ(dcPayload.getInterfaceType(), 0u);
 }
 
 TEST_F(InterfacePayloadTest, InterfaceStatus)
 {
     ASSERT_TRUE(TestSetterGetter(
         &InterfacePayload::setInterfaceStatus, &InterfacePayload::getInterfaceStatus, InterfacePayload::InterfaceStatus::linkStatusUp));
+    ASSERT_EQ(dcPayload.getInterfaceStatus(), InterfacePayload::InterfaceStatus::linkStatusDown);
 }
 
 TEST_F(InterfacePayloadTest, FeatureSupportBitmask)
 {
     ASSERT_TRUE(TestSetterGetter(&InterfacePayload::setFeatureSupportBitmask, &InterfacePayload::getFeatureSupportBitmask, uint32_t{55}));
+    ASSERT_EQ(dcPayload.getFeatureSupportBitmask(), 0u);
 }
 
 TEST_F(InterfacePayloadTest, StreamIds)
 {
     ASSERT_EQ(payload->getStreamIdsCount(), streamsIds.size());
     ASSERT_TRUE(std::equal(streamsIds.begin(), streamsIds.end(), payload->getStreamIds()));
+    ASSERT_EQ(dcPayload.getStreamIdsCount(), 0u);
+    ASSERT_EQ(dcPayload.getStreamIds(), nullptr);
 }
 
 TEST_F(InterfacePayloadTest, VendorDataOdd)
 {
     ASSERT_EQ(payload->getVendorDataLength(), vendorData.size());
     ASSERT_TRUE(std::equal(vendorData.begin(), vendorData.end(), payload->getVendorData()));
+    ASSERT_EQ(dcPayload.getVendorDataLength(), 0u);
+    ASSERT_EQ(dcPayload.getVendorData(), nullptr);
 }
 
 TEST_F(InterfacePayloadTest, VendorDataEven)

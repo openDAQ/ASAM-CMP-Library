@@ -246,13 +246,18 @@ uint8_t CanPayloadBase::getDataLength() const
 
 const uint8_t* CanPayloadBase::getData() const
 {
-    return payloadData.data() + sizeof(Header);
+    return getDataLength() ? payloadData.data() + sizeof(Header) : nullptr;
 }
 
 bool CanPayloadBase::isValidPayload(const uint8_t* data, const size_t size)
 {
     auto header = reinterpret_cast<const Header*>(data);
     return (size >= sizeof(Header) && !header->hasError() && header->getDataLength() <= size - sizeof(Header));
+}
+
+CanPayloadBase::CanPayloadBase(const PayloadType type, const size_t size)
+    : Payload(type, size)
+{
 }
 
 CanPayloadBase::CanPayloadBase(const PayloadType type, const uint8_t* data, const size_t size)
