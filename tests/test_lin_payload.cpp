@@ -112,10 +112,23 @@ TEST_F(LinPayloadTest, DataLength)
     ASSERT_EQ(dcPayload.getDataLength(), 0u);
 }
 
-TEST_F(LinPayloadTest, Data)
+TEST_F(LinPayloadTest, GetData)
 {
     ASSERT_TRUE(std::equal(data.begin(), data.end(), payload->getData()));
     ASSERT_EQ(dcPayload.getData(), nullptr);
+}
+
+TEST_F(LinPayloadTest, SetData)
+{
+    constexpr uint16_t newDataSize = dataSize * 2;
+    std::vector<uint8_t> newData(newDataSize);
+    std::iota(newData.begin(), newData.end(), 0);
+    payload->setData(newData.data(), newDataSize);
+    ASSERT_EQ(payload->getDataLength(), newDataSize);
+    ASSERT_TRUE(std::equal(newData.begin(), newData.end(), payload->getData()));
+
+    dcPayload.setData(newData.data(), newDataSize);
+    ASSERT_TRUE(std::equal(newData.begin(), newData.end(), dcPayload.getData()));
 }
 
 TEST_F(LinPayloadTest, IsValidPayload)

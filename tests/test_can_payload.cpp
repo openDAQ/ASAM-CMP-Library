@@ -19,7 +19,7 @@ class CanPayloadTest : public ::testing::Test
 public:
     CanPayloadTest()
     {
-        data.resize(canDataSize);
+        data.resize(dataSize);
         std::iota(data.begin(), data.end(), uint8_t{});
         auto message = createCanDataMessage(arbId, data);
 
@@ -28,7 +28,9 @@ public:
     }
 
 protected:
-    static constexpr size_t canDataSize = 64;
+    static constexpr size_t dataSize = 64;
+    // For data size 64, dlc is 0x0F
+    static constexpr uint8_t dlc = 0x0F;
     static constexpr uint32_t arbId = 78;
 
 protected:
@@ -277,10 +279,6 @@ TEST_F(CanPayloadTest, ErrorPosition)
 
 TEST_F(CanPayloadTest, Dlc)
 {
-    // For data size 64, dlc is 0x0F
-    constexpr uint8_t dataSize = 64;
-    constexpr uint8_t dlc = 0x0F;
-
     CanPayloadBase* payload = canPayload.get();
     ASSERT_EQ(payload->getDataLength(), dataSize);
     ASSERT_EQ(payload->getDlc(), dlc);
@@ -290,20 +288,46 @@ TEST_F(CanPayloadTest, Dlc)
 TEST_F(CanPayloadTest, DataLength)
 {
     CanPayloadBase* payload = canPayload.get();
-    ASSERT_EQ(payload->getDataLength(), canDataSize);
+    ASSERT_EQ(payload->getDataLength(), dataSize);
     ASSERT_EQ(dcCanPayload.getDataLength(), 0u);
 }
 
-TEST_F(CanPayloadTest, Data)
+TEST_F(CanPayloadTest, GetData)
 {
     CanPayloadBase* payload = canPayload.get();
     ASSERT_TRUE(std::equal(data.begin(), data.end(), payload->getData()));
     ASSERT_EQ(dcCanPayload.getData(), nullptr);
 }
 
+TEST_F(CanPayloadTest, SetData)
+{
+    constexpr uint8_t dataLength = 32;
+    constexpr uint8_t dlc2 = 13;
+
+    std::vector<uint8_t> newData(dataLength);
+    std::iota(newData.begin(), newData.end(), 0);
+    CanPayloadBase* payload = canPayload.get();
+    payload->setData(newData.data(), dataLength);
+    ASSERT_EQ(payload->getDataLength(), dataLength);
+    ASSERT_EQ(payload->getDlc(), dlc2);
+    ASSERT_TRUE(std::equal(newData.begin(), newData.end(), payload->getData()));
+
+    dcCanPayload.setData(newData.data(),dataLength);
+    ASSERT_TRUE(std::equal(newData.begin(), newData.end(), dcCanPayload.getData()));
+}
+
+TEST_F(CanPayloadTest, SetZeroData)
+{
+    CanPayloadBase* payload = canPayload.get();
+    payload->setData(nullptr, 0);
+    ASSERT_EQ(payload->getDataLength(), 0);
+    ASSERT_EQ(payload->getDlc(), 0);
+    ASSERT_EQ(payload->getData(), nullptr);
+}
+
 TEST_F(CanPayloadTest, IsValidPayload)
 {
-    data.resize(canDataSize);
+    data.resize(dataSize);
     auto message = createCanDataMessage(arbId, data);
     ASSERT_TRUE(CanPayloadBase::isValidPayload(message.data(), message.size()));
 }

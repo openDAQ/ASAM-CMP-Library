@@ -85,6 +85,7 @@ public:
     const uint8_t* getStreamIds() const;
     uint16_t getVendorDataLength() const;
     const uint8_t* getVendorData() const;
+    void setData(const uint8_t* streamIds, const uint16_t streamIdsCount, const uint8_t* vendorData, const uint16_t vendorDataLength);
 
     static bool isValidPayload(const uint8_t* data, const size_t size);
 

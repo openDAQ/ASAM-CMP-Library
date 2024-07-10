@@ -48,6 +48,7 @@ public:
 
     uint16_t getDataLength() const;
     const uint8_t* getData() const;
+    void setData(const uint8_t* data, const uint16_t dataLength);
 
     static bool isValidPayload(const uint8_t* data, const size_t size);
 

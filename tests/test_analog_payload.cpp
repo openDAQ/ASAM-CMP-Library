@@ -107,10 +107,31 @@ TEST_F(AnalogPayloadTest, SamplesCount)
     ASSERT_EQ(dcPayload.getSamplesCount(), 0u);
 }
 
-TEST_F(AnalogPayloadTest, Data)
+TEST_F(AnalogPayloadTest, GetData)
 {
     ASSERT_TRUE(std::equal(data.begin(), data.end(), payload->getData()));
     ASSERT_EQ(dcPayload.getData(), nullptr);
+}
+
+TEST_F(AnalogPayloadTest, SetData)
+{
+    constexpr size_t newDataSize = dataSize * 2;
+    std::vector<uint8_t> newData(newDataSize);
+    std::iota(newData.begin(), newData.end(), 0);
+    payload->setData(newData.data(), newData.size());
+    ASSERT_EQ(payload->getSampleDt(), AnalogPayload::SampleDt::aInt16);
+    ASSERT_EQ(payload->getSamplesCount(), newDataSize / sizeof(uint16_t));
+    ASSERT_TRUE(std::equal(newData.begin(), newData.end(), payload->getData()));
+
+    dcPayload.setData(newData.data(), newData.size());
+    ASSERT_TRUE(std::equal(newData.begin(), newData.end(), dcPayload.getData()));
+}
+
+TEST_F(AnalogPayloadTest, SetZeroData)
+{
+    payload->setData(nullptr, 0);
+    ASSERT_EQ(payload->getSamplesCount(), 0);
+    ASSERT_EQ(payload->getData(), nullptr);
 }
 
 TEST_F(AnalogPayloadTest, IsValidPayload)

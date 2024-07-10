@@ -109,6 +109,7 @@ public:
     uint8_t getDlc() const;
     uint8_t getDataLength() const;
     const uint8_t* getData() const;
+    void setData(const uint8_t* data, const uint8_t dataLength);
 
     static bool isValidPayload(const uint8_t* data, const size_t size);
 
@@ -118,6 +119,7 @@ protected:
 
     const Header* getHeader() const;
     Header* getHeader();
+    uint8_t encodeDlc(const uint8_t dataLength);
 };
 
 END_NAMESPACE_ASAM_CMP

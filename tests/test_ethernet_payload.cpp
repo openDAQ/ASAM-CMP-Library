@@ -17,6 +17,7 @@ public:
         data.resize(dataSize);
         std::iota(data.begin(), data.end(), uint8_t{});
         message = createEthernetDataMessage(data);
+        payload = std::make_unique<EthernetPayload>(message.data(), message.size());
     }
 
 protected:
@@ -25,6 +26,7 @@ protected:
 protected:
     std::vector<uint8_t> data;
     std::vector<uint8_t> message;
+    std::unique_ptr<EthernetPayload> payload;
     EthernetPayload dcPayload;
 };
 
@@ -38,24 +40,6 @@ TEST_F(EthernetPayloadTest, DefaultConstructor)
     ASSERT_TRUE(dcPayload.isValid());
 }
 
-TEST_F(EthernetPayloadTest, Properties)
-{
-    EthernetPayload payload(message.data(), message.size());
-
-    ASSERT_EQ(payload.getType(), PayloadType::ethernet);
-    ASSERT_EQ(payload.getDataLength(), dataSize);
-    ASSERT_TRUE(std::equal(data.begin(), data.end(), payload.getData()));
-
-    ASSERT_EQ(dcPayload.getType(), PayloadType::ethernet);
-    ASSERT_EQ(dcPayload.getDataLength(), 0u);
-    ASSERT_EQ(dcPayload.getData(), nullptr);
-}
-
-TEST_F(EthernetPayloadTest, IsValidPayload)
-{
-    ASSERT_TRUE(EthernetPayload::isValidPayload(message.data(), message.size()));
-}
-
 TEST_F(EthernetPayloadTest, Flags)
 {
     constexpr EthernetPayload::Flags fcsErr = EthernetPayload::Flags::fcsErr;
@@ -63,22 +47,57 @@ TEST_F(EthernetPayloadTest, Flags)
     constexpr EthernetPayload::Flags frameTooLongErr = EthernetPayload::Flags::frameTooLongErr;
     uint16_t newFlags = to_underlying(fcsErr) | to_underlying(txPortDown);
 
-    EthernetPayload payload(message.data(), message.size());
-    payload.setFlags(newFlags);
+    payload->setFlags(newFlags);
 
-    ASSERT_EQ(payload.getFlags(), newFlags);
-    ASSERT_TRUE(payload.getFlag(fcsErr));
-    ASSERT_TRUE(payload.getFlag(txPortDown));
-    ASSERT_FALSE(payload.getFlag(frameTooLongErr));
+    ASSERT_EQ(payload->getFlags(), newFlags);
+    ASSERT_TRUE(payload->getFlag(fcsErr));
+    ASSERT_TRUE(payload->getFlag(txPortDown));
+    ASSERT_FALSE(payload->getFlag(frameTooLongErr));
 
-    payload.setFlag(frameTooLongErr, true);
-    payload.setFlag(fcsErr, false);
+    payload->setFlag(frameTooLongErr, true);
+    payload->setFlag(fcsErr, false);
     newFlags = to_underlying(txPortDown) | to_underlying(frameTooLongErr);
 
-    ASSERT_EQ(payload.getFlags(), newFlags);
-    ASSERT_FALSE(payload.getFlag(fcsErr));
-    ASSERT_TRUE(payload.getFlag(txPortDown));
-    ASSERT_TRUE(payload.getFlag(frameTooLongErr));
+    ASSERT_EQ(payload->getFlags(), newFlags);
+    ASSERT_FALSE(payload->getFlag(fcsErr));
+    ASSERT_TRUE(payload->getFlag(txPortDown));
+    ASSERT_TRUE(payload->getFlag(frameTooLongErr));
 
     ASSERT_EQ(dcPayload.getFlags(), 0u);
+}
+
+TEST_F(EthernetPayloadTest, Properties)
+{
+    ASSERT_EQ(payload->getType(), PayloadType::ethernet);
+    ASSERT_EQ(payload->getDataLength(), dataSize);
+    ASSERT_TRUE(std::equal(data.begin(), data.end(), payload->getData()));
+
+    ASSERT_EQ(dcPayload.getType(), PayloadType::ethernet);
+    ASSERT_EQ(dcPayload.getDataLength(), 0u);
+    ASSERT_EQ(dcPayload.getData(), nullptr);
+}
+
+TEST_F(EthernetPayloadTest, SetData)
+{
+    constexpr uint16_t newDataSize = dataSize * 2;
+    std::vector<uint8_t> newData(newDataSize);
+    std::iota(newData.begin(), newData.end(), 0);
+    payload->setData(newData.data(), newDataSize);
+    ASSERT_EQ(payload->getDataLength(), newDataSize);
+    ASSERT_TRUE(std::equal(newData.begin(), newData.end(), payload->getData()));
+
+    dcPayload.setData(newData.data(), newDataSize);
+    ASSERT_TRUE(std::equal(newData.begin(), newData.end(), dcPayload.getData()));
+}
+
+TEST_F(EthernetPayloadTest, SetZeroData)
+{
+    payload->setData(nullptr, 0);
+    ASSERT_EQ(payload->getDataLength(), 0);
+    ASSERT_EQ(payload->getData(), nullptr);
+}
+
+TEST_F(EthernetPayloadTest, IsValidPayload)
+{
+    ASSERT_TRUE(EthernetPayload::isValidPayload(message.data(), message.size()));
 }

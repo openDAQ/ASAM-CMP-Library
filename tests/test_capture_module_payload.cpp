@@ -167,6 +167,24 @@ TEST_F(CaptureModulePayloadTest, VendorDataStringView)
     ASSERT_EQ(dcPayload.getVendorDataStringView(), "");
 }
 
+TEST_F(CaptureModulePayloadTest, SetData)
+{
+    constexpr std::string_view newDeviceDescription = "Device Description2";
+    constexpr std::string_view newSerialNumber = "Serial Num";
+    constexpr std::string_view newHardwareVersion = "";
+    constexpr std::string_view newSoftwareVersion = "Software Ver";
+    static constexpr size_t newDataSize = dataSize * 3;
+    std::vector<uint8_t> newVendorData(newDataSize);
+    std::iota(newVendorData.begin(), newVendorData.end(), 0);
+
+    payload->setData(newDeviceDescription, newSerialNumber, newHardwareVersion, newSoftwareVersion, newVendorData);
+    ASSERT_EQ(payload->getDeviceDescription(), newDeviceDescription);
+    ASSERT_EQ(payload->getSerialNumber(), newSerialNumber);
+    ASSERT_EQ(payload->getHardwareVersion(), newHardwareVersion);
+    ASSERT_EQ(payload->getSoftwareVersion(), newSoftwareVersion);
+    ASSERT_TRUE(std::equal(newVendorData.begin(), newVendorData.end(), payload->getVendorDataStringView().begin()));
+}
+
 TEST_F(CaptureModulePayloadTest, IsValidPayload)
 {
     ASSERT_TRUE(CaptureModulePayload::isValidPayload(message.data(), message.size()));

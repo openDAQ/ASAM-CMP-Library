@@ -75,6 +75,12 @@ const uint8_t* EthernetPayload::getData() const
     return getDataLength() ? payloadData.data() + sizeof(Header) : nullptr;
 }
 
+void EthernetPayload::setData(const uint8_t* data, const uint16_t dataLength)
+{
+    Payload::setData<Header>(data, dataLength);
+    getHeader()->setDataLength(dataLength);
+}
+
 bool EthernetPayload::isValidPayload(const uint8_t* data, const size_t size)
 {
     auto header = reinterpret_cast<const Header*>(data);

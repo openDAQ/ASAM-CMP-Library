@@ -169,6 +169,7 @@ public:
 
     size_t getSamplesCount() const;
     const uint8_t* getData() const;
+    void setData(const uint8_t* data, const size_t size);
 
     static bool isValidPayload(const uint8_t* data, const size_t size);
 

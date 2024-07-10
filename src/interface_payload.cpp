@@ -232,6 +232,32 @@ const uint8_t* InterfacePayload::getVendorData() const
     return getVendorDataLength() ? getVendorDataLengthPtr() + sizeof(uint16_t) : nullptr;
 }
 
+void InterfacePayload::setData(const uint8_t* streamIds,
+                               const uint16_t streamIdsCount,
+                               const uint8_t* vendorData,
+                               const uint16_t vendorDataLength)
+{
+    size_t padding = 0;
+    if (streamIdsCount % 2)
+        padding = 1;
+
+    const size_t payloadSize = sizeof(Header) + sizeof(uint16_t) + streamIdsCount + padding + sizeof(uint16_t) + vendorDataLength;
+    payloadData.resize(payloadSize);
+    auto ptr = payloadData.data() + sizeof(Header);
+
+    auto swappedLength = swapEndian(streamIdsCount);
+    memcpy(ptr, &swappedLength, sizeof(streamIdsCount));
+    ptr += sizeof(streamIdsCount);
+    memcpy(ptr, streamIds, streamIdsCount);
+    ptr += streamIdsCount;
+    ptr += padding;
+
+    swappedLength = swapEndian(vendorDataLength);
+    memcpy(ptr, &swappedLength, sizeof(vendorDataLength));
+    ptr += sizeof(vendorDataLength);
+    memcpy(ptr, vendorData, vendorDataLength);
+}
+
 bool InterfacePayload::isValidPayload(const uint8_t* data, const size_t size)
 {
     auto header = reinterpret_cast<const Header*>(data);

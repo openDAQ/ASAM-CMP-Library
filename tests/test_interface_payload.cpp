@@ -174,6 +174,29 @@ TEST_F(InterfacePayloadTest, VendorDataEven)
     ASSERT_TRUE(std::equal(vendorData.begin(), vendorData.end(), payload->getVendorData()));
 }
 
+TEST_F(InterfacePayloadTest, SetData)
+{
+    const std::vector<uint8_t> newsStreamsIds = {3, 4, 5, 6, 7, 8, 9};
+    static constexpr uint16_t newVendorDataSize = vendorDataSize * 4;
+    std::vector<uint8_t> newVendorData(newVendorDataSize);
+    std::iota(newVendorData.begin(), newVendorData.end(), 0);
+
+    payload->setData(newsStreamsIds.data(), static_cast<uint16_t>(newsStreamsIds.size()), newVendorData.data(), newVendorDataSize);
+    ASSERT_EQ(payload->getStreamIdsCount(), newsStreamsIds.size());
+    ASSERT_TRUE(std::equal(newsStreamsIds.begin(), newsStreamsIds.end(), payload->getStreamIds()));
+    ASSERT_EQ(payload->getVendorDataLength(), newVendorData.size());
+    ASSERT_TRUE(std::equal(newVendorData.begin(), newVendorData.end(), payload->getVendorData()));
+}
+
+TEST_F(InterfacePayloadTest, SetZeroData)
+{
+    payload->setData(nullptr, 0, nullptr, 0);
+    ASSERT_EQ(payload->getStreamIdsCount(), 0);
+    ASSERT_EQ(payload->getStreamIds(), nullptr);
+    ASSERT_EQ(payload->getVendorDataLength(), 0);
+    ASSERT_EQ(payload->getVendorData(), nullptr);
+}
+
 TEST_F(InterfacePayloadTest, IsValidPayload)
 {
     ASSERT_TRUE(InterfacePayload::isValidPayload(message.data(), message.size()));
