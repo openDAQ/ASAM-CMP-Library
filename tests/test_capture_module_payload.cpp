@@ -175,7 +175,7 @@ TEST_F(CaptureModulePayloadTest, SetData)
     constexpr std::string_view newSoftwareVersion = "Software Ver";
     static constexpr size_t newDataSize = dataSize * 3;
     std::vector<uint8_t> newVendorData(newDataSize);
-    std::iota(newVendorData.begin(), newVendorData.end(), 0);
+    std::iota(newVendorData.begin(), newVendorData.end(), uint8_t{});
 
     payload->setData(newDeviceDescription, newSerialNumber, newHardwareVersion, newSoftwareVersion, newVendorData);
     ASSERT_EQ(payload->getDeviceDescription(), newDeviceDescription);

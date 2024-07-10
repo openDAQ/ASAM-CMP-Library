@@ -179,7 +179,7 @@ TEST_F(InterfacePayloadTest, SetData)
     const std::vector<uint8_t> newsStreamsIds = {3, 4, 5, 6, 7, 8, 9};
     static constexpr uint16_t newVendorDataSize = vendorDataSize * 4;
     std::vector<uint8_t> newVendorData(newVendorDataSize);
-    std::iota(newVendorData.begin(), newVendorData.end(), 0);
+    std::iota(newVendorData.begin(), newVendorData.end(), uint8_t{});
 
     payload->setData(newsStreamsIds.data(), static_cast<uint16_t>(newsStreamsIds.size()), newVendorData.data(), newVendorDataSize);
     ASSERT_EQ(payload->getStreamIdsCount(), newsStreamsIds.size());

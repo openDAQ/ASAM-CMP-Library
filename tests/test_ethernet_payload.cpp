@@ -81,7 +81,7 @@ TEST_F(EthernetPayloadTest, SetData)
 {
     constexpr uint16_t newDataSize = dataSize * 2;
     std::vector<uint8_t> newData(newDataSize);
-    std::iota(newData.begin(), newData.end(), 0);
+    std::iota(newData.begin(), newData.end(), uint8_t{});
     payload->setData(newData.data(), newDataSize);
     ASSERT_EQ(payload->getDataLength(), newDataSize);
     ASSERT_TRUE(std::equal(newData.begin(), newData.end(), payload->getData()));

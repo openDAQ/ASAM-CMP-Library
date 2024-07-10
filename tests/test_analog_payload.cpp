@@ -117,7 +117,7 @@ TEST_F(AnalogPayloadTest, SetData)
 {
     constexpr size_t newDataSize = dataSize * 2;
     std::vector<uint8_t> newData(newDataSize);
-    std::iota(newData.begin(), newData.end(), 0);
+    std::iota(newData.begin(), newData.end(), uint8_t{});
     payload->setData(newData.data(), newData.size());
     ASSERT_EQ(payload->getSampleDt(), AnalogPayload::SampleDt::aInt16);
     ASSERT_EQ(payload->getSamplesCount(), newDataSize / sizeof(uint16_t));
@@ -130,7 +130,7 @@ TEST_F(AnalogPayloadTest, SetData)
 TEST_F(AnalogPayloadTest, SetZeroData)
 {
     payload->setData(nullptr, 0);
-    ASSERT_EQ(payload->getSamplesCount(), 0);
+    ASSERT_EQ(payload->getSamplesCount(), 0u);
     ASSERT_EQ(payload->getData(), nullptr);
 }
 

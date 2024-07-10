@@ -180,7 +180,7 @@ TEST_F(CanPayloadTest, CrcSupport)
 {
     canPayload->setCrcSupport(true);
     ASSERT_TRUE(canPayload->getCrcSupport());
-    ASSERT_EQ(dcCanPayload.getCrcSupport(), 0u);
+    ASSERT_FALSE(dcCanPayload.getCrcSupport());
 }
 
 TEST_F(CanPayloadTest, CrcAllBits)
@@ -230,21 +230,21 @@ TEST_F(CanPayloadTest, SbcParity)
 {
     canFdPayload->setSbcParity(true);
     ASSERT_TRUE(canFdPayload->getSbcParity());
-    ASSERT_EQ(dcCanFdPayload.getSbcParity(), 0u);
+    ASSERT_FALSE(dcCanFdPayload.getSbcParity());
 }
 
 TEST_F(CanPayloadTest, SbcSupport)
 {
     canFdPayload->setSbcSupport(true);
     ASSERT_TRUE(canFdPayload->getSbcSupport());
-    ASSERT_EQ(dcCanFdPayload.getSbcSupport(), 0u);
+    ASSERT_FALSE(dcCanFdPayload.getSbcSupport());
 }
 
 TEST_F(CanPayloadTest, CrcSbcSupport)
 {
     canFdPayload->setCrcSupport(true);
     ASSERT_TRUE(canFdPayload->getCrcSupport());
-    ASSERT_EQ(dcCanFdPayload.getCrcSupport(), 0u);
+    ASSERT_FALSE(dcCanFdPayload.getCrcSupport());
 }
 
 TEST_F(CanPayloadTest, CrcSbcAllBits)
@@ -305,7 +305,7 @@ TEST_F(CanPayloadTest, SetData)
     constexpr uint8_t dlc2 = 13;
 
     std::vector<uint8_t> newData(dataLength);
-    std::iota(newData.begin(), newData.end(), 0);
+    std::iota(newData.begin(), newData.end(), uint8_t{});
     CanPayloadBase* payload = canPayload.get();
     payload->setData(newData.data(), dataLength);
     ASSERT_EQ(payload->getDataLength(), dataLength);
