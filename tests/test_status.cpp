@@ -5,11 +5,11 @@
 
 #include "create_message.h"
 
-using ASAM::CMP::Status;
 using ASAM::CMP::DeviceStatus;
 using ASAM::CMP::Packet;
 using ASAM::CMP::Payload;
 using ASAM::CMP::PayloadType;
+using ASAM::CMP::Status;
 using MessageType = ASAM::CMP::CmpHeader::MessageType;
 
 class StatusTest : public ::testing::Test
@@ -23,6 +23,11 @@ public:
         auto cmDataMsg = createDataMessage(PayloadType::cmStatMsg, payloadMsg);
         cmPacket = Packet{MessageType::status, cmDataMsg.data(), cmDataMsg.size()};
         cmPacket.setDeviceId(deviceId);
+
+        payloadMsg = createInterfaceDataMessage(interfaceId, streamIds, data);
+        auto dataMsg = createDataMessage(PayloadType::ifStatMsg, payloadMsg);
+        ifPacket = Packet{MessageType::status, dataMsg.data(), dataMsg.size()};
+        ifPacket.setDeviceId(deviceId);
     }
 
 protected:
@@ -31,12 +36,15 @@ protected:
     static constexpr std::string_view hardwareVersion = "Hardware Version";
     static constexpr std::string_view softwareVersion = "Software Version";
     static constexpr size_t dataSize = 32;
+    static const uint32_t interfaceId = 3;
 
     static constexpr uint16_t deviceId = 37;
 
 protected:
     Packet cmPacket;
+    Packet ifPacket;
     Status status;
+    std::vector<uint8_t> streamIds = {1};
 };
 
 TEST_F(StatusTest, Empty)
@@ -104,4 +112,13 @@ TEST_F(StatusTest, NewDeviceId)
     packet.setDeviceId(newDeviceId);
     status.update(packet);
     ASSERT_EQ(status.getDeviceStatusCount(), 2u);
+}
+
+TEST_F(StatusTest, InterfaceStatusBeforDeviceStatus)
+{
+    status.update(ifPacket);
+    ASSERT_EQ(status.getDeviceStatusCount(), 0u);
+    status.update(cmPacket);
+    ASSERT_EQ(status.getDeviceStatusCount(), 1u);
+    ASSERT_EQ(status.getDeviceStatus(0).getInterfaceStatusCount(), 0u);
 }
