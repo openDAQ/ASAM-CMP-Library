@@ -14,6 +14,7 @@ public:
 
     // Random access to stream status
     std::size_t getInterfaceStatusCount() const;
+    size_t getIndexByInterfaceId(const uint32_t interfaceId) const;
     InterfaceStatus& getInterfaceStatus(std::size_t index);
     const InterfaceStatus& getInterfaceStatus(std::size_t index) const;
 
