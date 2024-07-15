@@ -24,11 +24,11 @@ Packet::Packet(const CmpHeader::MessageType msgType, const uint8_t* data, [[mayb
 }
 
 Packet::Packet(const Packet& other)
-    : payload(new Payload(*(other.payload.get())))
-    , version(other.version)
+    : version(other.version)
     , deviceId(other.deviceId)
     , streamId(other.streamId)
 {
+    payload = other.payload.get() ? std::make_unique<Payload>(*other.payload.get()) : std::make_unique<Payload>();
 }
 
 Packet::Packet(Packet&& other) noexcept

@@ -72,6 +72,14 @@ TEST_F(PacketFixture, Copy)
     ASSERT_TRUE(canPacket == packetCopy);
 }
 
+TEST_F(PacketFixture, CopyEmptyPacket)
+{
+    Packet emptyPacket;
+    Packet packetCopy(emptyPacket);
+
+    ASSERT_TRUE(emptyPacket == packetCopy);
+}
+
 TEST_F(PacketFixture, CopyAssignment)
 {
     Packet packetCopy(CmpHeader::MessageType::data, canDataMsg.data(), canDataMsg.size() / 2);
