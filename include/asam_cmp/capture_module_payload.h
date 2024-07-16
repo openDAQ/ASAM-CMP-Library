@@ -41,7 +41,7 @@ public:
 #pragma pack(pop)
 
 public:
-    CaptureModulePayload() = default;
+    CaptureModulePayload();
     CaptureModulePayload(const uint8_t* data, const size_t size);
 
     uint64_t getUptime() const;
@@ -66,6 +66,11 @@ public:
     uint16_t getVendorDataLength() const;
     const uint8_t* getVendorData() const;
     std::string_view getVendorDataStringView() const;
+    void setData(const std::string_view deviceDescription,
+                 const std::string_view serialNumber,
+                 const std::string_view hardwareVersion,
+                 const std::string_view softwareVersion,
+                 const std::vector<uint8_t>& vendorData);
 
     static bool isValidPayload(const uint8_t* data, const size_t size);
 
@@ -73,7 +78,11 @@ protected:
     const Header* getHeader() const;
     Header* getHeader();
 
+    static constexpr size_t minPayloadSize = sizeof(Header) + 5 * sizeof(int16_t);
+
 private:
+    uint8_t* fillWithString(uint8_t* ptr, const std::string_view str);
+
     static const uint8_t* initStringView(const uint8_t* ptr, std::string_view& str);
     static std::string_view removeTrailingNulls(std::string_view str);
 };

@@ -40,8 +40,21 @@ public:
     const uint8_t* getRawPayload() const;
 
 protected:
+    Payload(const PayloadType type, const size_t size);
+
+    template <typename Header>
+    void setData(const uint8_t* data, const size_t size);
+
+protected:
     std::vector<uint8_t> payloadData;
     PayloadType type{PayloadType::invalid};
 };
+
+template <typename Header>
+inline void Payload::setData(const uint8_t* data, const size_t size)
+{
+    payloadData.resize(sizeof(Header) + size);
+    memcpy(payloadData.data() + sizeof(Header), data, size);
+}
 
 END_NAMESPACE_ASAM_CMP

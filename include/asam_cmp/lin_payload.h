@@ -53,7 +53,7 @@ public:
 #pragma pack(pop)
 
 public:
-    LinPayload() = default;
+    LinPayload();
     LinPayload(const uint8_t* data, const size_t size);
 
     uint16_t getFlags() const;
@@ -69,6 +69,7 @@ public:
 
     uint8_t getDataLength() const;
     const uint8_t* getData() const;
+    void setData(const uint8_t* data, const uint8_t dataLength);
 
     static bool isValidPayload(const uint8_t* data, const size_t size);
 

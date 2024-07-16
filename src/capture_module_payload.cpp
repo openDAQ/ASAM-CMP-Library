@@ -1,3 +1,5 @@
+#include <cassert>
+
 #include <asam_cmp/capture_module_payload.h>
 
 BEGIN_NAMESPACE_ASAM_CMP
@@ -70,6 +72,11 @@ uint8_t CaptureModulePayload::Header::getGptpFlags() const
 void CaptureModulePayload::Header::setGptpFlags(const uint8_t flags)
 {
     gPtpFlags = flags;
+}
+
+CaptureModulePayload::CaptureModulePayload()
+    : Payload(PayloadType::cmStatMsg, minPayloadSize)
+{
 }
 
 CaptureModulePayload::CaptureModulePayload(const uint8_t* data, const size_t size)
@@ -217,6 +224,36 @@ std::string_view CaptureModulePayload::getVendorDataStringView() const
     return vendorData;
 }
 
+void CaptureModulePayload::setData(const std::string_view deviceDescription,
+                                   const std::string_view serialNumber,
+                                   const std::string_view hardwareVersion,
+                                   const std::string_view softwareVersion,
+                                   const std::vector<uint8_t>& vendorData)
+{
+    constexpr size_t maxNullsCount = 8;
+    const size_t payloadSize = sizeof(Header) + 5 * sizeof(uint16_t) + deviceDescription.size() + serialNumber.size() +
+                               hardwareVersion.size() + softwareVersion.size() + vendorData.size() + maxNullsCount;
+    payloadData.resize(payloadSize);
+    auto ptr = payloadData.data() + sizeof(Header);
+
+    ptr = fillWithString(ptr, deviceDescription);
+    ptr = fillWithString(ptr, serialNumber);
+    ptr = fillWithString(ptr, hardwareVersion);
+    ptr = fillWithString(ptr, softwareVersion);
+
+    uint16_t length = static_cast<uint16_t>(vendorData.size());
+    auto swappedLength = ASAM::CMP::swapEndian(length);
+    memcpy(ptr, &swappedLength, sizeof(length));
+    ptr += sizeof(length);
+    memcpy(ptr, vendorData.data(), vendorData.size());
+    ptr += vendorData.size();
+
+    size_t newSize = ptr - payloadData.data();
+    payloadData.resize(newSize);
+
+    assert((payloadData.size() % 2) == 0);
+}
+
 bool CaptureModulePayload::isValidPayload([[maybe_unused]] const uint8_t* data, const size_t size)
 {
     return (size >= sizeof(Header));
@@ -230,6 +267,23 @@ const CaptureModulePayload::Header* CaptureModulePayload::getHeader() const
 CaptureModulePayload::Header* CaptureModulePayload::getHeader()
 {
     return reinterpret_cast<Header*>(payloadData.data());
+}
+
+uint8_t* CaptureModulePayload::fillWithString(uint8_t* ptr, const std::string_view str)
+{
+    uint16_t length = static_cast<uint16_t>(str.size()) + 1;
+    if (length % 2)
+        length += 1;
+    auto swappedLength = ASAM::CMP::swapEndian(length);
+    memcpy(ptr, &swappedLength, sizeof(length));
+    ptr += sizeof(length);
+    memcpy(ptr, str.data(), str.size());
+    ptr += str.size();
+    char nulls[2] = {0, 0};
+    memcpy(ptr, nulls, length - str.size());
+    ptr += length - str.size();
+
+    return ptr;
 }
 
 const uint8_t* CaptureModulePayload::initStringView(const uint8_t* ptr, std::string_view& str)

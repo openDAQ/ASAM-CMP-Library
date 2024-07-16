@@ -8,7 +8,7 @@ BEGIN_NAMESPACE_ASAM_CMP
 class CanFdPayload : public CanPayloadBase
 {
 public:
-    CanFdPayload() = default;
+    CanFdPayload();
     CanFdPayload(const uint8_t* data, const size_t size);
 
     bool getRrs() const;

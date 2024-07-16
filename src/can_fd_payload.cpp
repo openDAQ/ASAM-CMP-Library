@@ -7,6 +7,11 @@ CanFdPayload::CanFdPayload(const uint8_t* data, const size_t size)
 {
 }
 
+CanFdPayload::CanFdPayload()
+    : CanPayloadBase(PayloadType::canFd, sizeof(Header))
+{
+}
+
 bool CanFdPayload::getRrs() const
 {
     return getHeader()->getRtrRrs();

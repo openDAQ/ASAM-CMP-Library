@@ -246,13 +246,25 @@ uint8_t CanPayloadBase::getDataLength() const
 
 const uint8_t* CanPayloadBase::getData() const
 {
-    return payloadData.data() + sizeof(Header);
+    return getDataLength() ? payloadData.data() + sizeof(Header) : nullptr;
+}
+
+void CanPayloadBase::setData(const uint8_t* data, const uint8_t dataLength)
+{
+    Payload::setData<Header>(data, dataLength);
+    getHeader()->setDataLength(dataLength);
+    getHeader()->setDlc(encodeDlc(dataLength));
 }
 
 bool CanPayloadBase::isValidPayload(const uint8_t* data, const size_t size)
 {
     auto header = reinterpret_cast<const Header*>(data);
     return (size >= sizeof(Header) && !header->hasError() && header->getDataLength() <= size - sizeof(Header));
+}
+
+CanPayloadBase::CanPayloadBase(const PayloadType type, const size_t size)
+    : Payload(type, size)
+{
 }
 
 CanPayloadBase::CanPayloadBase(const PayloadType type, const uint8_t* data, const size_t size)
@@ -268,6 +280,38 @@ const CanPayloadBase::Header* CanPayloadBase::getHeader() const
 CanPayloadBase::Header* CanPayloadBase::getHeader()
 {
     return reinterpret_cast<Header*>(payloadData.data());
+}
+
+uint8_t CanPayloadBase::encodeDlc(const uint8_t dataLength)
+{
+    if (dataLength <= 8)
+        return dataLength;
+
+    switch (dataLength)
+    {
+        case 12:
+            return 9;
+            break;
+        case 16:
+            return 10;
+            break;
+        case 20:
+            return 11;
+            break;
+        case 24:
+            return 12;
+            break;
+        case 32:
+            return 13;
+            break;
+        case 48:
+            return 14;
+            break;
+        case 64:
+            return 15;
+            break;
+    }
+    return 0;
 }
 
 END_NAMESPACE_ASAM_CMP

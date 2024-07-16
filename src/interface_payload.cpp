@@ -102,6 +102,11 @@ void InterfacePayload::Header::setFeatureSupportBitmask(const uint32_t bitmask)
     featureSupportBitmask = swapEndian(bitmask);
 }
 
+InterfacePayload::InterfacePayload()
+    : Payload(PayloadType::ifStatMsg, minPayloadSize)
+{
+}
+
 InterfacePayload::InterfacePayload(const uint8_t* data, const size_t size)
     : Payload(PayloadType::ifStatMsg, data, size)
 {
@@ -214,7 +219,7 @@ uint16_t InterfacePayload::getStreamIdsCount() const
 
 const uint8_t* InterfacePayload::getStreamIds() const
 {
-    return getStreamIdCountPtr() + sizeof(uint16_t);
+    return getStreamIdsCount() ? getStreamIdCountPtr() + sizeof(uint16_t) : nullptr;
 }
 
 uint16_t InterfacePayload::getVendorDataLength() const
@@ -224,7 +229,33 @@ uint16_t InterfacePayload::getVendorDataLength() const
 
 const uint8_t* InterfacePayload::getVendorData() const
 {
-    return getVendorDataLengthPtr() + sizeof(uint16_t);
+    return getVendorDataLength() ? getVendorDataLengthPtr() + sizeof(uint16_t) : nullptr;
+}
+
+void InterfacePayload::setData(const uint8_t* streamIds,
+                               const uint16_t streamIdsCount,
+                               const uint8_t* vendorData,
+                               const uint16_t vendorDataLength)
+{
+    size_t padding = 0;
+    if (streamIdsCount % 2)
+        padding = 1;
+
+    const size_t payloadSize = sizeof(Header) + sizeof(uint16_t) + streamIdsCount + padding + sizeof(uint16_t) + vendorDataLength;
+    payloadData.resize(payloadSize);
+    auto ptr = payloadData.data() + sizeof(Header);
+
+    auto swappedLength = swapEndian(streamIdsCount);
+    memcpy(ptr, &swappedLength, sizeof(streamIdsCount));
+    ptr += sizeof(streamIdsCount);
+    memcpy(ptr, streamIds, streamIdsCount);
+    ptr += streamIdsCount;
+    ptr += padding;
+
+    swappedLength = swapEndian(vendorDataLength);
+    memcpy(ptr, &swappedLength, sizeof(vendorDataLength));
+    ptr += sizeof(vendorDataLength);
+    memcpy(ptr, vendorData, vendorDataLength);
 }
 
 bool InterfacePayload::isValidPayload(const uint8_t* data, const size_t size)

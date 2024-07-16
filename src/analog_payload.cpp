@@ -63,6 +63,11 @@ void AnalogPayload::Header::setSampleScalar(const float scalar)
     sampleScalar = swapEndian(scalar);
 }
 
+AnalogPayload::AnalogPayload()
+    : Payload(PayloadType::analog, sizeof(Header))
+{
+}
+
 AnalogPayload::AnalogPayload(const uint8_t* data, const size_t size)
     : Payload(PayloadType::analog, data, size)
 {
@@ -131,12 +136,17 @@ void AnalogPayload::setSampleScalar(const float sampleScalar)
 size_t AnalogPayload::getSamplesCount() const
 {
     auto samplesSize = (getLength() - sizeof(Header));
-    return getHeader()->getSampleDt() == SampleDt::aInt16 ? samplesSize / 2 : samplesSize / 4;
+    return getHeader()->getSampleDt() == SampleDt::aInt16 ? samplesSize / sizeof(uint16_t) : samplesSize / sizeof(uint32_t);
 }
 
 const uint8_t* AnalogPayload::getData() const
 {
-    return payloadData.data() + sizeof(Header);
+    return getSamplesCount() ? payloadData.data() + sizeof(Header) : nullptr;
+}
+
+void AnalogPayload::setData(const uint8_t* data, const size_t size)
+{
+    Payload::setData<Header>(data, size);
 }
 
 bool AnalogPayload::isValidPayload(const uint8_t* data, const size_t size)
