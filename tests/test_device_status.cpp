@@ -107,6 +107,18 @@ TEST_F(DeviceStatusTest, AccessToConstantInterfaces)
     ASSERT_EQ(packet, ifPacket);
 }
 
+TEST_F(DeviceStatusTest, GetIndexByInterfaceId)
+{
+    auto curIfId = interfaceId;
+    deviceStatus.update(ifPacket);
+    static_cast<InterfacePayload&>(ifPacket.getPayload()).setInterfaceId(++curIfId);
+    deviceStatus.update(ifPacket);
+    static_cast<InterfacePayload&>(ifPacket.getPayload()).setInterfaceId(++curIfId);
+    deviceStatus.update(ifPacket);
+    auto index = deviceStatus.getIndexByInterfaceId(curIfId - 1);
+    ASSERT_EQ(index, 1u);
+}
+
 TEST_F(DeviceStatusTest, SameInterfaceId)
 {
     constexpr uint8_t newStreamId = 66;

@@ -6,12 +6,9 @@ BEGIN_NAMESPACE_ASAM_CMP
 
 void Status::update(const Packet& packet)
 {
-    auto devIt = std::find_if(devices.begin(),
-                              devices.end(),
-                              [&packet](const DeviceStatus& device) { return device.getPacket().getDeviceId() == packet.getDeviceId(); });
-    if (devIt != devices.end())
+    auto index = getIndexByDeviceId(packet.getDeviceId());
+    if (index < getDeviceStatusCount())
     {
-        auto index = std::distance(devices.begin(), devIt);
         devices[index].update(packet);
     }
     else if (packet.getPayload().getType() == PayloadType::cmStatMsg)
@@ -30,6 +27,13 @@ void Status::clear()
 std::size_t Status::getDeviceStatusCount() const
 {
     return devices.size();
+}
+
+size_t Status::getIndexByDeviceId(const uint16_t deviceId) const
+{
+    auto devIt = std::find_if(devices.begin(),
+                              devices.end(), [&deviceId](const DeviceStatus& device) { return device.getPacket().getDeviceId() == deviceId; });
+    return std::distance(devices.begin(), devIt);
 }
 
 DeviceStatus& Status::getDeviceStatus(std::size_t index)

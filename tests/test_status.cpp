@@ -79,6 +79,18 @@ TEST_F(StatusTest, ConstantAccess)
     ASSERT_EQ(packet, cmPacket);
 }
 
+TEST_F(StatusTest, GetIndexByDeviceId)
+{
+    auto curDevId = deviceId;
+    status.update(cmPacket);
+    cmPacket.setDeviceId(++curDevId);
+    status.update(cmPacket);
+    cmPacket.setDeviceId(++curDevId);
+    status.update(cmPacket);
+    auto index = status.getIndexByDeviceId(curDevId - 1);
+    ASSERT_EQ(index, 1u);
+}
+
 TEST_F(StatusTest, EmptyInterfaces)
 {
     status.update(cmPacket);

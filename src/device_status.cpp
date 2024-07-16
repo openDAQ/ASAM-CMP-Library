@@ -29,6 +29,14 @@ std::size_t DeviceStatus::getInterfaceStatusCount() const
     return interfaces.size();
 }
 
+size_t DeviceStatus::getIndexByInterfaceId(const uint32_t interfaceId) const
+{
+    auto intIt = std::find_if(interfaces.begin(),
+                              interfaces.end(),
+                              [&interfaceId](const InterfaceStatus& interface) { return interface.getInterfaceId() == interfaceId; });
+    return std::distance(interfaces.begin(), intIt);
+}
+
 InterfaceStatus& DeviceStatus::getInterfaceStatus(std::size_t index)
 {
     return interfaces[index];
@@ -42,12 +50,10 @@ const InterfaceStatus& DeviceStatus::getInterfaceStatus(std::size_t index) const
 void DeviceStatus::updateInterfaces(const Packet& packet)
 {
     auto newId = static_cast<const InterfacePayload&>(packet.getPayload()).getInterfaceId();
-    auto intIt = std::find_if(
-        interfaces.begin(), interfaces.end(), [&newId](const InterfaceStatus& interface) { return interface.getInterfaceId() == newId; });
+    auto index = getIndexByInterfaceId(newId);
 
-    if (intIt != interfaces.end())
+    if (index != getInterfaceStatusCount())
     {
-        auto index = std::distance(interfaces.begin(), intIt);
         interfaces[index].update(packet);
     }
     else

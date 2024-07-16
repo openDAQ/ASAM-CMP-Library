@@ -14,6 +14,7 @@ public:
 
     // Random access to device status
     std::size_t getDeviceStatusCount() const;
+    size_t getIndexByDeviceId(const uint16_t deviceId) const;
     DeviceStatus& getDeviceStatus(std::size_t index);
     const DeviceStatus& getDeviceStatus(std::size_t index) const;
 
