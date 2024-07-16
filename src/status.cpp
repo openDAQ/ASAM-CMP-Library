@@ -14,7 +14,7 @@ void Status::update(const Packet& packet)
         auto index = std::distance(devices.begin(), devIt);
         devices[index].update(packet);
     }
-    else
+    else if (packet.getPayload().getType() == PayloadType::cmStatMsg)
     {
         DeviceStatus deviceStatus;
         deviceStatus.update(packet);
