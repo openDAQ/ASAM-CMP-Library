@@ -70,7 +70,7 @@ private:
 
     friend void swap(Packet& lhs, Packet& rhs) noexcept;
     void setMessageHeader(MessageHeader messageHeader);
-    
+
 private:
     constexpr static uint8_t errorInPayload = 0x40;
 

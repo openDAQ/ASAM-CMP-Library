@@ -17,7 +17,6 @@ Packet::Packet(const CmpHeader::MessageType msgType, const uint8_t* data, [[mayb
     if (data == nullptr || size < sizeof(MessageHeader))
         throw std::invalid_argument("Not enough data");
 #endif  // _DEBUG
-
     auto header = reinterpret_cast<const MessageHeader*>(data);
     setMessageHeader(*header);
     payload = create({msgType, header->getPayloadType()}, data + sizeof(MessageHeader), header->getPayloadLength());
@@ -299,7 +298,6 @@ void Packet::setMessageHeader(MessageHeader messageHeader)
     setVendorId(messageHeader.getVendorId());
     setCommonFlags(messageHeader.getCommonFlags());
 }
-
 
 void swap(Packet& lhs, Packet& rhs) noexcept
 {

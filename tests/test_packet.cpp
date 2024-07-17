@@ -396,3 +396,4 @@ TEST_F(PacketFixture, IsHeaderCorrect)
     ASSERT_EQ(packet.getPayloadType(), expectedPayloadType);
     ASSERT_EQ(packet.getPayloadLength(), expectedPayloadLength);
 }
+
