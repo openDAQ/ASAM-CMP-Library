@@ -250,8 +250,6 @@ void CaptureModulePayload::setData(const std::string_view deviceDescription,
 
     size_t newSize = ptr - payloadData.data();
     payloadData.resize(newSize);
-
-    assert((payloadData.size() % 2) == 0);
 }
 
 bool CaptureModulePayload::isValidPayload([[maybe_unused]] const uint8_t* data, const size_t size)
