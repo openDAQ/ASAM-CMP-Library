@@ -77,7 +77,7 @@ private:
 private:
     std::unique_ptr<Payload> payload;
 
-    uint8_t version{0};
+    uint8_t version{1};
     uint16_t deviceId{0};
     uint8_t streamId{0};
     uint16_t sequenceCounter{0};
