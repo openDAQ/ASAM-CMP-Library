@@ -26,6 +26,12 @@ Packet::Packet(const Packet& other)
     : version(other.version)
     , deviceId(other.deviceId)
     , streamId(other.streamId)
+    , sequenceCounter(other.sequenceCounter)
+    , timestamp(other.timestamp)
+    , interfaceId(other.interfaceId)
+    , vendorId(other.vendorId)
+    , commonFlags(other.commonFlags)
+    , segmentType(other.segmentType)
 {
     payload = other.payload.get() ? std::make_unique<Payload>(*other.payload.get()) : std::make_unique<Payload>();
 }
@@ -53,13 +59,31 @@ Packet& Packet::operator=(Packet&& other) noexcept
 
 bool operator==(const Packet& lhs, const Packet& rhs) noexcept
 {
+    if (lhs.getVersion() != rhs.getVersion())
+        return false;
+
     if (lhs.getDeviceId() != rhs.getDeviceId())
         return false;
 
     if (lhs.getStreamId() != rhs.getStreamId())
         return false;
 
-    if (lhs.getVersion() != rhs.getVersion())
+    if (lhs.getSequenceCounter() != rhs.getSequenceCounter())
+        return false;
+
+    if (lhs.getTimestamp() != rhs.getTimestamp())
+        return false;
+
+    if (lhs.getInterfaceId() != rhs.getInterfaceId())
+        return false;
+
+    if (lhs.getVendorId() != rhs.getVendorId())
+        return false;
+
+    if (lhs.getCommonFlags() != rhs.getCommonFlags())
+        return false;
+
+    if (lhs.getSegmentType() != rhs.getSegmentType())
         return false;
 
     if (lhs.getPayloadLength() == rhs.getPayloadLength() && lhs.getPayloadLength() > 0)
@@ -303,8 +327,14 @@ void swap(Packet& lhs, Packet& rhs) noexcept
 {
     using std::swap;
     swap(lhs.version, rhs.version);
-    swap(lhs.streamId, rhs.streamId);
     swap(lhs.deviceId, rhs.deviceId);
+    swap(lhs.streamId, rhs.streamId);
+    swap(lhs.sequenceCounter, rhs.sequenceCounter);
+    swap(lhs.timestamp, rhs.timestamp);
+    swap(lhs.interfaceId, rhs.interfaceId);
+    swap(lhs.vendorId, rhs.vendorId);
+    swap(lhs.commonFlags, rhs.commonFlags);
+    swap(lhs.segmentType, rhs.segmentType);
     swap(lhs.payload, rhs.payload);
 }
 

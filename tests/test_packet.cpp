@@ -3,9 +3,9 @@
 
 #include <asam_cmp/can_fd_payload.h>
 #include <asam_cmp/capture_module_payload.h>
+#include <asam_cmp/common.h>
 #include <asam_cmp/interface_payload.h>
 #include <asam_cmp/packet.h>
-#include <asam_cmp/common.h>
 
 #include "create_message.h"
 
@@ -31,6 +31,17 @@ public:
         canPayloadMsg = createCanDataMessage(arbId, canMsg);
         canDataMsg = createDataMessage(payloadType, canPayloadMsg);
         canPacket = Packet(CmpHeader::MessageType::data, canDataMsg.data(), canDataMsg.size());
+
+        anotherPacket = Packet(CmpHeader::MessageType::data, canDataMsg.data(), canDataMsg.size());
+        anotherPacket.setVersion(anotherPacket.getVersion() + 1);
+        anotherPacket.setDeviceId(anotherPacket.getDeviceId() + 1);
+        anotherPacket.setStreamId(anotherPacket.getStreamId() + 1);
+        anotherPacket.setSequenceCounter(anotherPacket.getSequenceCounter() + 1);
+        anotherPacket.setTimestamp(anotherPacket.getTimestamp() + 1);
+        anotherPacket.setInterfaceId(anotherPacket.getInterfaceId() + 1);
+        anotherPacket.setVendorId(anotherPacket.getVendorId() + 1);
+        anotherPacket.setCommonFlags(anotherPacket.getCommonFlags() + 1);
+        anotherPacket.setSegmentType(MessageHeader::SegmentType::lastSegment);
     }
 
 protected:
@@ -57,6 +68,7 @@ protected:
     std::vector<uint8_t> canDataMsg;
     std::vector<uint8_t> canPayloadMsg;
     Packet canPacket;
+    Packet anotherPacket;
 };
 
 TEST_F(PacketFixture, DefaultConstructor)
@@ -67,9 +79,9 @@ TEST_F(PacketFixture, DefaultConstructor)
 
 TEST_F(PacketFixture, Copy)
 {
-    Packet packetCopy(canPacket);
+    Packet packetCopy(anotherPacket);
 
-    ASSERT_TRUE(canPacket == packetCopy);
+    ASSERT_TRUE(anotherPacket == packetCopy);
 }
 
 TEST_F(PacketFixture, CopyEmptyPacket)
@@ -82,31 +94,30 @@ TEST_F(PacketFixture, CopyEmptyPacket)
 
 TEST_F(PacketFixture, CopyAssignment)
 {
-    Packet packetCopy(CmpHeader::MessageType::data, canDataMsg.data(), canDataMsg.size() / 2);
-    packetCopy = canPacket;
+    Packet packetCopy;
+    packetCopy = anotherPacket;
 
-    ASSERT_TRUE(canPacket == packetCopy);
+    ASSERT_TRUE(anotherPacket == packetCopy);
 }
 
 TEST_F(PacketFixture, Move)
 {
-    Packet packetCopy(canPacket);
+    Packet packetCopy(anotherPacket);
 
-    Packet checker(std::move(canPacket));
+    Packet checker(std::move(anotherPacket));
     ASSERT_TRUE(checker == packetCopy);
-    ASSERT_FALSE(checker == canPacket);
+    ASSERT_FALSE(checker == anotherPacket);
 }
 
 TEST_F(PacketFixture, MoveAssignment)
 {
-    Packet packetCopy(canPacket);
+    Packet packetCopy(anotherPacket);
 
-    std::vector<uint8_t> checkerData(16, 0);
-    Packet checker(CmpHeader::MessageType::data, checkerData.data(), checkerData.size());
+    Packet checker;
 
-    checker = std::move(canPacket);
+    checker = std::move(anotherPacket);
     ASSERT_TRUE(checker == packetCopy);
-    ASSERT_FALSE(checker == canPacket);
+    ASSERT_FALSE(checker == anotherPacket);
 }
 
 TEST_F(PacketFixture, IsValid)
@@ -384,11 +395,10 @@ TEST_F(PacketFixture, IsHeaderCorrect)
     Packet packet(ASAM::CMP::CmpHeader::MessageType::data, sampleData.data(), sampleData.size());
 
     uint64_t expectedTimestamp = swapEndian(*reinterpret_cast<uint64_t*>(sampleData.data()));
-    uint32_t expectedInterfaceId = swapEndian(*reinterpret_cast<uint32_t*>(sampleData.data()+8));
+    uint32_t expectedInterfaceId = swapEndian(*reinterpret_cast<uint32_t*>(sampleData.data() + 8));
     uint8_t expectedFlags = swapEndian(*(sampleData.data() + 12));
     uint8_t expectedPayloadType = swapEndian(*(sampleData.data() + 13));
     uint16_t expectedPayloadLength = swapEndian(*reinterpret_cast<uint16_t*>(sampleData.data() + 14));
-
 
     ASSERT_EQ(packet.getTimestamp(), expectedTimestamp);
     ASSERT_EQ(packet.getInterfaceId(), expectedInterfaceId);
@@ -396,4 +406,3 @@ TEST_F(PacketFixture, IsHeaderCorrect)
     ASSERT_EQ(packet.getPayloadType(), expectedPayloadType);
     ASSERT_EQ(packet.getPayloadLength(), expectedPayloadLength);
 }
-
