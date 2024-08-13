@@ -2,6 +2,7 @@
 
 #include <asam_cmp/common.h>
 #include <asam_cmp/payload.h>
+#include <memory>
 
 BEGIN_NAMESPACE_ASAM_CMP
 
@@ -39,20 +40,20 @@ public:
         uint8_t dataLength{0};
 
     private:
-        static constexpr uint16_t errorMask =   0xFF03;
+        static constexpr uint16_t errorMask = 0xFF03;
 
-        static constexpr uint32_t idMask =      0xFFFFFF1F;
+        static constexpr uint32_t idMask = 0xFFFFFF1F;
 
-        static constexpr uint32_t rsvdMask =    0x00000020;
-        static constexpr uint32_t rtrMask =     0x00000040;
-        static constexpr uint32_t ideMask =     0x00000080;
+        static constexpr uint32_t rsvdMask = 0x00000020;
+        static constexpr uint32_t rtrMask = 0x00000040;
+        static constexpr uint32_t ideMask = 0x00000080;
 
-        static constexpr uint32_t crcMask =         0xFF7F0000;
-        static constexpr uint32_t crcSupportMask =  0x00000080;
-        static constexpr uint32_t crcSbcMask =      0xFFFF1F00;
-        static constexpr uint32_t crcSbcSbcMask =   0x0000E000;
+        static constexpr uint32_t crcMask = 0xFF7F0000;
+        static constexpr uint32_t crcSupportMask = 0x00000080;
+        static constexpr uint32_t crcSbcMask = 0xFFFF1F00;
+        static constexpr uint32_t crcSbcSbcMask = 0x0000E000;
         static constexpr uint32_t crcSbcSbcShift = 21;
-        static constexpr uint32_t crcSbcParityMask =  0x00000001;
+        static constexpr uint32_t crcSbcParityMask = 0x00000001;
         static constexpr uint32_t crcSbcSupportMask = 0x00000040;
 
     public:

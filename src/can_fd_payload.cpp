@@ -1,4 +1,5 @@
 #include <asam_cmp/can_fd_payload.h>
+#include <memory>
 
 BEGIN_NAMESPACE_ASAM_CMP
 
