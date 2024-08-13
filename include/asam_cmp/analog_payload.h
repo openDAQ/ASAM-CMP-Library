@@ -34,7 +34,7 @@ public:
         katal = 0x1D,
         lux = 0x19,
         watt = 0x0E,
-        pascal = 0x0C,
+        _pascal = 0x0C,
         volt = 0x10,
         weber = 0x14,
         tesla = 0x15,

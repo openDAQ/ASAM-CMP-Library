@@ -7,6 +7,7 @@
 #include <asam_cmp/common.h>
 #include <asam_cmp/message_header.h>
 #include <asam_cmp/payload_type.h>
+#include <memory>
 
 BEGIN_NAMESPACE_ASAM_CMP
 
