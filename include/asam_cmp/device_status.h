@@ -18,6 +18,8 @@ public:
     InterfaceStatus& getInterfaceStatus(std::size_t index);
     const InterfaceStatus& getInterfaceStatus(std::size_t index) const;
 
+    void removeInterfaceById(uint32_t interfaceId);
+
 private:
     void updateInterfaces(const Packet& packet);
 
