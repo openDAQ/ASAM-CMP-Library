@@ -64,4 +64,14 @@ void DeviceStatus::updateInterfaces(const Packet& packet)
     }
 }
 
+void DeviceStatus::removeInterfaceById(uint32_t interfaceId)
+{
+    auto index = getIndexByInterfaceId(interfaceId);
+    if (index != getInterfaceStatusCount())
+    {
+        std::swap(interfaces[index], interfaces[interfaces.size() - 1]);
+        interfaces.pop_back();
+    }
+}
+
 END_NAMESPACE_ASAM_CMP
