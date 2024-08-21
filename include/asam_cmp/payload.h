@@ -16,7 +16,6 @@ private:
     using MessageType = CmpHeader::MessageType;
 
 public:
-    Payload() = default;
     Payload(const PayloadType type, const uint8_t* data, const size_t size);
     Payload(const Payload& other) = default;
     Payload(Payload&& other) = default;

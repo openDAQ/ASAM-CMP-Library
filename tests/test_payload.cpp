@@ -48,47 +48,6 @@ protected:
     std::unique_ptr<Payload> payload;
 };
 
-TEST_F(PayloadTest, DefaultConstructor)
-{
-    Payload pay;
-    ASSERT_FALSE(pay.isValid());
-}
-
-TEST_F(PayloadTest, Copy)
-{
-    auto payloadCopy(*payload);
-    ASSERT_TRUE(*payload == payloadCopy);
-}
-
-TEST_F(PayloadTest, CopyAssignment)
-{
-    Payload payloadCopy;
-
-    payloadCopy = *payload;
-    ASSERT_TRUE(*payload == payloadCopy);
-}
-
-TEST_F(PayloadTest, Move)
-{
-    Payload payloadChecker(*payload);
-
-    Payload payloadCopy(std::move(*payload));
-
-    ASSERT_TRUE(payloadCopy == payloadChecker);
-    ASSERT_FALSE(payloadCopy == *payload);
-}
-
-TEST_F(PayloadTest, MoveAssignment)
-{
-    Payload payloadChecker(*payload);
-
-    Payload payloadCopy;
-    payloadCopy = std::move(*payload);
-
-    ASSERT_TRUE(payloadCopy == payloadChecker);
-    ASSERT_FALSE(payloadCopy == *payload);
-}
-
 TEST_F(PayloadTest, IsValid)
 {
     ASSERT_TRUE(payload->isValid());

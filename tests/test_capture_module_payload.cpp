@@ -81,6 +81,27 @@ TEST_F(CaptureModulePayloadTest, CopyAssignment)
     ASSERT_EQ(version, payloadCopy.getSoftwareVersion());
 }
 
+TEST_F(CaptureModulePayloadTest, Move)
+{
+    CaptureModulePayload payloadChecker(*payload);
+
+    CaptureModulePayload payloadCopy(std::move(*payload));
+
+    ASSERT_TRUE(payloadCopy == payloadChecker);
+    ASSERT_FALSE(payloadCopy == *payload);
+}
+
+TEST_F(CaptureModulePayloadTest, MoveAssignment)
+{
+    CaptureModulePayload payloadChecker(*payload);
+
+    CaptureModulePayload payloadCopy;
+    payloadCopy = std::move(*payload);
+
+    ASSERT_TRUE(payloadCopy == payloadChecker);
+    ASSERT_FALSE(payloadCopy == *payload);
+}
+
 TEST_F(CaptureModulePayloadTest, Type)
 {
     ASSERT_EQ(payload->getType(), PayloadType::cmStatMsg);

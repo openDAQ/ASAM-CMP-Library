@@ -56,6 +56,41 @@ TEST_F(AnalogPayloadTest, DefaultConstructor)
     ASSERT_TRUE(dcPayload.isValid());
 }
 
+TEST_F(AnalogPayloadTest, Copy)
+{
+    auto payloadCopy(*payload);
+    ASSERT_TRUE(*payload == payloadCopy);
+}
+
+TEST_F(AnalogPayloadTest, CopyAssignment)
+{
+    AnalogPayload payloadCopy;
+
+    payloadCopy = *payload;
+    ASSERT_TRUE(*payload == payloadCopy);
+}
+
+TEST_F(AnalogPayloadTest, Move)
+{
+    AnalogPayload payloadChecker(*payload);
+
+    AnalogPayload payloadCopy(std::move(*payload));
+
+    ASSERT_TRUE(payloadCopy == payloadChecker);
+    ASSERT_FALSE(payloadCopy == *payload);
+}
+
+TEST_F(AnalogPayloadTest, MoveAssignment)
+{
+    AnalogPayload payloadChecker(*payload);
+
+    AnalogPayload payloadCopy;
+    payloadCopy = std::move(*payload);
+
+    ASSERT_TRUE(payloadCopy == payloadChecker);
+    ASSERT_FALSE(payloadCopy == *payload);
+}
+
 TEST_F(AnalogPayloadTest, Type)
 {
     ASSERT_EQ(payload->getType(), PayloadType::analog);

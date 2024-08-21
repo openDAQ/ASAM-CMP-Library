@@ -57,6 +57,41 @@ TEST_F(CanPayloadTest, DefaultConstructorCanFd)
     ASSERT_TRUE(dcCanFdPayload.isValid());
 }
 
+TEST_F(CanPayloadTest, Copy)
+{
+    auto payloadCopy(*canPayload);
+    ASSERT_TRUE(*canPayload == payloadCopy);
+}
+
+TEST_F(CanPayloadTest, CopyAssignment)
+{
+    CanPayload payloadCopy;
+
+    payloadCopy = *canPayload;
+    ASSERT_TRUE(*canPayload == payloadCopy);
+}
+
+TEST_F(CanPayloadTest, Move)
+{
+    CanPayload payloadChecker(*canPayload);
+
+    CanPayload payloadCopy(std::move(*canPayload));
+
+    ASSERT_TRUE(payloadCopy == payloadChecker);
+    ASSERT_FALSE(payloadCopy == *canPayload);
+}
+
+TEST_F(CanPayloadTest, MoveAssignment)
+{
+    CanPayload payloadChecker(*canPayload);
+
+    CanPayload payloadCopy;
+    payloadCopy = std::move(*canPayload);
+
+    ASSERT_TRUE(payloadCopy == payloadChecker);
+    ASSERT_FALSE(payloadCopy == *canPayload);
+}
+
 TEST_F(CanPayloadTest, TypeCan)
 {
     CanPayloadBase* payload = canPayload.get();
