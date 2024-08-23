@@ -33,7 +33,8 @@ Packet::Packet(const Packet& other)
     , commonFlags(other.commonFlags)
     , segmentType(other.segmentType)
 {
-    payload = other.payload.get() ? std::make_unique<Payload>(*other.payload.get()) : std::make_unique<Payload>();
+    if (other.payload.get())
+        payload = std::make_unique<Payload>(*other.payload.get());
 }
 
 Packet::Packet(Packet&& other) noexcept

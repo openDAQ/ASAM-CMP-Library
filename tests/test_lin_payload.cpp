@@ -56,6 +56,41 @@ TEST_F(LinPayloadTest, DefaultConstructor)
     ASSERT_TRUE(dcPayload.isValid());
 }
 
+TEST_F(LinPayloadTest, Copy)
+{
+    auto payloadCopy(*payload);
+    ASSERT_TRUE(*payload == payloadCopy);
+}
+
+TEST_F(LinPayloadTest, CopyAssignment)
+{
+    LinPayload payloadCopy;
+
+    payloadCopy = *payload;
+    ASSERT_TRUE(*payload == payloadCopy);
+}
+
+TEST_F(LinPayloadTest, Move)
+{
+    LinPayload payloadChecker(*payload);
+
+    LinPayload payloadCopy(std::move(*payload));
+
+    ASSERT_TRUE(payloadCopy == payloadChecker);
+    ASSERT_FALSE(payloadCopy == *payload);
+}
+
+TEST_F(LinPayloadTest, MoveAssignment)
+{
+    LinPayload payloadChecker(*payload);
+
+    LinPayload payloadCopy;
+    payloadCopy = std::move(*payload);
+
+    ASSERT_TRUE(payloadCopy == payloadChecker);
+    ASSERT_FALSE(payloadCopy == *payload);
+}
+
 TEST_F(LinPayloadTest, Type)
 {
     ASSERT_EQ(payload->getType(), PayloadType::lin);

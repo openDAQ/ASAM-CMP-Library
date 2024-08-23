@@ -80,6 +80,27 @@ TEST_F(InterfacePayloadTest, CopyAssignment)
     ASSERT_TRUE(std::equal(vec.begin(), vec.end(), payloadCopy.getStreamIds()));
 }
 
+TEST_F(InterfacePayloadTest, Move)
+{
+    InterfacePayload payloadChecker(*payload);
+
+    InterfacePayload payloadCopy(std::move(*payload));
+
+    ASSERT_TRUE(payloadCopy == payloadChecker);
+    ASSERT_FALSE(payloadCopy == *payload);
+}
+
+TEST_F(InterfacePayloadTest, MoveAssignment)
+{
+    InterfacePayload payloadChecker(*payload);
+
+    InterfacePayload payloadCopy;
+    payloadCopy = std::move(*payload);
+
+    ASSERT_TRUE(payloadCopy == payloadChecker);
+    ASSERT_FALSE(payloadCopy == *payload);
+}
+
 TEST_F(InterfacePayloadTest, Type)
 {
     ASSERT_EQ(payload->getType(), PayloadType::ifStatMsg);

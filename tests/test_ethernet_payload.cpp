@@ -40,6 +40,41 @@ TEST_F(EthernetPayloadTest, DefaultConstructor)
     ASSERT_TRUE(dcPayload.isValid());
 }
 
+TEST_F(EthernetPayloadTest, Copy)
+{
+    auto payloadCopy(*payload);
+    ASSERT_TRUE(*payload == payloadCopy);
+}
+
+TEST_F(EthernetPayloadTest, CopyAssignment)
+{
+    EthernetPayload payloadCopy;
+
+    payloadCopy = *payload;
+    ASSERT_TRUE(*payload == payloadCopy);
+}
+
+TEST_F(EthernetPayloadTest, Move)
+{
+    EthernetPayload payloadChecker(*payload);
+
+    EthernetPayload payloadCopy(std::move(*payload));
+
+    ASSERT_TRUE(payloadCopy == payloadChecker);
+    ASSERT_FALSE(payloadCopy == *payload);
+}
+
+TEST_F(EthernetPayloadTest, MoveAssignment)
+{
+    EthernetPayload payloadChecker(*payload);
+
+    EthernetPayload payloadCopy;
+    payloadCopy = std::move(*payload);
+
+    ASSERT_TRUE(payloadCopy == payloadChecker);
+    ASSERT_FALSE(payloadCopy == *payload);
+}
+
 TEST_F(EthernetPayloadTest, Flags)
 {
     constexpr EthernetPayload::Flags fcsErr = EthernetPayload::Flags::fcsErr;
