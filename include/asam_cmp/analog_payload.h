@@ -14,6 +14,36 @@ public:
         aInt32 = 0x0100
     };
 
+    template <SampleDt Type>
+    struct SampleDtToType;
+
+    template <>
+    struct SampleDtToType <SampleDt::aInt16>
+    {
+        using Type = int16_t;
+        static constexpr SampleDt sampleDtType = SampleDt::aInt16;
+    };
+
+    template <>
+    struct SampleDtToType<SampleDt::aInt32>
+    {
+        using Type = int32_t;
+        static constexpr SampleDt sampleDtType = SampleDt::aInt32;
+    };
+
+    template <typename T>
+    struct SampleDtFromType;
+
+    template <>
+    struct SampleDtFromType<int16_t> : public SampleDtToType<SampleDt::aInt16>
+    {
+    };
+
+    template <>
+    struct SampleDtFromType<int32_t> : public SampleDtToType<SampleDt::aInt32>
+    {
+    };
+
     enum class Unit : uint8_t
     {
         undefined = 0x00,
