@@ -173,3 +173,12 @@ TEST_F(AnalogPayloadTest, IsValidPayload)
 {
     ASSERT_TRUE(AnalogPayload::isValidPayload(message.data(), message.size()));
 }
+
+TEST_F(AnalogPayloadTest, SampleDtTypeTraits)
+{
+    static_assert(std::is_same_v<AnalogPayload::SampleDtToType<AnalogPayload::SampleDt::aInt16>::Type, int16_t>);
+    static_assert(std::is_same_v<AnalogPayload::SampleDtToType<AnalogPayload::SampleDt::aInt32>::Type, int32_t>);
+
+    ASSERT_EQ(AnalogPayload::SampleDtFromType<int16_t>::sampleDtType, AnalogPayload::SampleDt::aInt16);
+    ASSERT_EQ(AnalogPayload::SampleDtFromType<int32_t>::sampleDtType, AnalogPayload::SampleDt::aInt32);
+}
