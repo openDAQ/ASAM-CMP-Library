@@ -3,6 +3,7 @@
 #include <asam_cmp/common.h>
 #include <asam_cmp/packet.h>
 #include <asam_cmp/tecmp_capture_module_payload.h>
+#include <vector>
 
 BEGIN_NAMESPACE_TECMP
 
@@ -13,7 +14,7 @@ public:
     using TecmpPayloadPtr = std::shared_ptr<TECMP::Payload>;
 
 public:
-    static std::vector<PacketPtr> Decode(const void* data, const std::size_t size);
+    static std::vector<std::shared_ptr<ASAM::CMP::Packet>> Decode(const void* data, const std::size_t size);
 
 private:
     static TECMP::CmpHeader GetHeader(const void* data, const std::size_t size, uint8_t** payloadPtr);
