@@ -10,8 +10,8 @@ if (POLICY CMP0135)
     cmake_policy(SET CMP0135 NEW)
 endif()
 
-option(ASAM_CMP_ENABLE_TESTS "Enable testing" OFF)
-option(ASAM_CMP_BUILD_EXAMPLE "Build example" OFF)
+option(ASAM_CMP_ENABLE_TESTS "Enable testing" ON)
+option(ASAM_CMP_BUILD_EXAMPLE "Build example" ON)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
