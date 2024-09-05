@@ -10,13 +10,12 @@ if (POLICY CMP0135)
     cmake_policy(SET CMP0135 NEW)
 endif()
 
-option(ASAMCMP_ENABLE_TESTS "Enable testing" ON)
+option(ASAM_CMP_ENABLE_TESTS "Enable testing" OFF)
+option(ASAM_CMP_BUILD_EXAMPLE "Build example" OFF)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
-set(ASAMCMP_SOURCE_DIR ${PROJECT_SOURCE_DIR})
 
 get_filename_component(ROOT_DIR ${CMAKE_SOURCE_DIR} REALPATH)
 get_filename_component(PROJ_DIR ${PROJECT_SOURCE_DIR} REALPATH)
@@ -27,7 +26,7 @@ else()
     message(STATUS "Building standalone")
 endif()
 
-if (ASAMCMP_ENABLE_TESTS)
+if (ASAM_CMP_ENABLE_TESTS)
     enable_testing()
 endif()
 
@@ -51,6 +50,13 @@ endif()
 
 add_subdirectory(external)
 add_subdirectory(src)
-if (ASAMCMP_ENABLE_TESTS)
+
+if (ASAM_CMP_ENABLE_TESTS)
     add_subdirectory(tests)
+endif()
+
+set(CMAKE_FOLDER "")
+
+if (ASAM_CMP_BUILD_EXAMPLE)
+    add_subdirectory(example)
 endif()
