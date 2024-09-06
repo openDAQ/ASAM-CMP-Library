@@ -15,7 +15,7 @@ BEGIN_NAMESPACE_ASAM_CMP
 struct DataContext
 {
     size_t minBytesPerMessage{0};
-    size_t maxBytesPerMessage{0};
+    size_t maxBytesPerMessage{1500};
 };
 
 class Encoder final
