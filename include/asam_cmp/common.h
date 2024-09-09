@@ -6,6 +6,9 @@
 #define BEGIN_NAMESPACE_ASAM_CMP namespace ASAM { namespace CMP {
 #define END_NAMESPACE_ASAM_CMP }}
 
+#define BEGIN_NAMESPACE_TECMP namespace TECMP{
+#define END_NAMESPACE_TECMP }
+
 BEGIN_NAMESPACE_ASAM_CMP
 
 constexpr uint8_t swapEndian(const uint8_t value)

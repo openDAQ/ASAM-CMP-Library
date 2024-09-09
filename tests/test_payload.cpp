@@ -39,7 +39,6 @@ protected:
 
 protected:
     static constexpr size_t dataSize = 64;
-    static constexpr uint32_t arbId = 78;
     static constexpr PayloadType payloadType = PayloadType::flexRay;
 
 protected:

@@ -1,15 +1,23 @@
 #include <cstring>
 
 #include <asam_cmp/decoder.h>
+#include <asam_cmp/tecmp_decoder.h>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
 
 BEGIN_NAMESPACE_ASAM_CMP
 
 std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std::size_t size)
 {
     if (data == nullptr)
-        return std::vector<std::shared_ptr<Packet>>();
+        return {};
     if (size < sizeof(CmpHeader))
-        return std::vector<std::shared_ptr<Packet>>();
+        return {};
+
+    const auto dataPtr = reinterpret_cast<const uint8_t*>(data);
+    if (*dataPtr == 0x00)
+        return TECMP::Decoder::Decode(data, size);
 
     std::vector<std::shared_ptr<Packet>> packets;
     const auto header = reinterpret_cast<const CmpHeader*>(data);
@@ -74,7 +82,6 @@ std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std
 
     return packets;
 }
-
 
 bool Decoder::isSegmentedPacket(const uint8_t* data, const size_t)
 {

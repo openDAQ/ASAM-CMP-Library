@@ -2,22 +2,22 @@
 #include <algorithm>
 #include <numeric>
 
-#include <asam_cmp/can_payload.h>
 #include <asam_cmp/analog_payload.h>
+#include <asam_cmp/can_payload.h>
 #include <asam_cmp/capture_module_payload.h>
 #include <asam_cmp/decoder.h>
 
 #include "create_message.h"
 
-using ASAM::CMP::CanPayload;
 using ASAM::CMP::AnalogPayload;
+using ASAM::CMP::CanPayload;
 using ASAM::CMP::CaptureModulePayload;
+using ASAM::CMP::CmpHeader;
 using ASAM::CMP::Decoder;
 using ASAM::CMP::EthernetPayload;
+using ASAM::CMP::MessageHeader;
 using ASAM::CMP::Packet;
 using ASAM::CMP::Payload;
-using ASAM::CMP::CmpHeader;
-using ASAM::CMP::MessageHeader;
 using ASAM::CMP::PayloadType;
 using SegmentType = MessageHeader::SegmentType;
 
@@ -192,8 +192,7 @@ TEST_F(DecoderFixture, CreateEthernetPacket)
 TEST_F(DecoderFixture, SegmentationOneStream)
 {
     constexpr size_t segmentCount = 4;
-    constexpr size_t ethDataSize =
-        ethernetPacketSize - sizeof(CmpHeader) - sizeof(MessageHeader) - sizeof(EthernetPayload::Header);
+    constexpr size_t ethDataSize = ethernetPacketSize - sizeof(CmpHeader) - sizeof(MessageHeader) - sizeof(EthernetPayload::Header);
     constexpr size_t payloadSizeAll = (segmentCount) * (ethDataSize + sizeof(EthernetPayload::Header));
 
     auto cmpMsgEth = createEthernetPacket(ethernetPacketSize);
@@ -226,8 +225,7 @@ TEST_F(DecoderFixture, SegmentationMultipleStreams)
 {
     constexpr uint8_t streamId2 = streamId + 1;
     constexpr size_t segmentCount = 3;
-    constexpr size_t ethDataSize =
-        ethernetPacketSize - sizeof(CmpHeader) - sizeof(MessageHeader) - sizeof(EthernetPayload::Header);
+    constexpr size_t ethDataSize = ethernetPacketSize - sizeof(CmpHeader) - sizeof(MessageHeader) - sizeof(EthernetPayload::Header);
     constexpr size_t payloadSizeAll = (segmentCount) * (ethDataSize + sizeof(EthernetPayload::Header));
 
     auto cmpMsgEth = createEthernetPacket(ethernetPacketSize);
@@ -277,8 +275,7 @@ TEST_F(DecoderFixture, SegmentationMultipleDevices)
 {
     static constexpr uint16_t deviceId2 = deviceId + 1;
     constexpr size_t segmentCount = 3;
-    constexpr size_t ethDataSize =
-        ethernetPacketSize - sizeof(CmpHeader) - sizeof(MessageHeader) - sizeof(EthernetPayload::Header);
+    constexpr size_t ethDataSize = ethernetPacketSize - sizeof(CmpHeader) - sizeof(MessageHeader) - sizeof(EthernetPayload::Header);
     constexpr size_t payloadSizeAll = (segmentCount) * (ethDataSize + sizeof(EthernetPayload::Header));
 
     auto cmpMsgEth = createEthernetPacket(ethernetPacketSize);
@@ -328,8 +325,7 @@ TEST_F(DecoderFixture, SegmentedUnsegmented)
 {
     static constexpr uint8_t streamId2 = streamId + 1;
     constexpr size_t segmentCount = 3;
-    constexpr size_t ethDataSize =
-        ethernetPacketSize - sizeof(CmpHeader) - sizeof(MessageHeader) - sizeof(EthernetPayload::Header);
+    constexpr size_t ethDataSize = ethernetPacketSize - sizeof(CmpHeader) - sizeof(MessageHeader) - sizeof(EthernetPayload::Header);
     constexpr size_t payloadSizeAll = (segmentCount) * (ethDataSize + sizeof(EthernetPayload::Header));
 
     auto cmpMsgEth = createEthernetPacket(ethernetPacketSize);
@@ -462,4 +458,26 @@ TEST_F(DecoderFixture, SegmentationWrongMessageType)
     dataMessageHeader->setSegmentType(SegmentType::lastSegment);
     packets = decoder.decode(cmpMsgEth.data(), cmpMsgEth.size());
     ASSERT_TRUE(packets.empty());
+}
+
+TEST_F(DecoderFixture, DecodeTecmp)
+{
+    std::vector<uint8_t> data = {0x00, 0x43, 0x05, 0x5c, 0x03, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0f, 0x00, 0x0f, 0xff,
+                                 0x02, 0x00, 0x00, 0x00, 0x61, 0x14, 0xb5, 0x3d, 0xe0, 0x00, 0x2e, 0x0f, 0x00, 0x0c, 0x01,
+                                 0x04, 0x00, 0x00, 0x18, 0x00, 0x43, 0x01, 0x61, 0x16, 0xe1, 0x00, 0x14, 0x07, 0x0a, 0x03,
+                                 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x00, 0x00, 0x00, 0x60, 0xde, 0xb9, 0x5d, 0x59,
+                                 0x15, 0x14, 0x22, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+
+    Decoder decoder;
+    auto tecmpPackets = decoder.decode(data.data(), data.size());
+    ASSERT_FALSE(tecmpPackets.empty());
+    ASSERT_EQ(tecmpPackets[0]->getMessageType(), ASAM::CMP::CmpHeader::MessageType::status);
+    ASSERT_EQ(tecmpPackets[0]->getPayload().getType(), PayloadType::cmStatMsg);
+    ASSERT_EQ(tecmpPackets[0]->getTimestamp(), 0x0000006114b53de0);
+    auto payload = tecmpPackets[0]->getPayload();
+    auto cmPayload = reinterpret_cast<ASAM::CMP::CaptureModulePayload&>(payload);
+    ASSERT_EQ(cmPayload.getSerialNumber(), "23140065");
+    ASSERT_EQ(cmPayload.getSoftwareVersion(), "v20.7.10");
+    ASSERT_EQ(cmPayload.getHardwareVersion(), "v3.3");
+    ASSERT_EQ(tecmpPackets[0]->getDeviceId(), 0x0043);
 }
