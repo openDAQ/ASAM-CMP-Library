@@ -15,15 +15,15 @@ This repository contains a static C++ library for encoding and decoding ASAM Con
    - gcc
    
 ## Build the project
-You can enable tests with the `ASAMCMP_ENABLE_TESTS` cmake option. You can use the `ASAM_CMP_BUILD_EXAMPLE` cmake option to build a usage example.
+You can enable tests with the `ASAM_CMP_ENABLE_TESTS` cmake option. You can use the `ASAM_CMP_BUILD_EXAMPLE` cmake option to build a usage example.
 To compile the library with tests in Windows using Visual Studio 2022 use command line:
 ```
-cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DASAMCMP_ENABLE_TESTS=ON
+cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DASAM_CMP_ENABLE_TESTS=ON
 cmake --build build
 ```
 To compile the library with tests in Linux use command line:
 ```
-cmake -S . -B build -DASAMCMP_ENABLE_TESTS=ON
+cmake -S . -B build -DASAM_CMP_ENABLE_TESTS=ON
 cmake --build build
 ```
 
