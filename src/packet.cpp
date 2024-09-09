@@ -18,7 +18,7 @@ Packet::Packet(const CmpHeader::MessageType msgType, const uint8_t* data, [[mayb
         throw std::invalid_argument("Not enough data");
 #endif  // _DEBUG
     auto header = reinterpret_cast<const MessageHeader*>(data);
-    setMessageHeader(*header);
+    setMessageHeader(msgType, *header);
     payload = create({msgType, header->getPayloadType()}, data + sizeof(MessageHeader), header->getPayloadLength());
 }
 
@@ -316,11 +316,22 @@ std::unique_ptr<Payload> Packet::create(const PayloadType type, const uint8_t* d
     return std::make_unique<Payload>(PayloadType::invalid, data, size);
 }
 
-void Packet::setMessageHeader(MessageHeader messageHeader)
+void Packet::setMessageHeader(const CmpHeader::MessageType msgType, MessageHeader messageHeader)
 {
     setTimestamp(messageHeader.getTimestamp());
-    setInterfaceId(messageHeader.getInterfaceId());
-    setVendorId(messageHeader.getVendorId());
+    switch (msgType)
+    {
+        case MessageType::data:
+            setInterfaceId(messageHeader.getInterfaceId());
+            break;
+        case MessageType::status:
+        case MessageType::vendor:
+            setVendorId(messageHeader.getVendorId());
+            break;
+        case MessageType::control:
+        default:
+            break;
+    }
     setCommonFlags(messageHeader.getCommonFlags());
 }
 
