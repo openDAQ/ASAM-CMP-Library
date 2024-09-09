@@ -473,7 +473,7 @@ TEST_F(DecoderFixture, DecodeTecmp)
     ASSERT_FALSE(tecmpPackets.empty());
     ASSERT_EQ(tecmpPackets[0]->getMessageType(), ASAM::CMP::CmpHeader::MessageType::status);
     ASSERT_EQ(tecmpPackets[0]->getPayload().getType(), PayloadType::cmStatMsg);
-    ASSERT_EQ(tecmpPackets[0]->getTimestamp(), 0x0000006114b53de0);
+    ASSERT_EQ(tecmpPackets[0]->getTimestamp(), 0x0000006114b53de0u);
     auto payload = tecmpPackets[0]->getPayload();
     auto cmPayload = reinterpret_cast<ASAM::CMP::CaptureModulePayload&>(payload);
     ASSERT_EQ(cmPayload.getSerialNumber(), "23140065");

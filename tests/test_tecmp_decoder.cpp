@@ -33,7 +33,7 @@ TEST_F(TecmpDecoderFixture, DecodeCaptureModulePayload)
     ASSERT_FALSE(tecmpPackets.empty());
     ASSERT_EQ(tecmpPackets[0]->getMessageType(), ASAM::CMP::CmpHeader::MessageType::status);
     ASSERT_EQ(tecmpPackets[0]->getPayload().getType(), ASAM::CMP::PayloadType::cmStatMsg);
-    ASSERT_EQ(tecmpPackets[0]->getTimestamp(), 0x0000006114b53de0);
+    ASSERT_EQ(tecmpPackets[0]->getTimestamp(), 0x0000006114b53de0u);
     auto payload = tecmpPackets[0]->getPayload();
     auto cmPayload = reinterpret_cast<ASAM::CMP::CaptureModulePayload&>(payload);
     ASSERT_EQ(cmPayload.getSerialNumber(), "23140065");
@@ -55,8 +55,8 @@ TEST_F(TecmpDecoderFixture, DecodeInterfacePayload)
 
     auto packets = Decoder::Decode(data.data(), data.size());
     ASSERT_FALSE(packets.empty());
-    ASSERT_EQ(packets.size(), 9);
-    auto id = 0x10;
+    ASSERT_EQ(packets.size(), 9u);
+    auto id = 0x10u;
     ASSERT_EQ(packets[0]->getInterfaceId(), id);
     for (std::size_t i = 1; i < packets.size(); i++)
     {
@@ -75,12 +75,12 @@ TEST_F(TecmpDecoderFixture, DecodeCanPayload)
     auto packets = Decoder::Decode(data.data(), data.size());
 
     ASSERT_FALSE(packets.empty());
-    ASSERT_EQ(packets.size(), 1);
-    ASSERT_EQ(packets[0]->getInterfaceId(), 0x20);
+    ASSERT_EQ(packets.size(), 1u);
+    ASSERT_EQ(packets[0]->getInterfaceId(), 0x20u);
     auto payload = reinterpret_cast<ASAM::CMP::CanPayload&>(packets[0]->getPayload());
-    ASSERT_EQ(payload.getId(), 0x0);
+    ASSERT_EQ(payload.getId(), 0x0u);
     uint8_t canData = *payload.getData();
-    ASSERT_EQ(canData, 123);
+    ASSERT_EQ(canData, 123u);
 }
 
 TEST_F(TecmpDecoderFixture, DecodeCanFdPayload)
@@ -91,11 +91,11 @@ TEST_F(TecmpDecoderFixture, DecodeCanFdPayload)
 
     auto packets = Decoder::Decode(data.data(), data.size());
     ASSERT_FALSE(packets.empty());
-    ASSERT_EQ(packets.size(), 1);
-    ASSERT_EQ(packets[0]->getInterfaceId(), 0x20);
+    ASSERT_EQ(packets.size(), 1u);
+    ASSERT_EQ(packets[0]->getInterfaceId(), 0x20u);
     auto payload = reinterpret_cast<ASAM::CMP::CanFdPayload&>(packets[0]->getPayload());
-    ASSERT_EQ(payload.getId(), 0x321);
-    ASSERT_EQ(payload.getDataLength(), 16);
+    ASSERT_EQ(payload.getId(), 0x321u);
+    ASSERT_EQ(payload.getDataLength(), 16u);
     auto data1 = *(reinterpret_cast<const double*>(payload.getData()));
     ASSERT_EQ(data1, 123.123);
     auto data2 = *(reinterpret_cast<const double*>(payload.getData() + sizeof(double)));

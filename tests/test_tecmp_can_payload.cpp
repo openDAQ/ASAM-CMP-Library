@@ -53,8 +53,8 @@ TEST_F(TecmpCanPayloadTest, TypeCan)
 
 TEST_F(TecmpCanPayloadTest, Fields)
 {
-    ASSERT_EQ(canPayload->getArbId(), 0);
-    ASSERT_EQ(canPayload->getDlc(), 8);
+    ASSERT_EQ(canPayload->getArbId(), 0u);
+    ASSERT_EQ(canPayload->getDlc(), 8u);
     auto dataPtr = reinterpret_cast<const uint16_t*>(canPayload->getData());
     ASSERT_EQ(*dataPtr, 123);
 }

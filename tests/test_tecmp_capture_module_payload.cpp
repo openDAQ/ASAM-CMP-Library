@@ -72,12 +72,12 @@ TEST_F(TecmpCaptureModulePayloadTest, Fields)
 {
     ASSERT_EQ(payload->getVendorId(), 0x0c);
     ASSERT_EQ(payload->getDeviceType(), 0x04);
-    ASSERT_EQ(payload->getVendorDataLength(), 24);
+    ASSERT_EQ(payload->getVendorDataLength(), 24u);
     ASSERT_EQ(payload->getDeviceId(), 0x0043);
-    ASSERT_EQ(payload->getSerialNumber(), 23140065);
-    ASSERT_EQ(payload->getSwVersionMajor(), 20);
-    ASSERT_EQ(payload->getSwVersionMinor(), 7);
-    ASSERT_EQ(payload->getSwVersionPatch(), 10);
+    ASSERT_EQ(payload->getSerialNumber(), 23140065u);
+    ASSERT_EQ(payload->getSwVersionMajor(), 20u);
+    ASSERT_EQ(payload->getSwVersionMinor(), 7u);
+    ASSERT_EQ(payload->getSwVersionPatch(), 10u);
     ASSERT_EQ(payload->getSwVersion(), "v20.7.10");
     ASSERT_EQ(payload->getVoltage(), 21.2f);
     ASSERT_EQ(payload->getHwVersion(), "v3.3");

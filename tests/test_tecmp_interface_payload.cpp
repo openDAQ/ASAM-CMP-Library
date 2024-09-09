@@ -134,5 +134,5 @@ TEST_F(TecmpInterfacePayloadTest, Fields)
 {
     ASSERT_EQ(payload->getVendorId(), 0x0c);
     ASSERT_EQ(payload->getDeviceId(), 0x0043);
-    ASSERT_EQ(payload->getInterfaceId(), 0x10);
+    ASSERT_EQ(payload->getInterfaceId(), 0x10u);
 }
