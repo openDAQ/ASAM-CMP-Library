@@ -50,10 +50,12 @@ const uint8_t* TECMP::LinPayload::getData() const
 void TECMP::LinPayload::setData(const uint8_t* data, const uint8_t dataLength)
 {
     Payload::setData<Header>(data, dataLength);
-    getHeader()->setPid(dataLength);
+    getHeader()->setDataLength(dataLength);
 }
 uint8_t TECMP::LinPayload::getCrc() const
 {
+    if (payloadData.size() <= sizeof(Header) + getHeader()->getDataLength())
+        return 0;
     return *(payloadData.data() + sizeof(Header) + getHeader()->getDataLength());
 }
 const TECMP::LinPayload::Header* TECMP::LinPayload::getHeader() const

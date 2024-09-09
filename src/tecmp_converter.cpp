@@ -1,3 +1,4 @@
+#include <asam_cmp/can_fd_payload.h>
 #include <asam_cmp/can_payload.h>
 #include <asam_cmp/capture_module_payload.h>
 #include <asam_cmp/interface_payload.h>
@@ -62,7 +63,7 @@ PacketPtr TECMP::Converter::ConvertCanPayload(CmpHeader& header, const TecmpPayl
 
     canPayload.setId(tecmpCanPayload->getArbId());
     canPayload.setData(tecmpCanPayload->getData(), tecmpCanPayload->getDlc());
-    canPayload.setCrc(tecmpCanPayload->getCrc());
+    canPayload.setCrc(static_cast<uint16_t>(tecmpCanPayload->getCrc()));
 
     packet->setPayload(canPayload);
 
@@ -121,7 +122,7 @@ PacketPtr TECMP::Converter::ConvertDataPayload(CmpHeader& header, const TecmpPay
 
 PacketPtr TECMP::Converter::ConvertCanFdPayload(TECMP::CanPayload* canPayload, PacketPtr packet)
 {
-    ASAM::CMP::CanPayload canFdPayload;
+    ASAM::CMP::CanFdPayload canFdPayload;
 
     canFdPayload.setId(canPayload->getArbId());
     canFdPayload.setData(canPayload->getData(), canPayload->getDlc());

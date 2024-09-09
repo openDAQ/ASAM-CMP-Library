@@ -17,32 +17,8 @@ public:
     template <SampleDt Type>
     struct SampleDtToType;
 
-    template <>
-    struct SampleDtToType <SampleDt::aInt16>
-    {
-        using Type = int16_t;
-        static constexpr SampleDt sampleDtType = SampleDt::aInt16;
-    };
-
-    template <>
-    struct SampleDtToType<SampleDt::aInt32>
-    {
-        using Type = int32_t;
-        static constexpr SampleDt sampleDtType = SampleDt::aInt32;
-    };
-
     template <typename T>
     struct SampleDtFromType;
-
-    template <>
-    struct SampleDtFromType<int16_t> : public SampleDtToType<SampleDt::aInt16>
-    {
-    };
-
-    template <>
-    struct SampleDtFromType<int32_t> : public SampleDtToType<SampleDt::aInt32>
-    {
-    };
 
     enum class Unit : uint8_t
     {
@@ -206,6 +182,30 @@ public:
 protected:
     const Header* getHeader() const;
     Header* getHeader();
+};
+
+template <>
+struct AnalogPayload::SampleDtToType<AnalogPayload::SampleDt::aInt16>
+{
+    using Type = int16_t;
+    static constexpr SampleDt sampleDtType = SampleDt::aInt16;
+};
+
+template <>
+struct AnalogPayload::SampleDtToType<AnalogPayload::SampleDt::aInt32>
+{
+    using Type = int32_t;
+    static constexpr SampleDt sampleDtType = SampleDt::aInt32;
+};
+
+template <>
+struct AnalogPayload::SampleDtFromType<int16_t> : public SampleDtToType<SampleDt::aInt16>
+{
+};
+
+template <>
+struct AnalogPayload::SampleDtFromType<int32_t> : public SampleDtToType<SampleDt::aInt32>
+{
 };
 
 END_NAMESPACE_ASAM_CMP

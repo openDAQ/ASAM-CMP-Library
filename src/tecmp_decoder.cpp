@@ -47,7 +47,7 @@ TECMP::CmpHeader TECMP::Decoder::GetHeader(const void* data, const std::size_t s
     if (size < sizeof(CmpHeader))
         return {};
 
-    memcpy(&header, data, 28);
+    memcpy(&header, data, sizeof(CmpHeader));
 
     if (!header.getPayloadLength())
         return {};
@@ -55,7 +55,7 @@ TECMP::CmpHeader TECMP::Decoder::GetHeader(const void* data, const std::size_t s
     if (size < sizeof(CmpHeader) + header.getPayloadLength())
         return {};
 
-    auto tempPtr = reinterpret_cast<const uint8_t*>(data) + 28;
+    auto tempPtr = reinterpret_cast<const uint8_t*>(data) + sizeof(CmpHeader);
     *payloadPtr = const_cast<uint8_t*>(tempPtr);
     return header;
 }

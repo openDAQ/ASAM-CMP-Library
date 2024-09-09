@@ -56,7 +56,10 @@ TECMP::CanPayload::CanPayload(const uint8_t* data, const size_t size)
 
 const uint8_t* TECMP::CanPayload::getData() const
 {
-    return payloadData.data() + sizeof(Header);
+    if (payloadData.size() > sizeof(Header))
+        return payloadData.data() + sizeof(Header);
+
+    return nullptr;
 }
 
 const TECMP::CanPayload::Header* TECMP::CanPayload::getHeader() const
@@ -71,10 +74,12 @@ TECMP::CanPayload::Header* TECMP::CanPayload::getHeader()
 
 uint32_t TECMP::CanPayload::getCrc() const
 {
-    uint32_t result;
+    if (payloadData.size() <= sizeof(Header) + getHeader()->getDlc())
+        return 0;
+
+    uint32_t result = 0;
     auto crcOffset = sizeof(Header) + getHeader()->getDlc();
-    auto crcSize = payloadData.size() - crcOffset;
     auto crcPtr = payloadData.data() + crcOffset;
-    memcpy((void*) &result, crcPtr, crcSize);
+    memcpy((void*) &result, crcPtr, 3);
     return result;
 }

@@ -6,20 +6,6 @@
 #include <iostream>
 #include <sstream>
 
-inline std::string OutputDebugMem(const std::byte* buffer, size_t size)
-{
-    std::stringstream str;
-    str.setf(std::ios_base::hex, std::ios::basefield);
-    str.setf(std::ios_base::uppercase);
-    str.fill('0');
-
-    for (size_t i = 0; i < size; ++i)
-    {
-        str << std::setw(2) << (unsigned short) (std::byte) buffer[i] << ' ';
-    }
-    return str.str();
-}
-
 BEGIN_NAMESPACE_ASAM_CMP
 
 std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std::size_t size)
