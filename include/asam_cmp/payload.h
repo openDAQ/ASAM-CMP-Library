@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <vector>
+#include <cstring>
 
 #include <asam_cmp/cmp_header.h>
 #include <asam_cmp/common.h>
