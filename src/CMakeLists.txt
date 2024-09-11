@@ -59,6 +59,10 @@ set(SRC_Sources cmp_header.cpp
 
 add_library(${LIB_NAME} STATIC ${SRC_Headers} ${SRC_Sources})
 
+if(UNIX)
+    target_compile_options(${LIB_NAME} PRIVATE -fPIC)
+endif()
+
 target_include_directories(${LIB_NAME} PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/../include>
