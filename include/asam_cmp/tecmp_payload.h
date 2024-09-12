@@ -4,7 +4,9 @@
 #include <asam_cmp/tecmp_header.h>
 #include <asam_cmp/tecmp_payload_type.h>
 #include <memory>
+
 #include <vector>
+#include <cstring>
 
 BEGIN_NAMESPACE_TECMP
 
