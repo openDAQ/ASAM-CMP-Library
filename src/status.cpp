@@ -61,10 +61,12 @@ DeviceStatus& Status::findOrCreateDeviceStatusById(const uint16_t deviceId)
 
 void Status::removeStatusById(const uint16_t deviceId)
 {
-    auto it = std::find_if(
-        devices.begin(), devices.end(), [deviceId](DeviceStatus status) { return deviceId == status.getPacket().getDeviceId(); });
-    if (it != devices.end())
-        devices.erase(it);
+    auto index = getIndexByDeviceId(deviceId);
+    if (index != getDeviceStatusCount())
+    {
+        std::swap(devices[index], devices[devices.size() - 1]);
+        devices.pop_back();
+    }
 }
 
 Packet& Status::CreateDevicePacket(uint16_t deviceId)
