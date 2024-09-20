@@ -64,6 +64,15 @@ void DeviceStatus::updateInterfaces(const Packet& packet)
     }
 }
 
+Packet& DeviceStatus::CreateInterfacePacket(uint16_t deviceId, uint32_t interfaceId)
+{
+    Packet packet;
+    packet.setDeviceId(deviceId);
+    packet.setInterfaceId(interfaceId);
+    packet.setPayload(InterfacePayload());
+    return packet;
+}
+
 void DeviceStatus::removeInterfaceById(uint32_t interfaceId)
 {
     auto index = getIndexByInterfaceId(interfaceId);
@@ -72,6 +81,18 @@ void DeviceStatus::removeInterfaceById(uint32_t interfaceId)
         std::swap(interfaces[index], interfaces[interfaces.size() - 1]);
         interfaces.pop_back();
     }
+}
+
+InterfaceStatus& DeviceStatus::findOrCreateInterfaceStatusById(const uint32_t interfaceId)
+{
+    auto index = getIndexByInterfaceId(interfaceId);
+    if (index != getInterfaceStatusCount())
+        return interfaces[index];
+
+    InterfaceStatus interfaceStatus;
+    interfaceStatus.update(CreateInterfacePacket(devicePacket.getDeviceId(), interfaceId));
+    interfaces.push_back(std::move(interfaceStatus));
+    return interfaces.back();
 }
 
 END_NAMESPACE_ASAM_CMP

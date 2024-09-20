@@ -18,7 +18,12 @@ public:
     DeviceStatus& getDeviceStatus(std::size_t index);
     const DeviceStatus& getDeviceStatus(std::size_t index) const;
 
+    DeviceStatus& findOrCreateDeviceStatusById(const uint16_t deviceId);
+    void removeStatusById(const uint16_t deviceId);
+
 private:
+    static Packet& CreateDevicePacket(uint16_t deviceId);
+
     std::vector<DeviceStatus> devices;
 };
 

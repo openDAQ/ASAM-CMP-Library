@@ -20,8 +20,10 @@ public:
 
     void removeInterfaceById(uint32_t interfaceId);
 
+    InterfaceStatus& findOrCreateInterfaceStatusById(const uint32_t interfaceId);
 private:
     void updateInterfaces(const Packet& packet);
+    static Packet& CreateInterfacePacket(uint16_t deviceId, uint32_t interfaceId);
 
 private:
     std::vector<InterfaceStatus> interfaces;

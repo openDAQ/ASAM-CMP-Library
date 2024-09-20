@@ -1,6 +1,6 @@
-#include <algorithm>
-
+#include <asam_cmp/capture_module_payload.h>
 #include <asam_cmp/status.h>
+#include <algorithm>
 
 BEGIN_NAMESPACE_ASAM_CMP
 
@@ -31,8 +31,8 @@ std::size_t Status::getDeviceStatusCount() const
 
 size_t Status::getIndexByDeviceId(const uint16_t deviceId) const
 {
-    auto devIt = std::find_if(devices.begin(),
-                              devices.end(), [&deviceId](const DeviceStatus& device) { return device.getPacket().getDeviceId() == deviceId; });
+    auto devIt = std::find_if(
+        devices.begin(), devices.end(), [&deviceId](const DeviceStatus& device) { return device.getPacket().getDeviceId() == deviceId; });
     return std::distance(devices.begin(), devIt);
 }
 
@@ -44,6 +44,35 @@ DeviceStatus& Status::getDeviceStatus(std::size_t index)
 const DeviceStatus& Status::getDeviceStatus(std::size_t index) const
 {
     return devices[index];
+}
+
+DeviceStatus& Status::findOrCreateDeviceStatusById(const uint16_t deviceId)
+{
+    auto index = getIndexByDeviceId(deviceId);
+    if (index < getDeviceStatusCount())
+        return devices[index];
+
+    DeviceStatus status;
+
+    status.update(CreateDevicePacket(deviceId));
+    devices.push_back(std::move(status));
+    return devices.back();
+}
+
+void Status::removeStatusById(const uint16_t deviceId)
+{
+    auto it = std::find_if(
+        devices.begin(), devices.end(), [deviceId](DeviceStatus status) { return deviceId == status.getPacket().getDeviceId(); });
+    if (it != devices.end())
+        devices.erase(it);
+}
+
+Packet& Status::CreateDevicePacket(uint16_t deviceId)
+{
+    Packet packet;
+    packet.setDeviceId(deviceId);
+    packet.setPayload(ASAM::CMP::CaptureModulePayload());
+    return packet;
 }
 
 END_NAMESPACE_ASAM_CMP
