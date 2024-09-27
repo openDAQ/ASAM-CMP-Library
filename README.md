@@ -15,7 +15,7 @@ This repository contains a static C++ library for encoding and decoding ASAM Con
    - gcc
    
 ## Build the project
-Tests can be excluded from the build by setting the cmake option `ASAM_CMP_ENABLE_TESTS` to `OFF`.
+Tests can be excluded from the build by setting the cmake option `ASAM_CMP_LIB_ENABLE_TESTS` to `OFF`.
 The Usage example can be excluded from the build by setting the cmake option `ASAM_CMP_BUILD_EXAMPLE` to `OFF`.
 To compile the library in Windows using Visual Studio 2022 use command line:
 ```
