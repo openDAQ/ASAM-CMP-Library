@@ -1,7 +1,7 @@
 set(CMAKE_FOLDER "external")
 
 include(FetchContent)
-
+message("ASAM CMP LIB UNIT TESTS "${ASAM_CMP_LIB_ENABLE_TESTS})
 if (ASAM_CMP_LIB_ENABLE_TESTS)
     if (BUILDING_AS_SUBMODULE)
         set(INSTALL_GTEST Off CACHE BOOL "" FORCE)
