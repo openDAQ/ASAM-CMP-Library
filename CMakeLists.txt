@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 set(CMAKE_FOLDER "${CMAKE_FOLDER}/AsamCmpLib")
 project(AsamCmpLib CXX)
+project(AsamCmpLib VERSION 1.0.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
