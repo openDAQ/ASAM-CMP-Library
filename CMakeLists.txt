@@ -11,7 +11,7 @@ if (POLICY CMP0135)
 endif()
 
 option(ASAM_CMP_LIB_ENABLE_TESTS "Enable testing" ON)
-option(ASAM_CMP_BUILD_EXAMPLE "Build example" ON)
+option(ASAM_CMP_LIB_BUILD_EXAMPLE "Build example" ON)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
@@ -57,6 +57,6 @@ endif()
 
 set(CMAKE_FOLDER "")
 
-if (ASAM_CMP_BUILD_EXAMPLE)
+if (ASAM_CMP_LIB_BUILD_EXAMPLE)
     add_subdirectory(example)
 endif()
