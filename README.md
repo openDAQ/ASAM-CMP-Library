@@ -1,5 +1,5 @@
 ## Introduction
-This repository contains a static C++ library for encoding and decoding [ASAM Control Module Protocol](https://www.asam.net/standards/detail/cmp/) messages. ASAM CMP is used to monitor in-vehicle bus communication and sensor data. 
+This repository contains a static C++ library for encoding and decoding [ASAM Capture Module Protocol](https://www.asam.net/standards/detail/cmp/) messages. ASAM CMP is used to monitor in-vehicle bus communication and sensor data. 
 
 ## Features
 - Encode and decode ASAM CMP Data and Status Messages.
