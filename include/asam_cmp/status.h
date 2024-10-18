@@ -34,6 +34,8 @@ public:
     DeviceStatus& getDeviceStatus(std::size_t index);
     const DeviceStatus& getDeviceStatus(std::size_t index) const;
 
+    void removeDeviceById(uint16_t deviceId);
+
 private:
     std::vector<DeviceStatus> devices;
 };
