@@ -31,8 +31,8 @@ std::size_t Status::getDeviceStatusCount() const
 
 size_t Status::getIndexByDeviceId(const uint16_t deviceId) const
 {
-    auto devIt = std::find_if(devices.begin(),
-                              devices.end(), [&deviceId](const DeviceStatus& device) { return device.getPacket().getDeviceId() == deviceId; });
+    auto devIt = std::find_if(
+        devices.begin(), devices.end(), [&deviceId](const DeviceStatus& device) { return device.getPacket().getDeviceId() == deviceId; });
     return std::distance(devices.begin(), devIt);
 }
 
@@ -44,6 +44,15 @@ DeviceStatus& Status::getDeviceStatus(std::size_t index)
 const DeviceStatus& Status::getDeviceStatus(std::size_t index) const
 {
     return devices[index];
+}
+void Status::removeDeviceById(uint16_t deviceId)
+{
+    auto index = getIndexByDeviceId(deviceId);
+    if (index != getDeviceStatusCount())
+    {
+        std::swap(devices[index], devices[devices.size() - 1]);
+        devices.pop_back();
+    }
 }
 
 END_NAMESPACE_ASAM_CMP
