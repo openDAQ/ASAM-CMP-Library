@@ -11,6 +11,10 @@ if (POLICY CMP0135)
     cmake_policy(SET CMP0135 NEW)
 endif()
 
+if (POLICY CMP0077)
+    cmake_policy(SET CMP0077 NEW)
+endif()
+
 option(ASAM_CMP_LIB_ENABLE_TESTS "Enable testing" ON)
 option(ASAM_CMP_LIB_BUILD_EXAMPLE "Build example" ON)
 
