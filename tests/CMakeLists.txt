@@ -25,6 +25,7 @@ set(SRC_Cpp testapp.cpp
         test_tecmp_can_payload.cpp
         test_tecmp_interface_payload.cpp
         test_tecmp_decoder.cpp
+        test_tecmp_ethernet_payload.cpp
 )
 
 add_executable(${TEST_APP} ${SRC_Cpp}

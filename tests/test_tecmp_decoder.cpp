@@ -1,6 +1,7 @@
 #include <asam_cmp/can_fd_payload.h>
 #include <asam_cmp/can_payload.h>
 #include <asam_cmp/capture_module_payload.h>
+#include <asam_cmp/ethernet_payload.h>
 #include <asam_cmp/interface_payload.h>
 #include <asam_cmp/tecmp_decoder.h>
 #include <gtest/gtest.h>
@@ -9,6 +10,40 @@ using TECMP::Decoder;
 
 class TecmpDecoderFixture : public ::testing::Test
 {
+public:
+    TecmpDecoderFixture()
+    {
+        tecmpEthernetPayloadFrame = {
+            0x00,                                            // IsTecmp
+            0x7B,                                            // deviceId
+            0x00, 0x00,                                      // sequenceCounter
+            0x00,                                            // version
+            0x03,                                            // messageType
+            0x00, 0x80,                                      // dataType (big-endian)
+            0x00, 0x00,                                      // reserved
+            0x00, 0x00,                                      // deviceFlags
+            0x00, 0x00, 0x00, 0x7B,                          // interfaceId
+            0x00, 0x00, 0x00, 0x61, 0x14, 0xB5, 0x3D, 0xE0,  // timestamp
+            0x00, 0x90,                                      // payloadLength
+            0x00, 0x00                                       // dataFlags
+        };
+
+        rawEthFrame = {0x0,  0xe0, 0x4c, 0x68, 0x6, 0x5c, 0x38, 0x2a, 0x19, 0x80, 0x40, 0x5e, 0x99, 0xfe, 0x0, 0x43, 0x0,  0x38,
+                       0x3,  0x2,  0x0,  0x0,  0x0, 0x0,  0x0,  0xf,  0x0,  0xf,  0xff, 0x0,  0x0,  0x0,  0x0, 0x6,  0x4,  0xc5,
+                       0xd0, 0x8,  0x0,  0x78, 0x0, 0x0,  0xc,  0x1,  0x4,  0x0,  0x0,  0x0,  0x0,  0x43, 0x1, 0x61, 0x16, 0xe1,
+                       0x0,  0x0,  0x0,  0x10, 0x0, 0x0,  0x0,  0x0,  0x0,  0x0,  0x0,  0x0,  0x0,  0x0,  0x0, 0x20, 0x0,  0x0,
+                       0x0,  0x0,  0x0,  0x0,  0x0, 0x0,  0x0,  0x0,  0x0,  0x30, 0x0,  0x0,  0x0,  0x0,  0x0, 0x0,  0x0,  0x0,
+                       0x0,  0x0,  0x0,  0x40, 0x0, 0x0,  0x0,  0x0,  0x0,  0x0,  0x0,  0x0,  0x0,  0x0,  0x0, 0x50, 0x0,  0x0,
+                       0x0,  0x0,  0x0,  0x0,  0x0, 0x0,  0x0,  0x0,  0x0,  0x60, 0x0,  0x0,  0x0,  0x0,  0x0, 0x0,  0x0,  0x0,
+                       0x0,  0x0,  0x0,  0x70, 0x0, 0x0,  0x0,  0x0,  0x0,  0x0,  0x0,  0x0,  0x0,  0x0,  0x0, 0x80, 0x0,  0x0,
+                       0x0,  0x0,  0x0,  0x0,  0x0, 0x0,  0x0,  0x0,  0x0,  0x90, 0x0,  0x0,  0x0,  0x0,  0x0, 0x0,  0x0,  0x0};
+
+        tecmpEthernetPayloadFrame.insert(tecmpEthernetPayloadFrame.end(), rawEthFrame.begin(), rawEthFrame.end());
+    }
+
+protected:
+    std::vector<uint8_t> tecmpEthernetPayloadFrame;
+    std::vector<uint8_t> rawEthFrame;
 };
 
 TEST_F(TecmpDecoderFixture, FailsWithASAMCMP)
@@ -100,4 +135,25 @@ TEST_F(TecmpDecoderFixture, DecodeCanFdPayload)
     ASSERT_EQ(data1, 123.123);
     auto data2 = *(reinterpret_cast<const double*>(payload.getData() + sizeof(double)));
     ASSERT_EQ(data2, 321.321);
+}
+
+TEST_F(TecmpDecoderFixture, DecodeEthernetPayload)
+{
+    auto packets = Decoder::Decode(tecmpEthernetPayloadFrame.data(), tecmpEthernetPayloadFrame.size());
+    ASSERT_FALSE(packets.empty());
+    ASSERT_EQ(packets.size(), 1u);
+
+    ASSERT_EQ(packets[0]->getInterfaceId(), 123);
+    ASSERT_EQ(packets[0]->getDeviceId(), 123);
+    ASSERT_EQ(packets[0]->getTimestamp(), 0x0000006114b53de0u);
+
+    auto payload = packets[0]->getPayload();
+    ASSERT_EQ(payload.getMessageType(), ASAM::CMP::CmpHeader::MessageType::data);
+    ASSERT_EQ(payload.getType(), ASAM::CMP::PayloadType::ethernet);
+
+    auto ethPayload = reinterpret_cast<ASAM::CMP::EthernetPayload&>(payload);
+    std::vector<uint8_t> frameBytes(ethPayload.getData(), ethPayload.getData() + ethPayload.getDataLength());
+
+    ASSERT_EQ(frameBytes.size(), rawEthFrame.size());
+    ASSERT_EQ(frameBytes, rawEthFrame);
 }

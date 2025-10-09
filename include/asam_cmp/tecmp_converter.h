@@ -36,12 +36,13 @@ private:
     static PacketPtr ConvertCaptureModulePayload(CmpHeader& header, const TecmpPayloadPtr& payload);
     static PacketPtr ConvertInterfacePayload(CmpHeader& header, const TecmpPayloadPtr& payload);
     static PacketPtr ConvertDataPayload(CmpHeader& header, const TecmpPayloadPtr& payload);
-    static PacketPtr GetPackageFromTecmpHeader(const TECMP::CmpHeader& header);
+    static PacketPtr GetPacketFromTecmpHeader(const TECMP::CmpHeader& header);
 
 private:
     static PacketPtr ConvertCanPayload(CmpHeader& header, const TecmpPayloadPtr& payload);
     static PacketPtr ConvertCanFdPayload(TECMP::CanPayload* canPayload, PacketPtr packet);
-    static PacketPtr convertLinPayload(CmpHeader& header, const TecmpPayloadPtr& payload);
+    static PacketPtr ConvertLinPayload(CmpHeader& header, const TecmpPayloadPtr& payload);
+    static PacketPtr ConvertEthernetPayload(CmpHeader& header, const TecmpPayloadPtr& payload);
 };
 
 END_NAMESPACE_TECMP
