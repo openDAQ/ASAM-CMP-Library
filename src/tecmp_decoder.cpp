@@ -2,6 +2,7 @@
 #include <asam_cmp/tecmp_capture_module_payload.h>
 #include <asam_cmp/tecmp_converter.h>
 #include <asam_cmp/tecmp_decoder.h>
+#include <asam_cmp/tecmp_ethernet_payload.h>
 #include <asam_cmp/tecmp_interface_payload.h>
 #include <asam_cmp/tecmp_lin_payload.h>
 
@@ -111,10 +112,16 @@ TecmpPayloadPtr TECMP::Decoder::GetDataPayload(const uint8_t* payloadData, const
                 return payload;
             break;
         }
+        case CmpHeader::DataType::ethernet:
+        {
+            auto payload = GetEthernetPayload(payloadData, size);
+            if (payload->getMessageType() == CmpHeader::MessageType::data && payload->getType() == PayloadType::ethernet)
+                return payload;
+            break;
+        }
         case CmpHeader::DataType::flexRay:
         case CmpHeader::DataType::uartRs232:
         case CmpHeader::DataType::analog:
-        case CmpHeader::DataType::ethernet:
         case CmpHeader::DataType::invalid:
             break;  // Not implimented
     }
@@ -155,6 +162,14 @@ TecmpPayloadPtr TECMP::Decoder::GetCanPayload(const uint8_t* payloadData, const 
 TecmpPayloadPtr TECMP::Decoder::GetLinPayload(const uint8_t* payloadData, const std::size_t size)
 {
     LinPayload payload(payloadData, size);
+    if (payload.isValid())
+        return std::make_shared<Payload>(payload);
+
+    return {};
+}
+TecmpPayloadPtr TECMP::Decoder::GetEthernetPayload(const uint8_t* payloadData, const std::size_t size)
+{
+    EthernetPayload payload(payloadData, size);
     if (payload.isValid())
         return std::make_shared<Payload>(payload);
 

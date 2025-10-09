@@ -28,6 +28,7 @@ set(SRC_Headers ../include/${LIB_NAME}/common.h
         ../include/${LIB_NAME}/tecmp_decoder.h
         ../include/${LIB_NAME}/tecmp_interface_payload.h
         ../include/${LIB_NAME}/tecmp_converter.h
+        ../include/${LIB_NAME}/tecmp_ethernet_payload.h
 )
 
 set(SRC_Sources cmp_header.cpp
@@ -55,13 +56,14 @@ set(SRC_Sources cmp_header.cpp
         tecmp_decoder.cpp
         tecmp_interface_payload.cpp
         tecmp_converter.cpp
+        tecmp_ethernet_payload.cpp
 )
 
 add_library(${LIB_NAME} STATIC ${SRC_Headers} ${SRC_Sources})
 
-if(UNIX)
+if (UNIX)
     target_compile_options(${LIB_NAME} PRIVATE -fPIC)
-endif()
+endif ()
 
 target_include_directories(${LIB_NAME} PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/../include>

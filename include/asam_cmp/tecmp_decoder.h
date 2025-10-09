@@ -44,6 +44,7 @@ private:
     static TecmpPayloadPtr GetCaptureModulePayload(const uint8_t* payloadData, const std::size_t size);
     static TecmpPayloadPtr GetCanPayload(const uint8_t* payloadData, const std::size_t size);
     static TecmpPayloadPtr GetLinPayload(const uint8_t* payloadData, const std::size_t size);
+    static TecmpPayloadPtr GetEthernetPayload(const uint8_t* payloadData, const std::size_t size);
 };
 
 END_NAMESPACE_TECMP

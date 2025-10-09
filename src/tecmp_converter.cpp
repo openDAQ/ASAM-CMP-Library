@@ -1,11 +1,13 @@
 #include <asam_cmp/can_fd_payload.h>
 #include <asam_cmp/can_payload.h>
 #include <asam_cmp/capture_module_payload.h>
+#include <asam_cmp/ethernet_payload.h>
 #include <asam_cmp/interface_payload.h>
 #include <asam_cmp/lin_payload.h>
 #include <asam_cmp/tecmp_can_payload.h>
 #include <asam_cmp/tecmp_capture_module_payload.h>
 #include <asam_cmp/tecmp_converter.h>
+#include <asam_cmp/tecmp_ethernet_payload.h>
 #include <asam_cmp/tecmp_interface_payload.h>
 #include <asam_cmp/tecmp_lin_payload.h>
 
@@ -54,7 +56,7 @@ PacketPtr TECMP::Converter::ConvertPacket(CmpHeader& header, const TecmpPayloadP
 PacketPtr TECMP::Converter::ConvertCanPayload(CmpHeader& header, const TecmpPayloadPtr& payload)
 {
     auto tecmpCanPayload = reinterpret_cast<TECMP::CanPayload*>(payload.get());
-    auto packet = GetPackageFromTecmpHeader(header);
+    auto packet = GetPacketFromTecmpHeader(header);
     if (tecmpCanPayload->getDlc() > 8)
     {
         return ConvertCanFdPayload(tecmpCanPayload, packet);
@@ -73,7 +75,7 @@ PacketPtr TECMP::Converter::ConvertCanPayload(CmpHeader& header, const TecmpPayl
 PacketPtr TECMP::Converter::ConvertCaptureModulePayload(CmpHeader& header, const TecmpPayloadPtr& payload)
 {
     auto tecmpCmPayload = reinterpret_cast<TECMP::CaptureModulePayload*>(payload.get());
-    auto packet = GetPackageFromTecmpHeader(header);
+    auto packet = GetPacketFromTecmpHeader(header);
     ASAM::CMP::CaptureModulePayload cmPayload;
     cmPayload.setData(
         "", std::to_string(tecmpCmPayload->getSerialNumber()), tecmpCmPayload->getHwVersion(), tecmpCmPayload->getSwVersion(), {});
@@ -86,7 +88,7 @@ PacketPtr TECMP::Converter::ConvertCaptureModulePayload(CmpHeader& header, const
 PacketPtr TECMP::Converter::ConvertInterfacePayload(CmpHeader& header, const TecmpPayloadPtr& payload)
 {
     auto tecmpInterfacePayload = reinterpret_cast<TECMP::InterfacePayload*>(payload.get());
-    auto packet = GetPackageFromTecmpHeader(header);
+    auto packet = GetPacketFromTecmpHeader(header);
     ASAM::CMP::InterfacePayload interfacePayload;
 
     interfacePayload.setInterfaceId(tecmpInterfacePayload->getInterfaceId());
@@ -107,12 +109,14 @@ PacketPtr TECMP::Converter::ConvertDataPayload(CmpHeader& header, const TecmpPay
             return ConvertCanPayload(header, payload);
             break;
         case CmpHeader::DataType::lin:
-            return convertLinPayload(header, payload);
+            return ConvertLinPayload(header, payload);
+            break;
+        case CmpHeader::DataType::ethernet:
+            return ConvertEthernetPayload(header, payload);
             break;
         case CmpHeader::DataType::flexRay:
         case CmpHeader::DataType::uartRs232:
         case CmpHeader::DataType::analog:
-        case CmpHeader::DataType::ethernet:
         case CmpHeader::DataType::invalid:
             break;
     }
@@ -133,10 +137,10 @@ PacketPtr TECMP::Converter::ConvertCanFdPayload(TECMP::CanPayload* canPayload, P
     return packet;
 }
 
-PacketPtr TECMP::Converter::convertLinPayload(TECMP::CmpHeader& header, const TecmpPayloadPtr& payload)
+PacketPtr TECMP::Converter::ConvertLinPayload(TECMP::CmpHeader& header, const TecmpPayloadPtr& payload)
 {
     auto tecmpLinPayload = reinterpret_cast<TECMP::LinPayload*>(payload.get());
-    auto packet = GetPackageFromTecmpHeader(header);
+    auto packet = GetPacketFromTecmpHeader(header);
 
     ASAM::CMP::LinPayload linPayload;
 
@@ -148,8 +152,20 @@ PacketPtr TECMP::Converter::convertLinPayload(TECMP::CmpHeader& header, const Te
 
     return packet;
 }
+PacketPtr TECMP::Converter::ConvertEthernetPayload(CmpHeader& header, const TecmpPayloadPtr& payload)
+{
+    auto tecmpEthPayload = reinterpret_cast<TECMP::EthernetPayload*>(payload.get());
+    auto packet = GetPacketFromTecmpHeader(header);
 
-PacketPtr TECMP::Converter::GetPackageFromTecmpHeader(const TECMP::CmpHeader& header)
+    ASAM::CMP::EthernetPayload ethPayload;
+
+    ethPayload.setData(tecmpEthPayload->getData(), static_cast<uint16_t>(tecmpEthPayload->getDataLength()));
+
+    packet->setPayload(ethPayload);
+    return packet;
+}
+
+PacketPtr TECMP::Converter::GetPacketFromTecmpHeader(const TECMP::CmpHeader& header)
 {
     PacketPtr packet = std::make_shared<Packet>();
     packet->setDeviceId(header.getDeviceId());
