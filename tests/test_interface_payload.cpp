@@ -63,7 +63,7 @@ TEST_F(InterfacePayloadTest, Copy)
     auto payloadCopy{*payload};
     ASSERT_TRUE(*payload == payloadCopy);
 
-    std::vector vec(payloadCopy.getStreamIds(), payloadCopy.getStreamIds() + payloadCopy.getStreamIdsCount());
+    std::vector<uint8_t> vec(payloadCopy.getStreamIds(), payloadCopy.getStreamIds() + payloadCopy.getStreamIdsCount());
     payload.reset();
     ASSERT_TRUE(std::equal(vec.begin(), vec.end(), payloadCopy.getStreamIds()));
 }
@@ -75,7 +75,7 @@ TEST_F(InterfacePayloadTest, CopyAssignment)
     payloadCopy = checker;
     ASSERT_TRUE(checker == payloadCopy);
 
-    std::vector vec(payloadCopy.getStreamIds(), payloadCopy.getStreamIds() + payloadCopy.getStreamIdsCount());
+    std::vector<uint8_t> vec(payloadCopy.getStreamIds(), payloadCopy.getStreamIds() + payloadCopy.getStreamIdsCount());
     payload.reset();
     ASSERT_TRUE(std::equal(vec.begin(), vec.end(), payloadCopy.getStreamIds()));
 }
