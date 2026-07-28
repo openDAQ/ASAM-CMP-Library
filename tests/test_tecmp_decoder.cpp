@@ -143,8 +143,8 @@ TEST_F(TecmpDecoderFixture, DecodeEthernetPayload)
     ASSERT_FALSE(packets.empty());
     ASSERT_EQ(packets.size(), 1u);
 
-    ASSERT_EQ(packets[0]->getInterfaceId(), 123);
-    ASSERT_EQ(packets[0]->getDeviceId(), 123);
+    ASSERT_EQ(packets[0]->getInterfaceId(), static_cast<uint32_t>(123));
+    ASSERT_EQ(packets[0]->getDeviceId(), static_cast<uint16_t>(123));
     ASSERT_EQ(packets[0]->getTimestamp(), 0x0000006114b53de0u);
 
     auto payload = packets[0]->getPayload();
