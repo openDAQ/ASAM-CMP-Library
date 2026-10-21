@@ -106,6 +106,7 @@ TEST_F(EncoderFixture, CorrectnessRef)
     Decoder decoder;
     auto checker = decoder.decode(encodedData[0].data(), encodedData[0].size());
 
+    packets[0]->setSequenceCounter(encoder.getSequenceCounter());
     ASSERT_EQ(checker.size(), 1u);
     ASSERT_TRUE(*packets[0] == *checker[0]);
 }
@@ -123,6 +124,7 @@ TEST_F(EncoderFixture, Correctness)
     Decoder decoder;
     auto checker = decoder.decode(encodedData[0].data(), encodedData[0].size());
 
+    packets[0].setSequenceCounter(encoder.getSequenceCounter());
     ASSERT_EQ(checker.size(), 1u);
     ASSERT_TRUE(packets[0] == *checker[0]);
 }
@@ -144,6 +146,7 @@ TEST_F(EncoderFixture, Aggregation)
     ASSERT_EQ(packetsPtrs.size(), decodedData.size());
     for (size_t i = 0; i < packetsPtrs.size(); ++i)
     {
+        packetsPtrs[i]->setSequenceCounter(encoder.getSequenceCounter());
         ASSERT_TRUE(*packetsPtrs[i] == *decodedData[i]);
     }
 }

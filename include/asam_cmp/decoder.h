@@ -83,6 +83,7 @@ private:
         SegmentType segmentType{SegmentType::unsegmented};
         uint8_t curVersion{0};
         CmpHeader::MessageType curMessageType{0};
+        uint16_t firstSequenceCounter{0};
         uint16_t curSegment{0};
     };
 

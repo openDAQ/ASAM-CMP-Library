@@ -43,6 +43,7 @@ std::vector<std::shared_ptr<Packet>> Decoder::decode(const void* data, const std
             packet->setVersion(header->getVersion());
             packet->setDeviceId(deviceId);
             packet->setStreamId(streamId);
+            packet->setSequenceCounter(header->getSequenceCounter());
 
             packets.push_back(packet);
         }
@@ -98,6 +99,7 @@ Decoder::SegmentedPacket::SegmentedPacket(
     : segmentType(SegmentType::firstSegment)
     , curVersion(version)
     , curMessageType(messageType)
+    , firstSequenceCounter(sequenceCounter)
     , curSegment(sequenceCounter)
 {
     payload.resize(size);
@@ -107,7 +109,7 @@ Decoder::SegmentedPacket::SegmentedPacket(
 bool Decoder::SegmentedPacket::addSegment(
     const uint8_t* data, const size_t size, const uint8_t version, const CmpHeader::MessageType messageType, const uint16_t sequenceCounter)
 {
-    if (curVersion != version || curMessageType != messageType || sequenceCounter != curSegment + 1)
+    if (curVersion != version || curMessageType != messageType || sequenceCounter != static_cast<uint16_t>(curSegment + 1))
         return false;
 
     auto header = reinterpret_cast<const MessageHeader*>(data);
@@ -139,6 +141,7 @@ std::shared_ptr<Packet> Decoder::SegmentedPacket::getPacket()
 {
     auto packet = std::make_shared<Packet>(curMessageType, payload.data(), payload.size());
     packet->setVersion(curVersion);
+    packet->setSequenceCounter(firstSequenceCounter);
     return packet;
 }
 
